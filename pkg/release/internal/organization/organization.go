@@ -32,13 +32,18 @@ type Policy struct {
 	BuildRequirements BuildRequirements `json:"build"`
 }
 
-// New creates a new instance of a Policy.
-func New(fn string) (*Policy, error) {
-	var org Policy
+// FromFile creates a new instance of a Policy from a file.
+func FromFile(fn string) (*Policy, error) {
 	content, err := os.ReadFile(fn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read organization policy: %w", err)
 	}
+	return FromBytes(content)
+}
+
+// FromBytes creates a new instance of a Policy from bytes.
+func FromBytes(content []byte) (*Policy, error) {
+	var org Policy
 	if err := json.Unmarshal(content, &org); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal: %w", err)
 	}

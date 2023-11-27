@@ -7,16 +7,16 @@ import (
 )
 
 type Policy struct {
-	orgPolicy organization.Policy
-	// TODO: project part.
+	org organization.Policy
+	//projects []
 }
 
 func New(root string) (*Policy, error) {
-	org, err := organization.New(filepath.Join(root, "defaults.json"))
+	org, err := organization.FromFile(filepath.Join(root, "defaults.json"))
 	if err != nil {
 		return nil, err
 	}
 	return &Policy{
-		orgPolicy: *org,
+		org: *org,
 	}, nil
 }
