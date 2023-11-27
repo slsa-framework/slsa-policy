@@ -1,26 +1,26 @@
 package release
 
-import "fmt"
+import (
+	"fmt"
 
-// import (
-// 	internal "github.com/laurentsimon/slsa-policy/pkg/release/internal"
-// )
+	internal "github.com/laurentsimon/slsa-policy/pkg/release/internal"
+)
 
-// // Policy defines the release policy.
-// type Policy struct {
-// 	policy *internal.ReleasePolicy
-// }
+// Policy defines the release policy.
+type Policy struct {
+	policy *internal.Policy
+}
 
-// // FromDir creates a release policy from a root directory.
-// func FromDir(root string) (*Policy, error) {
-// 	policy, err := internal.FromDir(root)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &Policy{
-// 		policy: policy,
-// 	}, nil
-// }
+// New creates a release policy.
+func New(root string) (*Policy, error) {
+	policy, err := internal.New(root)
+	if err != nil {
+		return nil, err
+	}
+	return &Policy{
+		policy: policy,
+	}, nil
+}
 
 func Hello() error {
 	fmt.Println("hey")

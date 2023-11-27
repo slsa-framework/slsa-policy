@@ -1,0 +1,14 @@
+{
+    "format": 1,
+    "roots": {
+        "build": [
+            {
+                "id": "https://github.com/actions/runner/github-hosted",
+                "slsa_level": 3
+            }
+        ]
+    },
+    "build": {
+        "require_slsa_level": 3
+    }
+}

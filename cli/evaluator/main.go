@@ -8,5 +8,8 @@ import (
 
 func main() {
 	fmt.Println("Hello, Modules!")
-	release.Hello()
+	_, err := release.New(".")
+	if err != nil {
+		panic(err)
+	}
 }

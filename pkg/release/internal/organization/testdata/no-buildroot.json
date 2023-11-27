@@ -1,0 +1,9 @@
+{
+    "format": 1,
+    "roots": {
+        "build": []
+    },
+    "build": {
+        "require_slsa_level": 3
+    }
+}

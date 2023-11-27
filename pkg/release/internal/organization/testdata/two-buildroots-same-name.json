@@ -1,0 +1,21 @@
+{
+    "format": 1,
+    "roots": {
+        "build": [
+            {
+                "id": "https://github.com/actions/runner/github-hosted",
+                "name": "a_name",
+                "slsa_level": 3
+            },
+            {
+                "id": "https://cloudbuild.googleapis.com/GoogleHostedWorker",
+                "name": "a_name",
+                "slsa_level": 3
+            }
+
+        ]
+    },
+    "build": {
+        "require_slsa_level": 3
+    }
+}
