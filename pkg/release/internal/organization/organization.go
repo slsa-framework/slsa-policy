@@ -3,7 +3,8 @@ package organization
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
+	"io/ioutil"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
 )
@@ -32,17 +33,13 @@ type Policy struct {
 	BuildRequirements BuildRequirements `json:"build"`
 }
 
-// FromFile creates a new instance of a Policy from a file.
-func FromFile(fn string) (*Policy, error) {
-	content, err := os.ReadFile(fn)
+// FromReader creates a new instance of a Policy from an IO reader.
+func FromReader(reader io.Reader) (*Policy, error) {
+	// NOTE: see https://yourbasic.org/golang/io-reader-interface-explained.
+	content, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read organization policy: %w", err)
+		return nil, fmt.Errorf("failed to read: %w", err)
 	}
-	return FromBytes(content)
-}
-
-// FromBytes creates a new instance of a Policy from bytes.
-func FromBytes(content []byte) (*Policy, error) {
 	var org Policy
 	if err := json.Unmarshal(content, &org); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal: %w", err)
@@ -130,4 +127,14 @@ func (p *Policy) validateBuildRequirements() error {
 			errs.ErrorInvalidField, *p.BuildRequirements.RequireSlsaLevel)
 	}
 	return nil
+}
+
+// BuilderNames returns the list of trusted builder names.
+func (p *Policy) RootBuilderNames() []string {
+	var names []string
+	for i := range p.Roots.Build {
+		builder := &p.Roots.Build[i]
+		names = append(names, *builder.Name)
+	}
+	return names
 }

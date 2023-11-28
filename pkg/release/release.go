@@ -3,7 +3,7 @@ package release
 import (
 	"fmt"
 
-	internal "github.com/laurentsimon/slsa-policy/pkg/release/internal"
+	"github.com/laurentsimon/slsa-policy/pkg/release/internal"
 )
 
 // Policy defines the release policy.

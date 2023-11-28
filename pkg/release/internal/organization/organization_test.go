@@ -1,6 +1,7 @@
 package organization
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -276,7 +277,7 @@ func Test_validateBuildRoots(t *testing.T) {
 	}
 }
 
-func Test_FromFile(t *testing.T) {
+func Test_FromReader(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -362,7 +363,11 @@ func Test_FromFile(t *testing.T) {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			_, err := FromFile(filepath.Join("testdata", tt.path))
+			fn := filepath.Join("testdata", tt.path)
+			// FromReader.
+			file, err := os.Open(fn)
+			defer file.Close()
+			_, err = FromReader(file)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
