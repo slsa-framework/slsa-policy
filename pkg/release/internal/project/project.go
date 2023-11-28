@@ -145,6 +145,7 @@ func FromReaders(readers iterator.ReaderIterator, orgPolicy organization.Policy)
 			policies[uri] = *policy
 		}
 	}
+	//TODO: add test for this.
 	if readers.Error() != nil {
 		return nil, fmt.Errorf("failed to read policy: %w", readers.Error())
 	}

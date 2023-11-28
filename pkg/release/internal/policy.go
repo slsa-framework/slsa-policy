@@ -1,22 +1,26 @@
 package internal
 
 import (
-	"path/filepath"
+	"io"
 
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/organization"
+	"github.com/laurentsimon/slsa-policy/pkg/release/internal/project"
+	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
 
 type Policy struct {
-	org organization.Policy
-	//projects []
+	orgPolicy       organization.Policy
+	projectPolicies map[string]project.Policy
 }
 
-func New(root string) (*Policy, error) {
-	org, err := organization.FromFile(filepath.Join(root, "defaults.json"))
+func New(org io.Reader, projects iterator.ReaderIterator) (*Policy, error) {
+	orgPolicy, err := organization.FromReader(org)
 	if err != nil {
 		return nil, err
 	}
+	projectPolicies, err := project.FromReaders(projects, *orgPolicy)
 	return &Policy{
-		org: *org,
+		orgPolicy:       *orgPolicy,
+		projectPolicies: projectPolicies,
 	}, nil
 }

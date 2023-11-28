@@ -2,8 +2,10 @@ package release
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal"
+	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
 
 // Policy defines the release policy.
@@ -12,8 +14,8 @@ type Policy struct {
 }
 
 // New creates a release policy.
-func New(root string) (*Policy, error) {
-	policy, err := internal.New(root)
+func New(org io.Reader, projects iterator.ReaderIterator) (*Policy, error) {
+	policy, err := internal.New(org, projects)
 	if err != nil {
 		return nil, err
 	}
