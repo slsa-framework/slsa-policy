@@ -10,6 +10,7 @@ import (
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/common"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/organization"
+	"github.com/laurentsimon/slsa-policy/pkg/release/options"
 )
 
 func Test_validateFormat(t *testing.T) {
@@ -456,6 +457,219 @@ func Test_FromReaders(t *testing.T) {
 			// Call the constructor.
 			_, err := FromReaders(iter, orgPolicy)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+		})
+	}
+}
+
+func Test_Evaluate(t *testing.T) {
+	t.Parallel()
+	type dummyVerifierOpts struct {
+		builderID, sourceURI string
+	}
+	tests := []struct {
+		name           string
+		policy         *Policy
+		org            *organization.Policy
+		noVerifier     bool
+		publicationURI string
+		verifierOpts   dummyVerifierOpts
+		level          int
+		expected       error
+	}{
+		{
+			name:           "no verifier defined",
+			publicationURI: "publication_uri",
+			org: &organization.Policy{
+				Roots: organization.Roots{
+					Build: []organization.Root{
+						{
+							Name:      common.AsPointer("builder2"),
+							SlsaLevel: common.AsPointer(2),
+						},
+						{
+							Name:      common.AsPointer("builder1"),
+							SlsaLevel: common.AsPointer(1),
+						},
+					},
+				},
+			},
+			policy: &Policy{
+				Format: 1,
+				Publication: Publication{
+					URI: "uri_set",
+				},
+				BuildRequirements: BuildRequirements{
+					RequireSlsaBuilder: "builder1",
+					Repository: Repository{
+						URI: "publication_uri",
+					},
+				},
+			},
+			noVerifier: true,
+			level:      -1,
+			expected:   errs.ErrorInvalidInput,
+		},
+		{
+			name:           "builder 1 success",
+			publicationURI: "publication_uri",
+			org: &organization.Policy{
+				Roots: organization.Roots{
+					Build: []organization.Root{
+						{
+							Name:      common.AsPointer("builder2"),
+							SlsaLevel: common.AsPointer(2),
+						},
+						{
+							Name:      common.AsPointer("builder1"),
+							SlsaLevel: common.AsPointer(1),
+						},
+					},
+				},
+			},
+			policy: &Policy{
+				Format: 1,
+				Publication: Publication{
+					URI: "publication_uri",
+				},
+				BuildRequirements: BuildRequirements{
+					RequireSlsaBuilder: "builder1",
+					Repository: Repository{
+						URI: "source_uri",
+					},
+				},
+			},
+			level: 1,
+			verifierOpts: dummyVerifierOpts{
+				builderID: "builder1",
+				sourceURI: "source_uri",
+			},
+		},
+		{
+			name:           "builder 2 success",
+			publicationURI: "publication_uri",
+			org: &organization.Policy{
+				Roots: organization.Roots{
+					Build: []organization.Root{
+						{
+							Name:      common.AsPointer("builder2"),
+							SlsaLevel: common.AsPointer(2),
+						},
+						{
+							Name:      common.AsPointer("builder1"),
+							SlsaLevel: common.AsPointer(1),
+						},
+					},
+				},
+			},
+			policy: &Policy{
+				Format: 1,
+				Publication: Publication{
+					URI: "publication_uri",
+				},
+				BuildRequirements: BuildRequirements{
+					RequireSlsaBuilder: "builder2",
+					Repository: Repository{
+						URI: "source_uri",
+					},
+				},
+			},
+			verifierOpts: dummyVerifierOpts{
+				builderID: "builder2",
+				sourceURI: "source_uri",
+			},
+			level: 2,
+		},
+		{
+			name:           "no builder is supported",
+			publicationURI: "publication_uri",
+			org: &organization.Policy{
+				Roots: organization.Roots{
+					Build: []organization.Root{
+						{
+							Name:      common.AsPointer("builder2"),
+							SlsaLevel: common.AsPointer(2),
+						},
+						{
+							Name:      common.AsPointer("builder1"),
+							SlsaLevel: common.AsPointer(1),
+						},
+					},
+				},
+			},
+			policy: &Policy{
+				Format: 1,
+				Publication: Publication{
+					URI: "publication_uri",
+				},
+				BuildRequirements: BuildRequirements{
+					RequireSlsaBuilder: "builder2",
+					Repository: Repository{
+						URI: "source_uri",
+					},
+				},
+			},
+			verifierOpts: dummyVerifierOpts{
+				builderID: "builder3",
+				sourceURI: "source_uri",
+			},
+			expected: errs.ErrorVerification,
+			level:    -1,
+		},
+		{
+			name:           "builder 2 different source",
+			publicationURI: "publication_uri",
+			org: &organization.Policy{
+				Roots: organization.Roots{
+					Build: []organization.Root{
+						{
+							Name:      common.AsPointer("builder2"),
+							SlsaLevel: common.AsPointer(2),
+						},
+						{
+							Name:      common.AsPointer("builder1"),
+							SlsaLevel: common.AsPointer(1),
+						},
+					},
+				},
+			},
+			policy: &Policy{
+				Format: 1,
+				Publication: Publication{
+					URI: "publication_uri",
+				},
+				BuildRequirements: BuildRequirements{
+					RequireSlsaBuilder: "builder2",
+					Repository: Repository{
+						URI: "source_uri",
+					},
+				},
+			},
+			verifierOpts: dummyVerifierOpts{
+				builderID: "builder2",
+				sourceURI: "different_source_uri",
+			},
+			expected: errs.ErrorVerification,
+			level:    -1,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt // Re-initializing variable so it is not changed while executing the closure below
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			// Create the verifier that succeeds for the right parameters.
+			var verifier options.AttestationVerifier
+			if !tt.noVerifier {
+				verifier = common.NewAttestationVerifier(tt.publicationURI,
+					tt.verifierOpts.builderID, tt.verifierOpts.sourceURI)
+			}
+
+			level, err := tt.policy.Evaluate(tt.publicationURI, *tt.org, verifier)
+			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			if diff := cmp.Diff(tt.level, level); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})

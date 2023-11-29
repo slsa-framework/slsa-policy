@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/release/internal/options"
+	"github.com/laurentsimon/slsa-policy/pkg/release/options"
 )
 
 // Root defines a trusted root.
@@ -119,8 +119,19 @@ func (p *Policy) RootBuilderNames() []string {
 	return names
 }
 
+func (p *Policy) BuilderSlsaLevel(builderName string) int {
+	for i := range p.Roots.Build {
+		builder := &p.Roots.Build[i]
+		if builderName == *builder.Name {
+			return *builder.SlsaLevel
+		}
+	}
+	// This should never happen.
+	return -1
+}
+
 // Evaluate evaluates the policy.
-func (p *Policy) Evaluate(publicationURI string, buildConfig options.BuildVerificationConfig) error {
+func (p *Policy) Evaluate(publicationURI string, verifier options.AttestationVerifier) error {
 	// Nothing to do.
 	return nil
 }

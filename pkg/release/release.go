@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal"
+	"github.com/laurentsimon/slsa-policy/pkg/release/options"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
 
@@ -29,19 +30,9 @@ func Hello() error {
 	return nil
 }
 
-// type BuildAttestationVerifier interface {
-// 	SupportsID(builderID string) bool
-// 	SupportsRepository(uri string) bool
-// 	// WithAttestationPath, WithAttestationContent
-// 	//Verify(builderID, repositoyURI string, options... Options) error
-// }
-
-// func (p *Policy) Evaluate(buildVerifiers []BuildAttestationVerifier) error {
-// 	// get the policy we need
-// 	// validate no overlap in verifier support...? maybe not needed.
-// 	// start with higher-level verifiers always.
-// 	return nil
-// }
+func (p *Policy) Evaluate(publicationURI string, buildConfig options.BuildVerificationConfig) (int, error) {
+	return p.Evaluate(publicationURI, buildConfig)
+}
 
 // TODO:
 // https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis

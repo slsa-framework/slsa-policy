@@ -5,9 +5,9 @@ import (
 	"io"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/release/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/organization"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/project"
+	"github.com/laurentsimon/slsa-policy/pkg/release/options"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
 
@@ -53,13 +53,13 @@ func (p *Policy) evaluateBuildPolicy(publicationURI string, buildConfig options.
 	}
 
 	// Evaluate the org policy first.
-	err := p.orgPolicy.Evaluate(publicationURI, buildConfig)
+	err := p.orgPolicy.Evaluate(publicationURI)
 	if err != nil {
 		return err
 	}
 
 	// Evaluate the project policy first.
-	err = projectPolicy.Evaluate(publicationURI, p.orgPolicy, buildConfig)
+	err = projectPolicy.Evaluate(publicationURI, p.orgPolicy, buildConfig.Verifier)
 	if err != nil {
 		return err
 	}

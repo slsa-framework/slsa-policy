@@ -9,8 +9,8 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/release/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/organization"
+	"github.com/laurentsimon/slsa-policy/pkg/release/options"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
 
@@ -147,8 +147,16 @@ func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Pol
 }
 
 // Evaluate evaluates the policy.
-func (p *Policy) Evaluate(publicationURI string, orgPolicy organization.Policy,
-	buildConfig options.BuildVerificationConfig) error {
-	// Nothing to do.
-	return nil
+func (p *Policy) Evaluate(publicationURI string, orgPolicy organization.Policy, verifier options.AttestationVerifier) (int, error) {
+	if verifier == nil {
+		return -1, fmt.Errorf("%w: verifier is empty", errs.ErrorInvalidInput)
+	}
+	// Verify build attestations.
+	if err := verifier.VerifyBuildAttestation(publicationURI,
+		p.BuildRequirements.RequireSlsaBuilder, p.BuildRequirements.Repository.URI); err != nil {
+		return -1, fmt.Errorf("failed to verify artifact (%q) with builder ID (%q) and source URI (%q): %w",
+			publicationURI, p.BuildRequirements.RequireSlsaBuilder, p.BuildRequirements.Repository.URI, err)
+	}
+
+	return orgPolicy.BuilderSlsaLevel(p.BuildRequirements.RequireSlsaBuilder), nil
 }
