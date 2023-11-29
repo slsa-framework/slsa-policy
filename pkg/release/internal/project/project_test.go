@@ -467,6 +467,7 @@ func Test_Evaluate(t *testing.T) {
 	t.Parallel()
 	type dummyVerifierOpts struct {
 		builderID, sourceURI string
+		environment          *string
 	}
 	tests := []struct {
 		name           string
@@ -508,7 +509,6 @@ func Test_Evaluate(t *testing.T) {
 				},
 			},
 			noVerifier: true,
-			level:      -1,
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
@@ -615,7 +615,6 @@ func Test_Evaluate(t *testing.T) {
 				sourceURI: "source_uri",
 			},
 			expected: errs.ErrorVerification,
-			level:    -1,
 		},
 		{
 			name:           "builder 2 different source",
@@ -651,7 +650,43 @@ func Test_Evaluate(t *testing.T) {
 				sourceURI: "different_source_uri",
 			},
 			expected: errs.ErrorVerification,
-			level:    -1,
+		},
+		{
+			name:           "request with env policy no env",
+			publicationURI: "publication_uri",
+			org: &organization.Policy{
+				Roots: organization.Roots{
+					Build: []organization.Root{
+						{
+							Name:      common.AsPointer("builder2"),
+							SlsaLevel: common.AsPointer(2),
+						},
+						{
+							Name:      common.AsPointer("builder1"),
+							SlsaLevel: common.AsPointer(1),
+						},
+					},
+				},
+			},
+			policy: &Policy{
+				Format: 1,
+				Publication: Publication{
+					URI: "publication_uri",
+				},
+				BuildRequirements: BuildRequirements{
+					RequireSlsaBuilder: "builder1",
+					Repository: Repository{
+						URI: "source_uri",
+					},
+				},
+			},
+			level: 1,
+			verifierOpts: dummyVerifierOpts{
+				builderID:   "builder1",
+				sourceURI:   "source_uri",
+				environment: common.AsPointer("dev"),
+			},
+			expected: errs.ErrorNotFound,
 		},
 	}
 	for _, tt := range tests {
@@ -664,10 +699,16 @@ func Test_Evaluate(t *testing.T) {
 				verifier = common.NewAttestationVerifier(tt.publicationURI,
 					tt.verifierOpts.builderID, tt.verifierOpts.sourceURI)
 			}
-
-			level, err := tt.policy.Evaluate(tt.publicationURI, *tt.org, verifier)
+			opts := options.BuildVerification{
+				Verifier:    verifier,
+				Environment: tt.verifierOpts.environment,
+			}
+			level, err := tt.policy.Evaluate(tt.publicationURI, *tt.org, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			if err != nil {
+				return
 			}
 			if diff := cmp.Diff(tt.level, level); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)

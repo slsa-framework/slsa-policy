@@ -131,7 +131,7 @@ func (p *Policy) BuilderSlsaLevel(builderName string) int {
 }
 
 // Evaluate evaluates the policy.
-func (p *Policy) Evaluate(publicationURI string, verifier options.AttestationVerifier) error {
+func (p *Policy) Evaluate(publicationURI string, buildOpts options.BuildVerification) error {
 	// Nothing to do.
 	return nil
 }

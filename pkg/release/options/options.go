@@ -6,9 +6,9 @@ type AttestationVerifier interface {
 	VerifyBuildAttestation(publicationURI, builderID, sourceURI string) error
 }
 
-// BuildVerificationConfig defines the configuration to verify
+// BuildVerification defines the configuration to verify
 // build attestations.
-type BuildVerificationConfig struct {
+type BuildVerification struct {
 	Verifier    AttestationVerifier
 	Environment *string
 }

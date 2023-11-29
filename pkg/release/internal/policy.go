@@ -22,47 +22,40 @@ func New(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy, erro
 		return nil, err
 	}
 	projectPolicies, err := project.FromReaders(projects, *orgPolicy)
+	if err != nil {
+		return nil, err
+	}
 	return &Policy{
 		orgPolicy:       *orgPolicy,
 		projectPolicies: projectPolicies,
 	}, nil
 }
 
-func (p *Policy) Evaluate(publicationURI string, buildConfig options.BuildVerificationConfig) error {
+func (p *Policy) Evaluate(publicationURI string, buildOpts options.BuildVerification) (int, error) {
 	if publicationURI == "" {
-		return fmt.Errorf("%w: publication URI is empty", errs.ErrorInvalidInput)
+		return -1, fmt.Errorf("%w: publication URI is empty", errs.ErrorInvalidInput)
 	}
-	return p.evaluateBuildPolicy(publicationURI, buildConfig)
+	return p.evaluateBuildPolicy(publicationURI, buildOpts)
 }
 
-func (p *Policy) evaluateBuildPolicy(publicationURI string, buildConfig options.BuildVerificationConfig) error {
-	if buildConfig.SourceURI == "" {
-		return fmt.Errorf("%w: build config's source URI is empty", errs.ErrorInvalidInput)
-	}
-	if buildConfig.BuilderID == "" {
-		return fmt.Errorf("%w: build config's builder ID is empty", errs.ErrorInvalidInput)
-	}
-	if buildConfig.Environment != nil && *buildConfig.Environment == "" {
-		return fmt.Errorf("%w: build config's environment is empty", errs.ErrorInvalidInput)
-	}
-
+func (p *Policy) evaluateBuildPolicy(publicationURI string, buildOpts options.BuildVerification) (int, error) {
 	// Get the project policy for the artifact.
 	projectPolicy, exists := p.projectPolicies[publicationURI]
 	if !exists {
-		return fmt.Errorf("%w: publication's uri (%q) not present in project policies", errs.ErrorNotFound, publicationURI)
+		return -1, fmt.Errorf("%w: publication's uri (%q) not present in project policies", errs.ErrorNotFound, publicationURI)
 	}
 
 	// Evaluate the org policy first.
-	err := p.orgPolicy.Evaluate(publicationURI)
+	err := p.orgPolicy.Evaluate(publicationURI, buildOpts)
 	if err != nil {
-		return err
+		return -1, err
 	}
 
 	// Evaluate the project policy first.
-	err = projectPolicy.Evaluate(publicationURI, p.orgPolicy, buildConfig.Verifier)
+	level, err := projectPolicy.Evaluate(publicationURI, p.orgPolicy, buildOpts)
 	if err != nil {
-		return err
+		return -1, err
 	}
 
-	return nil
+	return level, nil
 }

@@ -132,6 +132,8 @@ func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Pol
 		}
 		// TODO: Re-visit what we consider unique. It maye require some tweaks to support
 		// different environments in different files.
+		// If we want to support multiple files, they should all have the environment defined or none
+		// should.
 		uri := policy.Publication.URI
 		if _, exists := policies[uri]; exists {
 			return nil, fmt.Errorf("%w: publication's uri (%q) is defined more than once", errs.ErrorInvalidField, uri)
@@ -147,15 +149,26 @@ func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Pol
 }
 
 // Evaluate evaluates the policy.
-func (p *Policy) Evaluate(publicationURI string, orgPolicy organization.Policy, verifier options.AttestationVerifier) (int, error) {
-	if verifier == nil {
+func (p *Policy) Evaluate(publicationURI string, orgPolicy organization.Policy, buildOpts options.BuildVerification) (int, error) {
+	if buildOpts.Verifier == nil {
 		return -1, fmt.Errorf("%w: verifier is empty", errs.ErrorInvalidInput)
 	}
+	if buildOpts.Environment != nil {
+		if *buildOpts.Environment == "" {
+			return -1, fmt.Errorf("%w: build config's environment is empty", errs.ErrorInvalidInput)
+		}
+		if !slices.Contains(p.Publication.Environment.AnyOf, *buildOpts.Environment) {
+			return -1, fmt.Errorf("%w: failed to verify artifact (%q) for environment (%q): not defined in policy",
+				errs.ErrorNotFound, publicationURI, *buildOpts.Environment)
+		}
+	}
+
 	// Verify build attestations.
-	if err := verifier.VerifyBuildAttestation(publicationURI,
+	if err := buildOpts.Verifier.VerifyBuildAttestation(publicationURI,
 		p.BuildRequirements.RequireSlsaBuilder, p.BuildRequirements.Repository.URI); err != nil {
-		return -1, fmt.Errorf("failed to verify artifact (%q) with builder ID (%q) and source URI (%q): %w",
-			publicationURI, p.BuildRequirements.RequireSlsaBuilder, p.BuildRequirements.Repository.URI, err)
+		return -1, fmt.Errorf("%w: failed to verify artifact (%q) with builder ID (%q) and source URI (%q): %w",
+			errs.ErrorVerification, publicationURI, p.BuildRequirements.RequireSlsaBuilder,
+			p.BuildRequirements.Repository.URI, err)
 	}
 
 	return orgPolicy.BuilderSlsaLevel(p.BuildRequirements.RequireSlsaBuilder), nil
