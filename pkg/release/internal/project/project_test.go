@@ -341,6 +341,41 @@ func Test_FromReaders(t *testing.T) {
 				},
 			},
 			builders: []string{"builder_name"},
+			expected: errs.ErrorInvalidField,
+		},
+		{
+			name: "publication uri re-use env set and not",
+			policies: []Policy{
+				Policy{
+					Format: 1,
+					Publication: Publication{
+						URI: "uri_set",
+						Environment: Environment{
+							AnyOf: []string{"prod"},
+						},
+					},
+					BuildRequirements: BuildRequirements{
+						RequireSlsaBuilder: "builder_name",
+						Repository: Repository{
+							URI: "non_empty",
+						},
+					},
+				},
+				Policy{
+					Format: 1,
+					Publication: Publication{
+						URI: "uri_set",
+					},
+					BuildRequirements: BuildRequirements{
+						RequireSlsaBuilder: "builder_name",
+						Repository: Repository{
+							URI: "non_empty",
+						},
+					},
+				},
+			},
+			builders: []string{"builder_name"},
+			expected: errs.ErrorInvalidField,
 		},
 		{
 			name: "builder not set",
@@ -400,7 +435,7 @@ func Test_FromReaders(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			// Create the org policy (only the buildr names are needed).
+			// Create the org policy (only the builder names are needed).
 			orgPolicy := organization.Policy{}
 			for i := range tt.builders {
 				orgPolicy.Roots.Build = append(orgPolicy.Roots.Build, organization.Root{Name: &tt.builders[i]})

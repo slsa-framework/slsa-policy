@@ -9,6 +9,7 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
+	"github.com/laurentsimon/slsa-policy/pkg/release/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/organization"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
@@ -43,24 +44,25 @@ type Policy struct {
 	BuildRequirements BuildRequirements `json:"build"`
 }
 
-func fromReader(reader io.Reader, builderNames []string) (*Policy, error) {
+func fromReader(reader io.ReadCloser, builderNames []string) (*Policy, error) {
 	// NOTE: see https://yourbasic.org/golang/io-reader-interface-explained.
 	content, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read: %w", err)
 	}
+	defer reader.Close()
 	var project Policy
 	if err := json.Unmarshal(content, &project); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal: %w", err)
 	}
-	if err := project.Validate(builderNames); err != nil {
+	if err := project.validate(builderNames); err != nil {
 		return nil, err
 	}
 	return &project, nil
 }
 
-// Validate validates the format of the policy.
-func (p *Policy) Validate(builderNames []string) error {
+// validate validates the format of the policy.
+func (p *Policy) validate(builderNames []string) error {
 	if err := p.validateFormat(); err != nil {
 		return err
 	}
@@ -118,7 +120,7 @@ func (p *Policy) validateBuildRequirements(builderNames []string) error {
 }
 
 // FromReaders creates a set of policies keyed by their publication URI (and if present, the environment).
-func FromReaders(readers iterator.ReaderIterator, orgPolicy organization.Policy) (map[string]Policy, error) {
+func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Policy) (map[string]Policy, error) {
 	policies := make(map[string]Policy)
 	for readers.HasNext() {
 		reader := readers.Next()
@@ -128,26 +130,25 @@ func FromReaders(readers iterator.ReaderIterator, orgPolicy organization.Policy)
 		if err != nil {
 			return nil, err
 		}
-		// Publication URI must be defined only once.
-		for i := range policy.Publication.Environment.AnyOf {
-			env := &policy.Publication.Environment.AnyOf[i]
-			uri := fmt.Sprintf("%s_%s", policy.Publication.URI, *env)
-			if _, exists := policies[uri]; exists {
-				return nil, fmt.Errorf("%w: publication's uri (%q) is defined more than once", errs.ErrorInvalidField, uri)
-			}
-			policies[uri] = *policy
+		// TODO: Re-visit what we consider unique. It maye require some tweaks to support
+		// different environments in different files.
+		uri := policy.Publication.URI
+		if _, exists := policies[uri]; exists {
+			return nil, fmt.Errorf("%w: publication's uri (%q) is defined more than once", errs.ErrorInvalidField, uri)
 		}
-		if len(policy.Publication.Environment.AnyOf) == 0 {
-			uri := policy.Publication.URI
-			if _, exists := policies[uri]; exists {
-				return nil, fmt.Errorf("%w: publication's uri (%q) is defined more than once", errs.ErrorInvalidField, uri)
-			}
-			policies[uri] = *policy
-		}
+		policies[uri] = *policy
+
 	}
 	//TODO: add test for this.
 	if readers.Error() != nil {
 		return nil, fmt.Errorf("failed to read policy: %w", readers.Error())
 	}
 	return policies, nil
+}
+
+// Evaluate evaluates the policy.
+func (p *Policy) Evaluate(publicationURI string, orgPolicy organization.Policy,
+	buildConfig options.BuildVerificationConfig) error {
+	// Nothing to do.
+	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
+	"github.com/laurentsimon/slsa-policy/pkg/release/internal/options"
 )
 
 // Root defines a trusted root.
@@ -21,44 +22,36 @@ type Roots struct {
 	Build []Root `json:"build"`
 }
 
-// BuildRequirements defines the build requirements.
-type BuildRequirements struct {
-	RequireSlsaLevel *int `json:"require_slsa_level"`
-}
-
 // Policy defines the policy.
 type Policy struct {
-	Format            int               `json:"format"`
-	Roots             Roots             `json:"roots"`
-	BuildRequirements BuildRequirements `json:"build"`
+	Format int   `json:"format"`
+	Roots  Roots `json:"roots"`
 }
 
 // FromReader creates a new instance of a Policy from an IO reader.
-func FromReader(reader io.Reader) (*Policy, error) {
+func FromReader(reader io.ReadCloser) (*Policy, error) {
 	// NOTE: see https://yourbasic.org/golang/io-reader-interface-explained.
 	content, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read: %w", err)
 	}
+	defer reader.Close()
 	var org Policy
 	if err := json.Unmarshal(content, &org); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal: %w", err)
 	}
-	if err := org.Validate(); err != nil {
+	if err := org.validate(); err != nil {
 		return nil, err
 	}
 	return &org, nil
 }
 
-// Validate validates the format of the policy.
-func (p *Policy) Validate() error {
+// validate validates the format of the policy.
+func (p *Policy) validate() error {
 	if err := p.validateFormat(); err != nil {
 		return err
 	}
 	if err := p.validateBuildRoots(); err != nil {
-		return err
-	}
-	if err := p.validateBuildRequirements(); err != nil {
 		return err
 	}
 	return nil
@@ -116,19 +109,6 @@ func (p *Policy) validateBuildRoots() error {
 	return nil
 }
 
-func (p *Policy) validateBuildRequirements() error {
-	// Build requirements must be defined.
-	if p.BuildRequirements.RequireSlsaLevel == nil {
-		return fmt.Errorf("%w: build's require_slsa_level is not defined", errs.ErrorInvalidField)
-	}
-	// Level must be in the corre range.
-	if *p.BuildRequirements.RequireSlsaLevel < 0 || *p.BuildRequirements.RequireSlsaLevel > 4 {
-		return fmt.Errorf("%w: build requirements's require_slsa_level is invalid (%d). Must satisfy 0 <= slsa_level <= 4",
-			errs.ErrorInvalidField, *p.BuildRequirements.RequireSlsaLevel)
-	}
-	return nil
-}
-
 // BuilderNames returns the list of trusted builder names.
 func (p *Policy) RootBuilderNames() []string {
 	var names []string
@@ -137,4 +117,10 @@ func (p *Policy) RootBuilderNames() []string {
 		names = append(names, *builder.Name)
 	}
 	return names
+}
+
+// Evaluate evaluates the policy.
+func (p *Policy) Evaluate(publicationURI string, buildConfig options.BuildVerificationConfig) error {
+	// Nothing to do.
+	return nil
 }

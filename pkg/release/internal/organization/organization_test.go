@@ -3,6 +3,7 @@ package organization
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -45,59 +46,6 @@ func Test_validateFormat(t *testing.T) {
 			t.Parallel()
 
 			err := tt.policy.validateFormat()
-			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-		})
-	}
-}
-
-func Test_validateBuildRequirements(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name     string
-		policy   *Policy
-		expected error
-	}{
-		{
-			name:     "empty build requirements",
-			policy:   &Policy{},
-			expected: errs.ErrorInvalidField,
-		},
-		{
-			name: "slsa level is negative",
-			policy: &Policy{
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(-1),
-				},
-			},
-			expected: errs.ErrorInvalidField,
-		},
-		{
-			name: "slsa level is greater than 4",
-			policy: &Policy{
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(5),
-				},
-			},
-			expected: errs.ErrorInvalidField,
-		},
-		{
-			name: "valid build requirements",
-			policy: &Policy{
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(2),
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		tt := tt // Re-initializing variable so it is not changed while executing the closure below
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			err := tt.policy.validateBuildRequirements()
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -298,9 +246,6 @@ func Test_FromReader(t *testing.T) {
 						},
 					},
 				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(3),
-				},
 			},
 		},
 		{
@@ -314,9 +259,6 @@ func Test_FromReader(t *testing.T) {
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(3),
 				},
 			},
 			expected: errs.ErrorInvalidField,
@@ -333,9 +275,6 @@ func Test_FromReader(t *testing.T) {
 						},
 					},
 				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(3),
-				},
 			},
 			expected: errs.ErrorInvalidField,
 		},
@@ -350,9 +289,6 @@ func Test_FromReader(t *testing.T) {
 							Name: common.AsPointer("github_actions_level_3"),
 						},
 					},
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(3),
 				},
 			},
 			expected: errs.ErrorInvalidField,
@@ -370,9 +306,6 @@ func Test_FromReader(t *testing.T) {
 						},
 					},
 				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(3),
-				},
 			},
 			expected: errs.ErrorInvalidField,
 		},
@@ -389,9 +322,6 @@ func Test_FromReader(t *testing.T) {
 						},
 					},
 				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(3),
-				},
 			},
 			expected: errs.ErrorInvalidField,
 		},
@@ -399,9 +329,6 @@ func Test_FromReader(t *testing.T) {
 			name: "no build roots",
 			policy: &Policy{
 				Format: 1,
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(3),
-				},
 			},
 			expected: errs.ErrorInvalidField,
 		},
@@ -416,9 +343,6 @@ func Test_FromReader(t *testing.T) {
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(3),
 				},
 			},
 			expected: errs.ErrorInvalidField,
@@ -435,63 +359,6 @@ func Test_FromReader(t *testing.T) {
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(3),
-				},
-			},
-			expected: errs.ErrorInvalidField,
-		},
-		{
-			name: "empty build level requirement",
-			policy: &Policy{
-				Format: 1,
-				Roots: Roots{
-					Build: []Root{
-						{
-							ID:        common.AsPointer("https://github.com/actions/runner/github-hosted"),
-							Name:      common.AsPointer("github_actions_level_3"),
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
-			expected: errs.ErrorInvalidField,
-		},
-		{
-			name: "negative build level requirement",
-			policy: &Policy{
-				Format: 1,
-				Roots: Roots{
-					Build: []Root{
-						{
-							ID:        common.AsPointer("https://github.com/actions/runner/github-hosted"),
-							Name:      common.AsPointer("github_actions_level_3"),
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(-1),
-				},
-			},
-			expected: errs.ErrorInvalidField,
-		},
-		{
-			name: "large build level requirement",
-			policy: &Policy{
-				Format: 1,
-				Roots: Roots{
-					Build: []Root{
-						{
-							ID:        common.AsPointer("https://github.com/actions/runner/github-hosted"),
-							Name:      common.AsPointer("github_actions_level_3"),
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(5),
 				},
 			},
 			expected: errs.ErrorInvalidField,
@@ -514,9 +381,6 @@ func Test_FromReader(t *testing.T) {
 						},
 					},
 				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(3),
-				},
 			},
 		},
 		{
@@ -536,9 +400,6 @@ func Test_FromReader(t *testing.T) {
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(3),
 				},
 			},
 			expected: errs.ErrorInvalidField,
@@ -561,9 +422,6 @@ func Test_FromReader(t *testing.T) {
 						},
 					},
 				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaLevel: common.AsPointer(3),
-				},
 			},
 			expected: errs.ErrorInvalidField,
 		},
@@ -577,7 +435,7 @@ func Test_FromReader(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to marshal: %v", err)
 			}
-			reader := bytes.NewReader(content)
+			reader := io.NopCloser(bytes.NewReader(content))
 			_, err = FromReader(reader)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)

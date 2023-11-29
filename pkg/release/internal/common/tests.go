@@ -11,7 +11,7 @@ func AsPointer[K interface{}](o K) *K {
 	return &o
 }
 
-func NewBytesIterator(values [][]byte) iterator.ReaderIterator {
+func NewBytesIterator(values [][]byte) iterator.ReadCloserIterator {
 	return &bytesIterator{values: values, index: -1}
 }
 
@@ -21,12 +21,12 @@ type bytesIterator struct {
 	err    error
 }
 
-func (iter *bytesIterator) Next() io.Reader {
+func (iter *bytesIterator) Next() io.ReadCloser {
 	if iter.err != nil {
 		return nil
 	}
 	iter.index++
-	return bytes.NewReader(iter.values[iter.index])
+	return io.NopCloser(bytes.NewReader(iter.values[iter.index]))
 }
 
 func (iter *bytesIterator) HasNext() bool {

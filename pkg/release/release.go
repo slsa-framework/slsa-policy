@@ -14,7 +14,7 @@ type Policy struct {
 }
 
 // New creates a release policy.
-func New(org io.Reader, projects iterator.ReaderIterator) (*Policy, error) {
+func New(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy, error) {
 	policy, err := internal.New(org, projects)
 	if err != nil {
 		return nil, err
@@ -28,6 +28,20 @@ func Hello() error {
 	fmt.Println("hey")
 	return nil
 }
+
+// type BuildAttestationVerifier interface {
+// 	SupportsID(builderID string) bool
+// 	SupportsRepository(uri string) bool
+// 	// WithAttestationPath, WithAttestationContent
+// 	//Verify(builderID, repositoyURI string, options... Options) error
+// }
+
+// func (p *Policy) Evaluate(buildVerifiers []BuildAttestationVerifier) error {
+// 	// get the policy we need
+// 	// validate no overlap in verifier support...? maybe not needed.
+// 	// start with higher-level verifiers always.
+// 	return nil
+// }
 
 // TODO:
 // https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis

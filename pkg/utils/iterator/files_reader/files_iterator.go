@@ -7,7 +7,8 @@ import (
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
 
-func FromPaths(paths []string) iterator.ReaderIterator {
+// FromPaths creates an iterator for a list of files.
+func FromPaths(paths []string) iterator.ReadCloserIterator {
 	return &filesIterator{paths: paths, index: -1}
 }
 
@@ -17,7 +18,7 @@ type filesIterator struct {
 	err   error
 }
 
-func (iter *filesIterator) Next() io.Reader {
+func (iter *filesIterator) Next() io.ReadCloser {
 	if iter.err != nil {
 		return nil
 	}
