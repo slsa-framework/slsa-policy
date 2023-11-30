@@ -53,7 +53,7 @@ func Test_validateFormat(t *testing.T) {
 	}
 }
 
-func Test_validatePublication(t *testing.T) {
+func Test_validateRelease(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -69,7 +69,7 @@ func Test_validatePublication(t *testing.T) {
 		{
 			name: "set uri",
 			policy: &Policy{
-				Publication: Publication{
+				Release: Release{
 					URI: "non_empty_uri",
 				},
 			},
@@ -77,7 +77,7 @@ func Test_validatePublication(t *testing.T) {
 		{
 			name: "set uri and environment",
 			policy: &Policy{
-				Publication: Publication{
+				Release: Release{
 					URI: "non_empty_uri",
 					Environment: Environment{
 						AnyOf: []string{"dev", "prod"},
@@ -88,7 +88,7 @@ func Test_validatePublication(t *testing.T) {
 		{
 			name: "empty environment field",
 			policy: &Policy{
-				Publication: Publication{
+				Release: Release{
 					URI: "non_empty_uri",
 					Environment: Environment{
 						AnyOf: []string{"", "dev", "prod"},
@@ -103,7 +103,7 @@ func Test_validatePublication(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := tt.policy.validatePublication()
+			err := tt.policy.validateRelease()
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -207,7 +207,7 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Publication: Publication{
+					Release: Release{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -225,7 +225,7 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Publication: Publication{
+					Release: Release{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -240,11 +240,11 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "publication uri re-use",
+			name: "release uri re-use",
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Publication: Publication{
+					Release: Release{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -256,7 +256,7 @@ func Test_FromReaders(t *testing.T) {
 				},
 				Policy{
 					Format: 1,
-					Publication: Publication{
+					Release: Release{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -271,11 +271,11 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "publication uri re-use same env",
+			name: "release uri re-use same env",
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Publication: Publication{
+					Release: Release{
 						URI: "uri_set",
 						Environment: Environment{
 							AnyOf: []string{"dev"},
@@ -290,7 +290,7 @@ func Test_FromReaders(t *testing.T) {
 				},
 				Policy{
 					Format: 1,
-					Publication: Publication{
+					Release: Release{
 						URI: "uri_set",
 						Environment: Environment{
 							AnyOf: []string{"dev"},
@@ -308,11 +308,11 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "publication uri re-use different env",
+			name: "release uri re-use different env",
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Publication: Publication{
+					Release: Release{
 						URI: "uri_set",
 						Environment: Environment{
 							AnyOf: []string{"prod"},
@@ -327,7 +327,7 @@ func Test_FromReaders(t *testing.T) {
 				},
 				Policy{
 					Format: 1,
-					Publication: Publication{
+					Release: Release{
 						URI: "uri_set",
 						Environment: Environment{
 							AnyOf: []string{"dev"},
@@ -345,11 +345,11 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "publication uri re-use env set and not",
+			name: "release uri re-use env set and not",
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Publication: Publication{
+					Release: Release{
 						URI: "uri_set",
 						Environment: Environment{
 							AnyOf: []string{"prod"},
@@ -364,7 +364,7 @@ func Test_FromReaders(t *testing.T) {
 				},
 				Policy{
 					Format: 1,
-					Publication: Publication{
+					Release: Release{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -383,7 +383,7 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Publication: Publication{
+					Release: Release{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -401,7 +401,7 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Publication: Publication{
+					Release: Release{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -470,18 +470,18 @@ func Test_Evaluate(t *testing.T) {
 		environment          *string
 	}
 	tests := []struct {
-		name           string
-		policy         *Policy
-		org            *organization.Policy
-		noVerifier     bool
-		publicationURI string
-		verifierOpts   dummyVerifierOpts
-		level          int
-		expected       error
+		name         string
+		policy       *Policy
+		org          *organization.Policy
+		noVerifier   bool
+		releaseURI   string
+		verifierOpts dummyVerifierOpts
+		level        int
+		expected     error
 	}{
 		{
-			name:           "no verifier defined",
-			publicationURI: "publication_uri",
+			name:       "no verifier defined",
+			releaseURI: "release_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
@@ -498,13 +498,13 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Publication: Publication{
+				Release: Release{
 					URI: "uri_set",
 				},
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder1",
 					Repository: Repository{
-						URI: "publication_uri",
+						URI: "release_uri",
 					},
 				},
 			},
@@ -512,8 +512,8 @@ func Test_Evaluate(t *testing.T) {
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
-			name:           "builder 1 success",
-			publicationURI: "publication_uri",
+			name:       "builder 1 success",
+			releaseURI: "release_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
@@ -530,8 +530,8 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Publication: Publication{
-					URI: "publication_uri",
+				Release: Release{
+					URI: "release_uri",
 				},
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder1",
@@ -547,8 +547,8 @@ func Test_Evaluate(t *testing.T) {
 			},
 		},
 		{
-			name:           "builder 2 success",
-			publicationURI: "publication_uri",
+			name:       "builder 2 success",
+			releaseURI: "release_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
@@ -565,8 +565,8 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Publication: Publication{
-					URI: "publication_uri",
+				Release: Release{
+					URI: "release_uri",
 				},
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder2",
@@ -582,8 +582,8 @@ func Test_Evaluate(t *testing.T) {
 			level: 2,
 		},
 		{
-			name:           "no builder is supported",
-			publicationURI: "publication_uri",
+			name:       "no builder is supported",
+			releaseURI: "release_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
@@ -600,8 +600,8 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Publication: Publication{
-					URI: "publication_uri",
+				Release: Release{
+					URI: "release_uri",
 				},
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder2",
@@ -617,8 +617,8 @@ func Test_Evaluate(t *testing.T) {
 			expected: errs.ErrorVerification,
 		},
 		{
-			name:           "builder 2 different source",
-			publicationURI: "publication_uri",
+			name:       "builder 2 different source",
+			releaseURI: "release_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
@@ -635,8 +635,8 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Publication: Publication{
-					URI: "publication_uri",
+				Release: Release{
+					URI: "release_uri",
 				},
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder2",
@@ -652,8 +652,8 @@ func Test_Evaluate(t *testing.T) {
 			expected: errs.ErrorVerification,
 		},
 		{
-			name:           "request with env policy no env",
-			publicationURI: "publication_uri",
+			name:       "request with env policy no env",
+			releaseURI: "release_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
@@ -670,8 +670,8 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Publication: Publication{
-					URI: "publication_uri",
+				Release: Release{
+					URI: "release_uri",
 				},
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder1",
@@ -686,7 +686,46 @@ func Test_Evaluate(t *testing.T) {
 				sourceURI:   "source_uri",
 				environment: common.AsPointer("dev"),
 			},
-			expected: errs.ErrorNotFound,
+			expected: errs.ErrorInvalidInput,
+		},
+		{
+			name:       "request no env policy with env",
+			releaseURI: "release_uri",
+			org: &organization.Policy{
+				Roots: organization.Roots{
+					Build: []organization.Root{
+						{
+							Name:      common.AsPointer("builder2"),
+							SlsaLevel: common.AsPointer(2),
+						},
+						{
+							Name:      common.AsPointer("builder1"),
+							SlsaLevel: common.AsPointer(1),
+						},
+					},
+				},
+			},
+			policy: &Policy{
+				Format: 1,
+				Release: Release{
+					URI: "release_uri",
+					Environment: Environment{
+						AnyOf: []string{"dev", "prod"},
+					},
+				},
+				BuildRequirements: BuildRequirements{
+					RequireSlsaBuilder: "builder1",
+					Repository: Repository{
+						URI: "source_uri",
+					},
+				},
+			},
+			level: 1,
+			verifierOpts: dummyVerifierOpts{
+				builderID: "builder1",
+				sourceURI: "source_uri",
+			},
+			expected: errs.ErrorInvalidInput,
 		},
 	}
 	for _, tt := range tests {
@@ -696,14 +735,14 @@ func Test_Evaluate(t *testing.T) {
 			// Create the verifier that succeeds for the right parameters.
 			var verifier options.AttestationVerifier
 			if !tt.noVerifier {
-				verifier = common.NewAttestationVerifier(tt.publicationURI,
+				verifier = common.NewAttestationVerifier(tt.releaseURI,
 					tt.verifierOpts.builderID, tt.verifierOpts.sourceURI)
 			}
 			opts := options.BuildVerification{
 				Verifier:    verifier,
 				Environment: tt.verifierOpts.environment,
 			}
-			level, err := tt.policy.Evaluate(tt.publicationURI, *tt.org, opts)
+			level, err := tt.policy.Evaluate(tt.releaseURI, *tt.org, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

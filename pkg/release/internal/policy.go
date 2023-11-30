@@ -16,7 +16,7 @@ type Policy struct {
 	projectPolicies map[string]project.Policy
 }
 
-func New(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy, error) {
+func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy, error) {
 	orgPolicy, err := organization.FromReader(org)
 	if err != nil {
 		return nil, err

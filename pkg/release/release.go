@@ -15,7 +15,7 @@ type Policy struct {
 
 // New creates a release policy.
 func New(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy, error) {
-	policy, err := internal.New(org, projects)
+	policy, err := internal.PolicyNew(org, projects)
 	if err != nil {
 		return nil, err
 	}
@@ -27,4 +27,9 @@ func New(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy, erro
 // Evaluate evalues the release policy.
 func (p *Policy) Evaluate(publicationURI string, buildOpts options.BuildVerification) (int, error) {
 	return p.Evaluate(publicationURI, buildOpts)
+}
+
+func (p *Policy) Attestation() ([]byte, error) {
+	// TODO
+	return nil, nil
 }
