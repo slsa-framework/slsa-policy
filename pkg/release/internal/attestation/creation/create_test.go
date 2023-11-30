@@ -1,4 +1,4 @@
-package internal
+package attestation
 
 import (
 	"testing"
@@ -6,11 +6,12 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
+	"github.com/laurentsimon/slsa-policy/pkg/release/internal/attestation"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/common"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
-func Test_AttestationNew(t *testing.T) {
+func Test_New(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -65,14 +66,14 @@ func Test_AttestationNew(t *testing.T) {
 			policy: map[string]intoto.Policy{
 				"org": intoto.Policy{
 					URI: "policy1_uri",
-					Digest: intoto.DigestSet{
+					Digests: intoto.DigestSet{
 						"sha256":    "value1",
 						"commitSha": "value2",
 					},
 				},
 				"project": intoto.Policy{
 					URI: "policy2_uri",
-					Digest: intoto.DigestSet{
+					Digests: intoto.DigestSet{
 						"sha256":    "value3",
 						"commitSha": "value4",
 					},
@@ -88,14 +89,14 @@ func Test_AttestationNew(t *testing.T) {
 			policy: map[string]intoto.Policy{
 				"org": intoto.Policy{
 					URI: "policy1_uri",
-					Digest: intoto.DigestSet{
+					Digests: intoto.DigestSet{
 						"sha256":    "value1",
 						"commitSha": "value2",
 					},
 				},
 				"project": intoto.Policy{
 					URI: "policy2_uri",
-					Digest: intoto.DigestSet{
+					Digests: intoto.DigestSet{
 						"sha256":    "value3",
 						"commitSha": "value4",
 					},
@@ -141,14 +142,14 @@ func Test_AttestationNew(t *testing.T) {
 			policy: map[string]intoto.Policy{
 				"org": intoto.Policy{
 					URI: "policy1_uri",
-					Digest: intoto.DigestSet{
+					Digests: intoto.DigestSet{
 						"sha256":    "value1",
 						"commitSha": "value2",
 					},
 				},
 				"project": intoto.Policy{
 					URI: "policy2_uri",
-					Digest: intoto.DigestSet{
+					Digests: intoto.DigestSet{
 						"sha256":    "value3",
 						"commitSha": "value4",
 					},
@@ -164,14 +165,14 @@ func Test_AttestationNew(t *testing.T) {
 			policy: map[string]intoto.Policy{
 				"org": intoto.Policy{
 					URI: "policy1_uri",
-					Digest: intoto.DigestSet{
+					Digests: intoto.DigestSet{
 						"sha256":    "value1",
 						"commitSha": "value2",
 					},
 				},
 				"project": intoto.Policy{
 					URI: "policy2_uri",
-					Digest: intoto.DigestSet{
+					Digests: intoto.DigestSet{
 						"sha256":    "value3",
 						"commitSha": "value4",
 					},
@@ -184,7 +185,14 @@ func Test_AttestationNew(t *testing.T) {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			var options []func(*Attestation) error
+			var options []func(*Creation) error
+			subject := intoto.ResourceDescriptor{
+				Name: "subject1",
+				Digests: intoto.DigestSet{
+					"sha256":    "some_value",
+					"gitCommit": "another_value",
+				},
+			}
 			if tt.authorVersion != "" {
 				options = append(options, WithAuthorVersion(tt.authorVersion))
 			}
@@ -197,13 +205,31 @@ func Test_AttestationNew(t *testing.T) {
 			if tt.policy != nil {
 				options = append(options, WithPolicy(tt.policy))
 			}
-
-			att, err := AttestationNew("author_id", tt.result, options...)
+			att, err := New(subject, "author_id", tt.result, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			if err != nil {
 				return
+			}
+			// Statement type verification.
+			if diff := cmp.Diff(attestation.StatementType, att.Header.Type); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			// Predicate type verification.
+			if diff := cmp.Diff(attestation.PredicateType, att.Header.PredicateType); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+
+			// Add the environment to the subjects now, to allow comparison.
+			if tt.environment != "" {
+				subject.Annotations = map[string]interface{}{
+					attestation.EnvironmentAnnotation: tt.environment,
+				}
+			}
+			// Subjects must match.
+			if diff := cmp.Diff([]intoto.ResourceDescriptor{subject}, att.Header.Subjects); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			// Author ID must match.
 			if diff := cmp.Diff("author_id", att.Predicate.Author.ID); diff != "" {
@@ -223,17 +249,17 @@ func Test_AttestationNew(t *testing.T) {
 			}
 			// Environment must match.
 			if tt.environment != "" {
-				if diff := cmp.Diff(tt.environment, att.Header.Resource.Annotations[environmentAnnotation]); diff != "" {
+				if diff := cmp.Diff(tt.environment, att.Header.Subjects[0].Annotations[attestation.EnvironmentAnnotation]); diff != "" {
 					t.Fatalf("unexpected err (-want +got): \n%s", diff)
 				}
 			} else {
-				if diff := cmp.Diff(map[string]any(nil), att.Header.Resource.Annotations); diff != "" {
+				if diff := cmp.Diff(map[string]any(nil), att.Header.Subjects[0].Annotations); diff != "" {
 					t.Fatalf("unexpected err (-want +got): \n%s", diff)
 				}
 			}
 			// SLSA Levels must match.
 			if tt.buildLevel != nil {
-				if diff := cmp.Diff(*tt.buildLevel, att.Predicate.ReleaseProperties[levelProperty]); diff != "" {
+				if diff := cmp.Diff(*tt.buildLevel, att.Predicate.ReleaseProperties[attestation.BuildLevelProperty]); diff != "" {
 					t.Fatalf("unexpected err (-want +got): \n%s", diff)
 				}
 			} else {

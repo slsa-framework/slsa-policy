@@ -33,3 +33,5 @@ func (p *Policy) Attestation() ([]byte, error) {
 	// TODO
 	return nil, nil
 }
+
+// TODO: make attesttion API public.

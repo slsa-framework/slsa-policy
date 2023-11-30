@@ -3,10 +3,9 @@ package intoto
 type DigestSet map[string]string
 
 type Header struct {
-	Type          string `json:"_type"`
-	PredicateType string `json:"predicateType"`
-	// TODO: replace with subjects
-	Resource ResourceDescriptor `json:"resource"`
+	Type          string               `json:"_type"`
+	PredicateType string               `json:"predicateType"`
+	Subjects      []ResourceDescriptor `json:"subject"`
 }
 
 // Author is the author of the attestation.
@@ -16,8 +15,8 @@ type Author struct {
 }
 
 type Policy struct {
-	URI    string    `json:"uri,omitempty"`
-	Digest DigestSet `json:"digest,omitempty"`
+	URI     string    `json:"uri,omitempty"`
+	Digests DigestSet `json:"digest,omitempty"`
 }
 
 type ResourceDescriptor struct {
@@ -27,7 +26,7 @@ type ResourceDescriptor struct {
 
 	// A set of cryptographic digests of the contents of the resource or
 	// artifact. This field is REQUIRED unless either uri or content is set.
-	Digest DigestSet `json:"digest,omitempty"`
+	Digests DigestSet `json:"digest,omitempty"`
 
 	// Machine-readable identifier for distinguishing between descriptors.
 	Name string `json:"name,omitempty"`

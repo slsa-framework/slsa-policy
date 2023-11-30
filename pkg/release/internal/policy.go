@@ -31,28 +31,28 @@ func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy
 	}, nil
 }
 
-func (p *Policy) Evaluate(publicationURI string, buildOpts options.BuildVerification) (int, error) {
-	if publicationURI == "" {
-		return -1, fmt.Errorf("%w: publication URI is empty", errs.ErrorInvalidInput)
+func (p *Policy) Evaluate(releaseURI string, buildOpts options.BuildVerification) (int, error) {
+	if releaseURI == "" {
+		return -1, fmt.Errorf("%w: release URI is empty", errs.ErrorInvalidInput)
 	}
-	return p.evaluateBuildPolicy(publicationURI, buildOpts)
+	return p.evaluateBuildPolicy(releaseURI, buildOpts)
 }
 
-func (p *Policy) evaluateBuildPolicy(publicationURI string, buildOpts options.BuildVerification) (int, error) {
+func (p *Policy) evaluateBuildPolicy(releaseURI string, buildOpts options.BuildVerification) (int, error) {
 	// Get the project policy for the artifact.
-	projectPolicy, exists := p.projectPolicies[publicationURI]
+	projectPolicy, exists := p.projectPolicies[releaseURI]
 	if !exists {
-		return -1, fmt.Errorf("%w: publication's uri (%q) not present in project policies", errs.ErrorNotFound, publicationURI)
+		return -1, fmt.Errorf("%w: release's uri (%q) not present in project policies", errs.ErrorNotFound, releaseURI)
 	}
 
 	// Evaluate the org policy first.
-	err := p.orgPolicy.Evaluate(publicationURI, buildOpts)
+	err := p.orgPolicy.Evaluate(releaseURI, buildOpts)
 	if err != nil {
 		return -1, err
 	}
 
 	// Evaluate the project policy first.
-	level, err := projectPolicy.Evaluate(publicationURI, p.orgPolicy, buildOpts)
+	level, err := projectPolicy.Evaluate(releaseURI, p.orgPolicy, buildOpts)
 	if err != nil {
 		return -1, err
 	}
