@@ -1,11 +1,19 @@
 package intoto
 
+import (
+	"fmt"
+
+	"github.com/laurentsimon/slsa-policy/pkg/errs"
+)
+
 type DigestSet map[string]string
 
+type Subject ResourceDescriptor
+
 type Header struct {
-	Type          string               `json:"_type"`
-	PredicateType string               `json:"predicateType"`
-	Subjects      []ResourceDescriptor `json:"subject"`
+	Type          string    `json:"_type"`
+	PredicateType string    `json:"predicateType"`
+	Subjects      []Subject `json:"subjects"`
 }
 
 // Author is the author of the attestation.
@@ -56,3 +64,21 @@ const (
 	AttestationResultAllow AttestationResult = "ALLOW"
 	AttestationResultDeny  AttestationResult = "DENY"
 )
+
+func (s Subject) Validate() error {
+	if s.URI == "" {
+		return fmt.Errorf("%w: subject URI is empty", errs.ErrorInvalidInput)
+	}
+	if len(s.Digests) == 0 {
+		return fmt.Errorf("%w: subject digest is empty", errs.ErrorInvalidInput)
+	}
+	for k, v := range s.Digests {
+		if k == "" {
+			return fmt.Errorf("%w: subject digest key is empty", errs.ErrorInvalidInput)
+		}
+		if v == "" {
+			return fmt.Errorf("%w: subject digest (%q) is empty", errs.ErrorInvalidInput, k)
+		}
+	}
+	return nil
+}

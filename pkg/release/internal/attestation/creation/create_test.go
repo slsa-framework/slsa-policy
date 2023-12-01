@@ -13,10 +13,17 @@ import (
 
 func Test_New(t *testing.T) {
 	t.Parallel()
-
+	subject := intoto.Subject{
+		URI: "the_uri",
+		Digests: intoto.DigestSet{
+			"sha256":    "some_value",
+			"gitCommit": "another_value",
+		},
+	}
 	tests := []struct {
 		name          string
 		result        intoto.AttestationResult
+		subject       intoto.Subject
 		authorVersion string
 		buildLevel    *int
 		environment   string
@@ -25,44 +32,95 @@ func Test_New(t *testing.T) {
 	}{
 		// Allow policies.
 		{
-			name:   "allow result",
-			result: intoto.AttestationResultAllow,
+			name:    "allow result",
+			result:  intoto.AttestationResultAllow,
+			subject: subject,
 		},
 		{
-			name:          "allow result",
+			name:   "allow result with no subject uri",
+			result: intoto.AttestationResultAllow,
+			subject: intoto.Subject{
+				Digests: intoto.DigestSet{
+					"sha256":    "some_value",
+					"gitCommit": "another_value",
+				},
+			},
+			expected: errs.ErrorInvalidInput,
+		},
+		{
+			name:   "allow result with no subject digests",
+			result: intoto.AttestationResultAllow,
+			subject: intoto.Subject{
+				URI: "the_uri",
+			},
+			expected: errs.ErrorInvalidInput,
+		},
+		{
+			name:   "allow result with empty digest value",
+			result: intoto.AttestationResultAllow,
+			subject: intoto.Subject{
+				URI: "the_uri",
+				Digests: intoto.DigestSet{
+					"sha256":    "some_value",
+					"gitCommit": "",
+				},
+			},
+			expected: errs.ErrorInvalidInput,
+		},
+		{
+			name:   "allow result with empty digest key",
+			result: intoto.AttestationResultAllow,
+			subject: intoto.Subject{
+				URI: "the_uri",
+				Digests: intoto.DigestSet{
+					"sha256": "some_value",
+					"":       "another_value",
+				},
+			},
+			expected: errs.ErrorInvalidInput,
+		},
+		{
+			name:          "allow result with version",
 			result:        intoto.AttestationResultAllow,
+			subject:       subject,
 			authorVersion: "my_version",
 		},
 		{
 			name:          "allow result with author version",
 			result:        intoto.AttestationResultAllow,
+			subject:       subject,
 			authorVersion: "my_version",
 		},
 		{
 			name:       "allow result with level",
 			result:     intoto.AttestationResultAllow,
+			subject:    subject,
 			buildLevel: common.AsPointer(2),
 		},
 		{
 			name:       "allow result with negative level",
 			result:     intoto.AttestationResultAllow,
+			subject:    subject,
 			buildLevel: common.AsPointer(-1),
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
 			name:       "allow result with large level",
 			result:     intoto.AttestationResultAllow,
+			subject:    subject,
 			buildLevel: common.AsPointer(5),
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
 			name:        "allow result with env",
 			result:      intoto.AttestationResultAllow,
+			subject:     subject,
 			environment: "prod",
 		},
 		{
-			name:   "allow result with policy",
-			result: intoto.AttestationResultAllow,
+			name:    "allow result with policy",
+			result:  intoto.AttestationResultAllow,
+			subject: subject,
 			policy: map[string]intoto.Policy{
 				"org": intoto.Policy{
 					URI: "policy1_uri",
@@ -83,6 +141,7 @@ func Test_New(t *testing.T) {
 		{
 			name:          "allow result with all set",
 			result:        intoto.AttestationResultAllow,
+			subject:       subject,
 			environment:   "prod",
 			buildLevel:    common.AsPointer(4),
 			authorVersion: "my_version",
@@ -105,40 +164,90 @@ func Test_New(t *testing.T) {
 		},
 		// Deny policies.
 		{
-			name:   "deny result",
+			name:    "deny result",
+			result:  intoto.AttestationResultDeny,
+			subject: subject,
+		},
+		{
+			name:   "allow result with no subject uri",
 			result: intoto.AttestationResultDeny,
+			subject: intoto.Subject{
+				Digests: intoto.DigestSet{
+					"sha256":    "some_value",
+					"gitCommit": "another_value",
+				},
+			},
+			expected: errs.ErrorInvalidInput,
+		},
+		{
+			name:   "allow result with no subject digests",
+			result: intoto.AttestationResultDeny,
+			subject: intoto.Subject{
+				URI: "the_uri",
+			},
+			expected: errs.ErrorInvalidInput,
+		},
+		{
+			name:   "allow result with empty digest value",
+			result: intoto.AttestationResultDeny,
+			subject: intoto.Subject{
+				URI: "the_uri",
+				Digests: intoto.DigestSet{
+					"sha256":    "some_value",
+					"gitCommit": "",
+				},
+			},
+			expected: errs.ErrorInvalidInput,
+		},
+		{
+			name:   "allow result with empty digest key",
+			result: intoto.AttestationResultDeny,
+			subject: intoto.Subject{
+				URI: "the_uri",
+				Digests: intoto.DigestSet{
+					"sha256": "some_value",
+					"":       "another_value",
+				},
+			},
+			expected: errs.ErrorInvalidInput,
 		},
 		{
 			name:          "deny result with author version",
 			result:        intoto.AttestationResultDeny,
+			subject:       subject,
 			authorVersion: "my_version",
 		},
 		{
 			name:       "deny result with level",
 			result:     intoto.AttestationResultDeny,
+			subject:    subject,
 			buildLevel: common.AsPointer(2),
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
 			name:       "deny result with negative level",
 			result:     intoto.AttestationResultDeny,
+			subject:    subject,
 			buildLevel: common.AsPointer(-1),
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
 			name:       "deny result with large level",
 			result:     intoto.AttestationResultDeny,
+			subject:    subject,
 			buildLevel: common.AsPointer(5),
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
 			name:        "deny result with env",
 			result:      intoto.AttestationResultDeny,
+			subject:     subject,
 			environment: "prod",
 		},
 		{
-			name:   "deny result with policy",
-			result: intoto.AttestationResultDeny,
+			name:    "deny result with policy",
+			result:  intoto.AttestationResultDeny,
+			subject: subject,
 			policy: map[string]intoto.Policy{
 				"org": intoto.Policy{
 					URI: "policy1_uri",
@@ -159,6 +268,7 @@ func Test_New(t *testing.T) {
 		{
 			name:          "deny result with all set",
 			result:        intoto.AttestationResultDeny,
+			subject:       subject,
 			environment:   "prod",
 			buildLevel:    common.AsPointer(4),
 			authorVersion: "my_version",
@@ -186,13 +296,7 @@ func Test_New(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			var options []func(*Creation) error
-			subject := intoto.ResourceDescriptor{
-				Name: "subject1",
-				Digests: intoto.DigestSet{
-					"sha256":    "some_value",
-					"gitCommit": "another_value",
-				},
-			}
+			// TODO: support for release URI.
 			if tt.authorVersion != "" {
 				options = append(options, WithAuthorVersion(tt.authorVersion))
 			}
@@ -205,7 +309,7 @@ func Test_New(t *testing.T) {
 			if tt.policy != nil {
 				options = append(options, WithPolicy(tt.policy))
 			}
-			att, err := New(subject, "author_id", tt.result, options...)
+			att, err := New(tt.subject, "author_id", tt.result, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -222,13 +326,14 @@ func Test_New(t *testing.T) {
 			}
 
 			// Add the environment to the subjects now, to allow comparison.
+			copySubject := subject
 			if tt.environment != "" {
-				subject.Annotations = map[string]interface{}{
+				copySubject.Annotations = map[string]interface{}{
 					attestation.EnvironmentAnnotation: tt.environment,
 				}
 			}
 			// Subjects must match.
-			if diff := cmp.Diff([]intoto.ResourceDescriptor{subject}, att.Header.Subjects); diff != "" {
+			if diff := cmp.Diff([]intoto.Subject{copySubject}, att.Header.Subjects); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			// Author ID must match.

@@ -15,13 +15,17 @@ type Creation struct {
 }
 
 // NOTE: See https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis.
-func New(subject intoto.ResourceDescriptor, authorID string, result intoto.AttestationResult, options ...func(*Creation) error) (*Creation, error) {
+func New(subject intoto.Subject, authorID string, result intoto.AttestationResult, options ...func(*Creation) error) (*Creation, error) {
+	if err := subject.Validate(); err != nil {
+		return nil, err
+	}
+	// Validate the digests.
 	attestation := Creation{
 		Attestation: attestation.Attestation{
 			Header: intoto.Header{
 				Type:          attestation.StatementType,
 				PredicateType: attestation.PredicateType,
-				Subjects:      []intoto.ResourceDescriptor{subject},
+				Subjects:      []intoto.Subject{subject},
 			},
 			Predicate: attestation.Predicate{
 				ReleaseResult: result,
