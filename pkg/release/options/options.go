@@ -1,9 +1,11 @@
 package options
 
+import "github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+
 // AttestationVerifier defines an interface to verify attestations.
 type AttestationVerifier interface {
 	// Build attestations.
-	VerifyBuildAttestation(publicationURI, builderID, sourceURI string) error
+	VerifyBuildAttestation(releaseURI, builderID, sourceURI string) (intoto.DigestSet, error)
 }
 
 // BuildVerification defines the configuration to verify

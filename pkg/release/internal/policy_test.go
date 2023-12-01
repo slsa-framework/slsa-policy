@@ -14,6 +14,7 @@ import (
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/organization"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/project"
 	"github.com/laurentsimon/slsa-policy/pkg/release/options"
+	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
 func Test_PolicyNew(t *testing.T) {
@@ -497,6 +498,11 @@ func Test_Evaluate(t *testing.T) {
 	type dummyVerifierOpts struct {
 		builderID, sourceURI string
 		environment          *string
+		digests              intoto.DigestSet
+	}
+	digests := intoto.DigestSet{
+		"sha256": "val256",
+		"sha512": "val512",
 	}
 	tests := []struct {
 		name         string
@@ -514,6 +520,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder_name1",
 				sourceURI: "source_uri1",
+				digests:   digests,
 			},
 			org: &organization.Policy{
 				Format: 1,
@@ -566,6 +573,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder_name1",
 				sourceURI: "source_uri1",
+				digests:   digests,
 			},
 			org: &organization.Policy{
 				Format: 1,
@@ -619,6 +627,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder_name1",
 				sourceURI: "mismatch_source_uri1",
+				digests:   digests,
 			},
 			org: &organization.Policy{
 				Format: 1,
@@ -672,6 +681,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID:   "builder_name1",
 				sourceURI:   "source_uri1",
+				digests:     digests,
 				environment: common.AsPointer("dev"),
 			},
 			org: &organization.Policy{
@@ -726,6 +736,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder_name1",
 				sourceURI: "source_uri1",
+				digests:   digests,
 			},
 			org: &organization.Policy{
 				Format: 1,
@@ -782,6 +793,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID:   "builder_name2",
 				sourceURI:   "source_uri2",
+				digests:     digests,
 				environment: common.AsPointer("dev"),
 			},
 			org: &organization.Policy{
@@ -838,6 +850,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID: "mismatch_builder_name1",
 				sourceURI: "source_uri1",
+				digests:   digests,
 			},
 			org: &organization.Policy{
 				Format: 1,
@@ -916,12 +929,13 @@ func Test_Evaluate(t *testing.T) {
 			}
 			// Create the verifier.
 			verifier := common.NewAttestationVerifier(tt.releaseURI,
-				tt.verifierOpts.builderID, tt.verifierOpts.sourceURI)
+				tt.verifierOpts.builderID, tt.verifierOpts.sourceURI,
+				tt.verifierOpts.digests)
 			opts := options.BuildVerification{
 				Verifier:    verifier,
 				Environment: tt.verifierOpts.environment,
 			}
-			level, err := policy.Evaluate(tt.releaseURI, opts)
+			level, dgsts, err := policy.Evaluate(tt.releaseURI, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -929,6 +943,9 @@ func Test_Evaluate(t *testing.T) {
 				return
 			}
 			if diff := cmp.Diff(tt.level, level); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			if diff := cmp.Diff(tt.verifierOpts.digests, dgsts); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})

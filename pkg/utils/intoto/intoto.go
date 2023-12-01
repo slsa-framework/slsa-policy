@@ -2,6 +2,7 @@ package intoto
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
 )
@@ -19,7 +20,7 @@ type Header struct {
 // Author is the author of the attestation.
 type Author struct {
 	ID      string `json:"id"`
-	Version string `json:"version"`
+	Version string `json:"version,omitempty"`
 }
 
 type Policy struct {
@@ -56,29 +57,28 @@ type ResourceDescriptor struct {
 	Annotations map[string]interface{} `json:"annotations,omitempty"`
 }
 
-type Properties map[string]interface{}
-
-type AttestationResult string
-
-const (
-	AttestationResultAllow AttestationResult = "ALLOW"
-	AttestationResultDeny  AttestationResult = "DENY"
-)
-
 func (s Subject) Validate() error {
 	if s.URI == "" {
 		return fmt.Errorf("%w: subject URI is empty", errs.ErrorInvalidInput)
 	}
-	if len(s.Digests) == 0 {
-		return fmt.Errorf("%w: subject digest is empty", errs.ErrorInvalidInput)
+	return s.Digests.Validate()
+}
+
+func (ds DigestSet) Validate() error {
+	if len(ds) == 0 {
+		return fmt.Errorf("%w: digests empty", errs.ErrorInvalidInput)
 	}
-	for k, v := range s.Digests {
+	for k, v := range ds {
 		if k == "" {
-			return fmt.Errorf("%w: subject digest key is empty", errs.ErrorInvalidInput)
+			return fmt.Errorf("%w: digests has empty key", errs.ErrorInvalidInput)
 		}
 		if v == "" {
-			return fmt.Errorf("%w: subject digest (%q) is empty", errs.ErrorInvalidInput, k)
+			return fmt.Errorf("%w: digests key (%q) has empty value", errs.ErrorInvalidInput, k)
 		}
 	}
 	return nil
+}
+
+func Now() string {
+	return time.Now().UTC().Format(time.RFC3339)
 }

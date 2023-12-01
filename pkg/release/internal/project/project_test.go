@@ -11,6 +11,7 @@ import (
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/common"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/organization"
 	"github.com/laurentsimon/slsa-policy/pkg/release/options"
+	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
 func Test_validateFormat(t *testing.T) {
@@ -468,6 +469,11 @@ func Test_Evaluate(t *testing.T) {
 	type dummyVerifierOpts struct {
 		builderID, sourceURI string
 		environment          *string
+		digests              intoto.DigestSet
+	}
+	digests := intoto.DigestSet{
+		"sha256": "val256",
+		"sha512": "val512",
 	}
 	tests := []struct {
 		name         string
@@ -544,6 +550,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder1",
 				sourceURI: "source_uri",
+				digests:   digests,
 			},
 		},
 		{
@@ -578,6 +585,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder2",
 				sourceURI: "source_uri",
+				digests:   digests,
 			},
 			level: 2,
 		},
@@ -613,6 +621,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder3",
 				sourceURI: "source_uri",
+				digests:   digests,
 			},
 			expected: errs.ErrorVerification,
 		},
@@ -648,6 +657,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder2",
 				sourceURI: "different_source_uri",
+				digests:   digests,
 			},
 			expected: errs.ErrorVerification,
 		},
@@ -684,6 +694,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID:   "builder1",
 				sourceURI:   "source_uri",
+				digests:     digests,
 				environment: common.AsPointer("dev"),
 			},
 			expected: errs.ErrorInvalidInput,
@@ -724,6 +735,7 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder1",
 				sourceURI: "source_uri",
+				digests:   digests,
 			},
 			expected: errs.ErrorInvalidInput,
 		},
@@ -736,13 +748,14 @@ func Test_Evaluate(t *testing.T) {
 			var verifier options.AttestationVerifier
 			if !tt.noVerifier {
 				verifier = common.NewAttestationVerifier(tt.releaseURI,
-					tt.verifierOpts.builderID, tt.verifierOpts.sourceURI)
+					tt.verifierOpts.builderID, tt.verifierOpts.sourceURI,
+					tt.verifierOpts.digests)
 			}
 			opts := options.BuildVerification{
 				Verifier:    verifier,
 				Environment: tt.verifierOpts.environment,
 			}
-			level, err := tt.policy.Evaluate(tt.releaseURI, *tt.org, opts)
+			level, digests, err := tt.policy.Evaluate(tt.releaseURI, *tt.org, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -750,6 +763,9 @@ func Test_Evaluate(t *testing.T) {
 				return
 			}
 			if diff := cmp.Diff(tt.level, level); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			if diff := cmp.Diff(tt.verifierOpts.digests, digests); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})

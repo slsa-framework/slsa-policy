@@ -6,12 +6,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/release/internal/attestation"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/common"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
-func Test_New(t *testing.T) {
+// TODO: split up the function.
+// TODO: support time creation.
+func Test_CreationNew(t *testing.T) {
 	t.Parallel()
 	subject := intoto.Subject{
 		URI: "the_uri",
@@ -22,7 +23,7 @@ func Test_New(t *testing.T) {
 	}
 	tests := []struct {
 		name          string
-		result        intoto.AttestationResult
+		result        ReleaseResult
 		subject       intoto.Subject
 		authorVersion string
 		buildLevel    *int
@@ -33,12 +34,12 @@ func Test_New(t *testing.T) {
 		// Allow policies.
 		{
 			name:    "allow result",
-			result:  intoto.AttestationResultAllow,
+			result:  ReleaseResultAllow,
 			subject: subject,
 		},
 		{
 			name:   "allow result with no subject uri",
-			result: intoto.AttestationResultAllow,
+			result: ReleaseResultAllow,
 			subject: intoto.Subject{
 				Digests: intoto.DigestSet{
 					"sha256":    "some_value",
@@ -49,7 +50,7 @@ func Test_New(t *testing.T) {
 		},
 		{
 			name:   "allow result with no subject digests",
-			result: intoto.AttestationResultAllow,
+			result: ReleaseResultAllow,
 			subject: intoto.Subject{
 				URI: "the_uri",
 			},
@@ -57,7 +58,7 @@ func Test_New(t *testing.T) {
 		},
 		{
 			name:   "allow result with empty digest value",
-			result: intoto.AttestationResultAllow,
+			result: ReleaseResultAllow,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -69,7 +70,7 @@ func Test_New(t *testing.T) {
 		},
 		{
 			name:   "allow result with empty digest key",
-			result: intoto.AttestationResultAllow,
+			result: ReleaseResultAllow,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -81,45 +82,45 @@ func Test_New(t *testing.T) {
 		},
 		{
 			name:          "allow result with version",
-			result:        intoto.AttestationResultAllow,
+			result:        ReleaseResultAllow,
 			subject:       subject,
 			authorVersion: "my_version",
 		},
 		{
 			name:          "allow result with author version",
-			result:        intoto.AttestationResultAllow,
+			result:        ReleaseResultAllow,
 			subject:       subject,
 			authorVersion: "my_version",
 		},
 		{
 			name:       "allow result with level",
-			result:     intoto.AttestationResultAllow,
+			result:     ReleaseResultAllow,
 			subject:    subject,
 			buildLevel: common.AsPointer(2),
 		},
 		{
 			name:       "allow result with negative level",
-			result:     intoto.AttestationResultAllow,
+			result:     ReleaseResultAllow,
 			subject:    subject,
 			buildLevel: common.AsPointer(-1),
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
 			name:       "allow result with large level",
-			result:     intoto.AttestationResultAllow,
+			result:     ReleaseResultAllow,
 			subject:    subject,
 			buildLevel: common.AsPointer(5),
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
 			name:        "allow result with env",
-			result:      intoto.AttestationResultAllow,
+			result:      ReleaseResultAllow,
 			subject:     subject,
 			environment: "prod",
 		},
 		{
 			name:    "allow result with policy",
-			result:  intoto.AttestationResultAllow,
+			result:  ReleaseResultAllow,
 			subject: subject,
 			policy: map[string]intoto.Policy{
 				"org": intoto.Policy{
@@ -140,7 +141,7 @@ func Test_New(t *testing.T) {
 		},
 		{
 			name:          "allow result with all set",
-			result:        intoto.AttestationResultAllow,
+			result:        ReleaseResultAllow,
 			subject:       subject,
 			environment:   "prod",
 			buildLevel:    common.AsPointer(4),
@@ -165,12 +166,12 @@ func Test_New(t *testing.T) {
 		// Deny policies.
 		{
 			name:    "deny result",
-			result:  intoto.AttestationResultDeny,
+			result:  ReleaseResultDeny,
 			subject: subject,
 		},
 		{
 			name:   "allow result with no subject uri",
-			result: intoto.AttestationResultDeny,
+			result: ReleaseResultDeny,
 			subject: intoto.Subject{
 				Digests: intoto.DigestSet{
 					"sha256":    "some_value",
@@ -181,7 +182,7 @@ func Test_New(t *testing.T) {
 		},
 		{
 			name:   "allow result with no subject digests",
-			result: intoto.AttestationResultDeny,
+			result: ReleaseResultDeny,
 			subject: intoto.Subject{
 				URI: "the_uri",
 			},
@@ -189,7 +190,7 @@ func Test_New(t *testing.T) {
 		},
 		{
 			name:   "allow result with empty digest value",
-			result: intoto.AttestationResultDeny,
+			result: ReleaseResultDeny,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -201,7 +202,7 @@ func Test_New(t *testing.T) {
 		},
 		{
 			name:   "allow result with empty digest key",
-			result: intoto.AttestationResultDeny,
+			result: ReleaseResultDeny,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -213,40 +214,40 @@ func Test_New(t *testing.T) {
 		},
 		{
 			name:          "deny result with author version",
-			result:        intoto.AttestationResultDeny,
+			result:        ReleaseResultDeny,
 			subject:       subject,
 			authorVersion: "my_version",
 		},
 		{
 			name:       "deny result with level",
-			result:     intoto.AttestationResultDeny,
+			result:     ReleaseResultDeny,
 			subject:    subject,
 			buildLevel: common.AsPointer(2),
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
 			name:       "deny result with negative level",
-			result:     intoto.AttestationResultDeny,
+			result:     ReleaseResultDeny,
 			subject:    subject,
 			buildLevel: common.AsPointer(-1),
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
 			name:       "deny result with large level",
-			result:     intoto.AttestationResultDeny,
+			result:     ReleaseResultDeny,
 			subject:    subject,
 			buildLevel: common.AsPointer(5),
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
 			name:        "deny result with env",
-			result:      intoto.AttestationResultDeny,
+			result:      ReleaseResultDeny,
 			subject:     subject,
 			environment: "prod",
 		},
 		{
 			name:    "deny result with policy",
-			result:  intoto.AttestationResultDeny,
+			result:  ReleaseResultDeny,
 			subject: subject,
 			policy: map[string]intoto.Policy{
 				"org": intoto.Policy{
@@ -267,7 +268,7 @@ func Test_New(t *testing.T) {
 		},
 		{
 			name:          "deny result with all set",
-			result:        intoto.AttestationResultDeny,
+			result:        ReleaseResultDeny,
 			subject:       subject,
 			environment:   "prod",
 			buildLevel:    common.AsPointer(4),
@@ -295,21 +296,20 @@ func Test_New(t *testing.T) {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			var options []func(*Creation) error
-			// TODO: support for release URI.
+			var options []CreationOptions
 			if tt.authorVersion != "" {
-				options = append(options, WithAuthorVersion(tt.authorVersion))
+				options = append(options, SetAuthorVersion(tt.authorVersion))
 			}
 			if tt.buildLevel != nil {
-				options = append(options, WithSlsaBuildLevel(*tt.buildLevel))
+				options = append(options, SetSlsaBuildLevel(*tt.buildLevel))
 			}
 			if tt.environment != "" {
-				options = append(options, WithEnvironment(tt.environment))
+				options = append(options, SetEnvironment(tt.environment))
 			}
 			if tt.policy != nil {
-				options = append(options, WithPolicy(tt.policy))
+				options = append(options, SetPolicy(tt.policy))
 			}
-			att, err := New(tt.subject, "author_id", tt.result, options...)
+			att, err := CreationNew(tt.subject, "author_id", tt.result, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -317,11 +317,11 @@ func Test_New(t *testing.T) {
 				return
 			}
 			// Statement type verification.
-			if diff := cmp.Diff(attestation.StatementType, att.Header.Type); diff != "" {
+			if diff := cmp.Diff(statementType, att.Header.Type); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
-			// Predicate type verification.
-			if diff := cmp.Diff(attestation.PredicateType, att.Header.PredicateType); diff != "" {
+			// predicate type verification.
+			if diff := cmp.Diff(predicateType, att.Header.PredicateType); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 
@@ -329,7 +329,7 @@ func Test_New(t *testing.T) {
 			copySubject := subject
 			if tt.environment != "" {
 				copySubject.Annotations = map[string]interface{}{
-					attestation.EnvironmentAnnotation: tt.environment,
+					environmentAnnotation: tt.environment,
 				}
 			}
 			// Subjects must match.
@@ -354,7 +354,7 @@ func Test_New(t *testing.T) {
 			}
 			// Environment must match.
 			if tt.environment != "" {
-				if diff := cmp.Diff(tt.environment, att.Header.Subjects[0].Annotations[attestation.EnvironmentAnnotation]); diff != "" {
+				if diff := cmp.Diff(tt.environment, att.Header.Subjects[0].Annotations[environmentAnnotation]); diff != "" {
 					t.Fatalf("unexpected err (-want +got): \n%s", diff)
 				}
 			} else {
@@ -364,11 +364,11 @@ func Test_New(t *testing.T) {
 			}
 			// SLSA Levels must match.
 			if tt.buildLevel != nil {
-				if diff := cmp.Diff(*tt.buildLevel, att.Predicate.ReleaseProperties[attestation.BuildLevelProperty]); diff != "" {
+				if diff := cmp.Diff(*tt.buildLevel, att.Predicate.ReleaseProperties[buildLevelProperty]); diff != "" {
 					t.Fatalf("unexpected err (-want +got): \n%s", diff)
 				}
 			} else {
-				if diff := cmp.Diff(intoto.Properties(nil), att.Predicate.ReleaseProperties); diff != "" {
+				if diff := cmp.Diff(properties(nil), att.Predicate.ReleaseProperties); diff != "" {
 					t.Fatalf("unexpected err (-want +got): \n%s", diff)
 				}
 			}

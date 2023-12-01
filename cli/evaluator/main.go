@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/laurentsimon/slsa-policy/pkg/release"
+	"github.com/laurentsimon/slsa-policy/pkg/release/attestation"
+	"github.com/laurentsimon/slsa-policy/pkg/release/options"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator/files_reader"
 )
 
@@ -65,8 +67,24 @@ func main() {
 		})
 	projectsReader := files_reader.FromPaths(projectsPath)
 	organizationReader, err := os.Open(orgPath)
-	_, err = release.New(organizationReader, projectsReader)
+	pol, err := release.PolicyNew(organizationReader, projectsReader)
 	if err != nil {
 		panic(err)
 	}
+	releaseURI := "docker.io/my/image"
+	buildOpts := options.BuildVerification{} // TODO
+	result := pol.Evaluate(releaseURI, buildOpts)
+	fmt.Println("err:", result.Error())
+	fmt.Println("allow:", result.IsAllow())
+	fmt.Println("deny:", result.IsDeny())
+	var createOpts []attestation.CreationOptions
+	att, err := result.AttestationNew("releaser_uri", createOpts...)
+	if err != nil {
+		panic(err)
+	}
+	content, err := att.ToBytes()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(content))
 }
