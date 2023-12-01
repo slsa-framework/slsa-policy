@@ -30,7 +30,6 @@ func New(reader io.ReadCloser) (*Verification, error) {
 	}, nil
 }
 
-// TODO: release URI.
 func (v *Verification) Verify(authorID string, subject intoto.Subject, environment string, result intoto.AttestationResult, options ...func(*Verification) error) error {
 	// Statement type.
 	if v.Attestation.Header.Type != attestation.StatementType {

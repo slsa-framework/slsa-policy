@@ -326,6 +326,35 @@ func Test_Verify(t *testing.T) {
 			},
 		},
 	}
+	author_id := "author_id"
+	author_version := "author_version"
+	author := intoto.Author{
+		ID:      author_id,
+		Version: author_version,
+	}
+	subject := intoto.Subject{
+		URI: "the_uri",
+		Digests: intoto.DigestSet{
+			"sha256":    "another",
+			"gitCommit": "another_com",
+		},
+	}
+	prod := "prod"
+	header := intoto.Header{
+		Type:          attestation.StatementType,
+		PredicateType: attestation.PredicateType,
+		Subjects:      subjects,
+	}
+	release_properties := map[string]interface{}{
+		attestation.BuildLevelProperty: 3,
+	}
+	predicate := attestation.Predicate{
+		Author:            author,
+		Policy:            policy,
+		ReleaseResult:     intoto.AttestationResultAllow,
+		ReleaseProperties: release_properties,
+	}
+	buildLevel := common.AsPointer(3)
 	tests := []struct {
 		name          string
 		att           *attestation.Attestation
@@ -342,36 +371,16 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "allow all fields set",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy: policy,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
 		},
 		{
 			name: "allow mismatch statement type",
@@ -381,32 +390,16 @@ func Test_Verify(t *testing.T) {
 					PredicateType: attestation.PredicateType,
 					Subjects:      subjects,
 				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "allow mismatch predicate type",
@@ -416,102 +409,46 @@ func Test_Verify(t *testing.T) {
 					PredicateType: attestation.PredicateType + "a",
 					Subjects:      subjects,
 				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "allow mismatch author id",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
 			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "allow mismatch author version",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
+			authorID:      author_id,
 			authorVersion: "other_author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "allow empty att uri",
@@ -528,58 +465,28 @@ func Test_Verify(t *testing.T) {
 						},
 					},
 				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorInvalidInput,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorInvalidInput,
 		},
 		{
 			name: "allow empty request uri",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
@@ -596,58 +503,28 @@ func Test_Verify(t *testing.T) {
 					Type:          attestation.StatementType,
 					PredicateType: attestation.PredicateType,
 				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorInvalidField,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorInvalidField,
 		},
 		{
 			name: "allow empty input subject",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			policy:        policy,
 			expected:      errs.ErrorInvalidInput,
 		},
@@ -666,58 +543,28 @@ func Test_Verify(t *testing.T) {
 						},
 					},
 				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorInvalidInput,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorInvalidInput,
 		},
 		{
 			name: "allow empty input digest key",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -743,32 +590,16 @@ func Test_Verify(t *testing.T) {
 						},
 					},
 				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorInvalidInput,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorInvalidInput,
 		},
 		{
 			name: "allow empty input digest value",
@@ -785,23 +616,13 @@ func Test_Verify(t *testing.T) {
 						},
 					},
 				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -815,28 +636,14 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "allow mismatch sha256 digest",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -850,28 +657,14 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "allow mismatch gitCommit digest",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -885,28 +678,14 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "allow mismatch digest not present",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -920,28 +699,14 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "allow one of digests",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -953,135 +718,61 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "allow mismatch no digest",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			policy:        policy,
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
 			name: "allow mismatch level",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
+			authorID:      author_id,
+			authorVersion: author_version,
 			buildLevel:    common.AsPointer(1),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "allow mismatch result",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "allow mismatch env",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
 			environment:   "dev",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "allow mismatch no env",
@@ -1099,32 +790,16 @@ func Test_Verify(t *testing.T) {
 						},
 					},
 				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "allow no env",
@@ -1142,63 +817,27 @@ func Test_Verify(t *testing.T) {
 						},
 					},
 				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy: policy,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			subject:       subject,
+			policy:        policy,
 		},
 		{
 			name: "allow mismatch no org",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
 			policy: map[string]intoto.Policy{
 				"not_org": {
 					URI: "org_uri",
@@ -1220,35 +859,15 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "allow mismatch org uri",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "no_org_uri",
@@ -1270,35 +889,15 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "allow mismatch org sha256",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "org_uri",
@@ -1320,35 +919,15 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "allow mismatch org sha256",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "org_uri",
@@ -1370,48 +949,28 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "allow level not present",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
+					Author:        author,
 					Policy:        policy,
 					ReleaseResult: intoto.AttestationResultAllow,
 				},
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "allow level field not present",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
+					Author:        author,
 					Policy:        policy,
 					ReleaseResult: intoto.AttestationResultAllow,
 					ReleaseProperties: map[string]interface{}{
@@ -1420,52 +979,26 @@ func Test_Verify(t *testing.T) {
 				},
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		// Allow with ignored fields.
 		{
 			name: "allow ignore author version",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:      intoto.AttestationResultAllow,
-			authorID:    "author_id",
+			authorID:    author_id,
 			buildLevel:  common.AsPointer(3),
 			environment: "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
+			subject:     subject,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "org_uri",
@@ -1486,199 +1019,90 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "allow ignore build level",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy: policy,
+			authorID:      author_id,
+			authorVersion: author_version,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
 		},
 		{
 			name: "allow ignore env",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "allow ignore digests",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			policy:        policy,
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
 			name: "allow ignore author id",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorInvalidInput,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorInvalidInput,
 		},
 		{
 			name: "allow ignore policy",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
-				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultAllow,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
-				},
+				Header:    header,
+				Predicate: predicate,
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
 		},
 		// Deny policies.
 		{
 			name: "deny all fields set",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy: policy,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
 		},
 		{
 			name: "deny mismatch statement type",
@@ -1689,31 +1113,20 @@ func Test_Verify(t *testing.T) {
 					Subjects:      subjects,
 				},
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "deny mismatch predicate type",
@@ -1724,101 +1137,60 @@ func Test_Verify(t *testing.T) {
 					Subjects:      subjects,
 				},
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "deny mismatch author id",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "deny mismatch author version",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
+			authorID:      author_id,
 			authorVersion: "other_author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 
 		{
@@ -1837,57 +1209,37 @@ func Test_Verify(t *testing.T) {
 					},
 				},
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorInvalidInput,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorInvalidInput,
 		},
 		{
 			name: "deny empty request uri",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
@@ -1905,57 +1257,37 @@ func Test_Verify(t *testing.T) {
 					PredicateType: attestation.PredicateType,
 				},
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorInvalidField,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorInvalidField,
 		},
 		{
 			name: "deny empty input subject",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			policy:        policy,
 			expected:      errs.ErrorInvalidInput,
 		},
@@ -1975,57 +1307,37 @@ func Test_Verify(t *testing.T) {
 					},
 				},
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorInvalidInput,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorInvalidInput,
 		},
 		{
 			name: "deny empty input digest key",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -2052,31 +1364,20 @@ func Test_Verify(t *testing.T) {
 					},
 				},
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorInvalidInput,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorInvalidInput,
 		},
 		{
 			name: "deny empty input digest value",
@@ -2094,22 +1395,17 @@ func Test_Verify(t *testing.T) {
 					},
 				},
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "other_author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -2123,28 +1419,19 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "deny mismatch sha256 digest",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -2158,28 +1445,19 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "deny mismatch gitCommit digest",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -2193,28 +1471,19 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "deny mismatch digest not present",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -2228,28 +1497,19 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "deny one of digests",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
@@ -2261,135 +1521,81 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "deny mismatch no digest",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			policy:        policy,
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
 			name: "deny mismatch level",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
+			authorID:      author_id,
+			authorVersion: author_version,
 			buildLevel:    common.AsPointer(1),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "deny mismatch result",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultAllow,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "deny mismatch env",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
 			environment:   "dev",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "deny mismatch no env",
@@ -2408,31 +1614,20 @@ func Test_Verify(t *testing.T) {
 					},
 				},
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "deny no env",
@@ -2451,62 +1646,36 @@ func Test_Verify(t *testing.T) {
 					},
 				},
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy: policy,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			subject:       subject,
+			policy:        policy,
 		},
 		{
 			name: "deny mismatch no org",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
 			policy: map[string]intoto.Policy{
 				"not_org": {
 					URI: "org_uri",
@@ -2528,35 +1697,20 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "deny mismatch org uri",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "no_org_uri",
@@ -2578,35 +1732,20 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "deny mismatch org sha256",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "org_uri",
@@ -2628,35 +1767,20 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "deny mismatch org sha256",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "org_uri",
@@ -2678,48 +1802,28 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "deny level not present",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
+					Author:        author,
 					Policy:        policy,
 					ReleaseResult: intoto.AttestationResultDeny,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "deny level field not present",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
+					Author:        author,
 					Policy:        policy,
 					ReleaseResult: intoto.AttestationResultDeny,
 					ReleaseProperties: map[string]interface{}{
@@ -2728,52 +1832,31 @@ func Test_Verify(t *testing.T) {
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		// Deny with ignored fields.
 		{
 			name: "deny ignore author version",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:      intoto.AttestationResultDeny,
-			authorID:    "author_id",
+			authorID:    author_id,
 			buildLevel:  common.AsPointer(3),
 			environment: "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
+			subject:     subject,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "org_uri",
@@ -2794,164 +1877,95 @@ func Test_Verify(t *testing.T) {
 		{
 			name: "deny ignore build level",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy: policy,
+			authorID:      author_id,
+			authorVersion: author_version,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
 		},
 		{
 			name: "deny ignore env",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorMismatch,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
 		},
 		{
 			name: "deny ignore digests",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
 			policy:        policy,
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
 			name: "deny ignore author id",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
-			policy:   policy,
-			expected: errs.ErrorInvalidInput,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorInvalidInput,
 		},
 		{
 			name: "deny ignore policy",
 			att: &attestation.Attestation{
-				Header: intoto.Header{
-					Type:          attestation.StatementType,
-					PredicateType: attestation.PredicateType,
-					Subjects:      subjects,
-				},
+				Header: header,
 				Predicate: attestation.Predicate{
-					Author: intoto.Author{
-						ID:      "author_id",
-						Version: "author_version",
-					},
-					Policy:        policy,
-					ReleaseResult: intoto.AttestationResultDeny,
-					ReleaseProperties: map[string]interface{}{
-						attestation.BuildLevelProperty: 3,
-					},
+					Author:            author,
+					Policy:            policy,
+					ReleaseResult:     intoto.AttestationResultDeny,
+					ReleaseProperties: release_properties,
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "author_id",
-			authorVersion: "author_version",
-			buildLevel:    common.AsPointer(3),
-			environment:   "prod",
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "another_com",
-				},
-			},
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			environment:   prod,
+			subject:       subject,
 		},
 	}
 	for _, tt := range tests {
