@@ -354,6 +354,10 @@ func Test_Verify(t *testing.T) {
 		ReleaseResult:     intoto.AttestationResultAllow,
 		ReleaseProperties: release_properties,
 	}
+	att := &attestation.Attestation{
+		Header:    header,
+		Predicate: predicate,
+	}
 	buildLevel := common.AsPointer(3)
 	tests := []struct {
 		name          string
@@ -369,11 +373,8 @@ func Test_Verify(t *testing.T) {
 	}{
 		// Allow policies.
 		{
-			name: "allow all fields set",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow all fields set",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -421,11 +422,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "allow mismatch author id",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch author id",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      "other_author_id",
 			authorVersion: author_version,
@@ -436,11 +434,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "allow mismatch author version",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch author version",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: "other_author_version",
@@ -477,11 +472,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
-			name: "allow empty request uri",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow empty request uri",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -515,11 +507,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorInvalidField,
 		},
 		{
-			name: "allow empty input subject",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow empty input subject",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -555,11 +544,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
-			name: "allow empty input digest key",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow empty input digest key",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -634,11 +620,8 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorInvalidInput,
 		},
 		{
-			name: "allow mismatch sha256 digest",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch sha256 digest",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -655,11 +638,8 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name: "allow mismatch gitCommit digest",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch gitCommit digest",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -676,11 +656,8 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name: "allow mismatch digest not present",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch digest not present",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -697,11 +674,8 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name: "allow one of digests",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow one of digests",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -716,11 +690,8 @@ func Test_Verify(t *testing.T) {
 			policy: policy,
 		},
 		{
-			name: "allow mismatch no digest",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch no digest",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -730,11 +701,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
-			name: "allow mismatch level",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch level",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -745,11 +713,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "allow mismatch result",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch result",
+			att:           att,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -760,11 +725,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "allow mismatch env",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch env",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -827,11 +789,8 @@ func Test_Verify(t *testing.T) {
 			policy:        policy,
 		},
 		{
-			name: "allow mismatch no org",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch no org",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -857,11 +816,8 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name: "allow mismatch org uri",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch org uri",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -887,11 +843,8 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name: "allow mismatch org sha256",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch org sha256",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -917,11 +870,8 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name: "allow mismatch org sha256",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow mismatch org sha256",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -989,11 +939,8 @@ func Test_Verify(t *testing.T) {
 		},
 		// Allow with ignored fields.
 		{
-			name: "allow ignore author version",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:        "allow ignore author version",
+			att:         att,
 			result:      intoto.AttestationResultAllow,
 			authorID:    author_id,
 			buildLevel:  common.AsPointer(3),
@@ -1017,11 +964,8 @@ func Test_Verify(t *testing.T) {
 			},
 		},
 		{
-			name: "allow ignore build level",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow ignore build level",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1030,11 +974,8 @@ func Test_Verify(t *testing.T) {
 			policy:        policy,
 		},
 		{
-			name: "allow ignore env",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow ignore env",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1044,11 +985,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "allow ignore digests",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow ignore digests",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1058,11 +996,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
-			name: "allow ignore author id",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow ignore author id",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
@@ -1072,11 +1007,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
-			name: "allow ignore policy",
-			att: &attestation.Attestation{
-				Header:    header,
-				Predicate: predicate,
-			},
+			name:          "allow ignore policy",
+			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
