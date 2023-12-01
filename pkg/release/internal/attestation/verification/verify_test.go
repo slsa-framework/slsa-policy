@@ -27,27 +27,27 @@ func Test_verifyDigests(t *testing.T) {
 			name: "same digests",
 			attDigests: intoto.DigestSet{
 				"sha256":    "another",
-				"gitCommit": "another_com",
+				"gitCommit": "anmismatch_com",
 			},
 			inputDigests: intoto.DigestSet{
-				"gitCommit": "another_com",
+				"gitCommit": "anmismatch_com",
 				"sha256":    "another",
 			},
 		},
 		{
 			name: "subset in attestations",
 			attDigests: intoto.DigestSet{
-				"gitCommit": "another_com",
+				"gitCommit": "anmismatch_com",
 			},
 			inputDigests: intoto.DigestSet{
-				"gitCommit": "another_com",
+				"gitCommit": "anmismatch_com",
 			},
 		},
 		{
 			name: "empty input digests",
 			attDigests: intoto.DigestSet{
 				"sha256":    "another",
-				"gitCommit": "another_com",
+				"gitCommit": "anmismatch_com",
 			},
 			expected: errs.ErrorInvalidInput,
 		},
@@ -55,10 +55,10 @@ func Test_verifyDigests(t *testing.T) {
 			name: "different digest names",
 			attDigests: intoto.DigestSet{
 				"a-sha256":    "another",
-				"a-gitCommit": "another_com",
+				"a-gitCommit": "anmismatch_com",
 			},
 			inputDigests: intoto.DigestSet{
-				"gitCommit": "another_com",
+				"gitCommit": "anmismatch_com",
 				"sha256":    "another",
 			},
 			expected: errs.ErrorMismatch,
@@ -67,10 +67,10 @@ func Test_verifyDigests(t *testing.T) {
 			name: "mismatch sha256 digest",
 			attDigests: intoto.DigestSet{
 				"sha256":    "not_another",
-				"gitCommit": "another_com",
+				"gitCommit": "anmismatch_com",
 			},
 			inputDigests: intoto.DigestSet{
-				"gitCommit": "another_com",
+				"gitCommit": "anmismatch_com",
 				"sha256":    "another",
 			},
 			expected: errs.ErrorMismatch,
@@ -103,13 +103,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 					"sha256":    "another",
 				},
 			},
@@ -120,13 +120,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 		},
@@ -136,7 +136,7 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			expected: errs.ErrorInvalidInput,
@@ -147,13 +147,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"a-sha256":    "another",
-					"a-gitCommit": "another_com",
+					"a-gitCommit": "anmismatch_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 					"sha256":    "another",
 				},
 			},
@@ -165,13 +165,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "not_another",
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 					"sha256":    "another",
 				},
 			},
@@ -182,13 +182,13 @@ func Test_verifySubject(t *testing.T) {
 			attSubject: intoto.Subject{
 				Digests: intoto.DigestSet{
 					"sha256":    "not_another",
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 					"sha256":    "another",
 				},
 			},
@@ -200,12 +200,12 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "not_another",
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 					"sha256":    "another",
 				},
 			},
@@ -217,13 +217,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256": "another",
-					"":       "another_com",
+					"":       "anmismatch_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 					"sha256":    "another",
 				},
 			},
@@ -235,13 +235,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 					"":          "another",
 				},
 			},
@@ -259,7 +259,7 @@ func Test_verifySubject(t *testing.T) {
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 					"sha256":    "another",
 				},
 			},
@@ -271,13 +271,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256": "another",
-					"":       "another_com",
+					"":       "anmismatch_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 					"sha256":    "",
 				},
 			},
@@ -303,7 +303,7 @@ func Test_Verify(t *testing.T) {
 			URI: "the_uri",
 			Digests: intoto.DigestSet{
 				"sha256":    "another",
-				"gitCommit": "another_com",
+				"gitCommit": "anmismatch_com",
 			},
 			Annotations: map[string]interface{}{
 				attestation.EnvironmentAnnotation: "prod",
@@ -336,7 +336,7 @@ func Test_Verify(t *testing.T) {
 		URI: "the_uri",
 		Digests: intoto.DigestSet{
 			"sha256":    "another",
-			"gitCommit": "another_com",
+			"gitCommit": "anmismatch_com",
 		},
 	}
 	prod := "prod"
@@ -425,7 +425,7 @@ func Test_Verify(t *testing.T) {
 			name:          "allow mismatch author id",
 			att:           att,
 			result:        intoto.AttestationResultAllow,
-			authorID:      "other_author_id",
+			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
 			environment:   prod,
@@ -438,7 +438,7 @@ func Test_Verify(t *testing.T) {
 			att:           att,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
-			authorVersion: "other_author_version",
+			authorVersion: "mismatch_author_version",
 			buildLevel:    buildLevel,
 			environment:   prod,
 			subject:       subject,
@@ -455,7 +455,7 @@ func Test_Verify(t *testing.T) {
 						{
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "another_com",
+								"gitCommit": "anmismatch_com",
 							},
 						},
 					},
@@ -482,7 +482,7 @@ func Test_Verify(t *testing.T) {
 			subject: intoto.Subject{
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			policy:   policy,
@@ -527,7 +527,7 @@ func Test_Verify(t *testing.T) {
 						{
 							Digests: intoto.DigestSet{
 								"sha256": "another",
-								"":       "another_com",
+								"":       "anmismatch_com",
 							},
 						},
 					},
@@ -555,7 +555,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256": "another",
-					"":       "another_com",
+					"":       "anmismatch_com",
 				},
 			},
 			policy:   policy,
@@ -597,7 +597,7 @@ func Test_Verify(t *testing.T) {
 						{
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "another_com",
+								"gitCommit": "anmismatch_com",
 							},
 						},
 					},
@@ -631,7 +631,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "not_another",
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			policy:   policy,
@@ -649,7 +649,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "git_another_com",
+					"gitCommit": "git_anmismatch_com",
 				},
 			},
 			policy:   policy,
@@ -667,7 +667,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"other":  "another",
-					"other2": "another_com",
+					"other2": "anmismatch_com",
 				},
 			},
 			policy:   policy,
@@ -684,7 +684,7 @@ func Test_Verify(t *testing.T) {
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			policy: policy,
@@ -747,7 +747,7 @@ func Test_Verify(t *testing.T) {
 							URI: "the_uri",
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "another_com",
+								"gitCommit": "anmismatch_com",
 							},
 						},
 					},
@@ -774,7 +774,7 @@ func Test_Verify(t *testing.T) {
 							URI: "the_uri",
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "another_com",
+								"gitCommit": "anmismatch_com",
 							},
 						},
 					},
@@ -1096,7 +1096,7 @@ func Test_Verify(t *testing.T) {
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "other_author_id",
+			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
 			environment:   prod,
@@ -1117,7 +1117,7 @@ func Test_Verify(t *testing.T) {
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
-			authorVersion: "other_author_version",
+			authorVersion: "mismatch_author_version",
 			buildLevel:    buildLevel,
 			environment:   prod,
 			subject:       subject,
@@ -1135,7 +1135,7 @@ func Test_Verify(t *testing.T) {
 						{
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "another_com",
+								"gitCommit": "anmismatch_com",
 							},
 						},
 					},
@@ -1148,7 +1148,7 @@ func Test_Verify(t *testing.T) {
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "other_author_id",
+			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
 			environment:   prod,
@@ -1168,14 +1168,14 @@ func Test_Verify(t *testing.T) {
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "other_author_id",
+			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
 			environment:   prod,
 			subject: intoto.Subject{
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			policy:   policy,
@@ -1196,7 +1196,7 @@ func Test_Verify(t *testing.T) {
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "other_author_id",
+			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
 			environment:   prod,
@@ -1216,7 +1216,7 @@ func Test_Verify(t *testing.T) {
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "other_author_id",
+			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
 			environment:   prod,
@@ -1233,7 +1233,7 @@ func Test_Verify(t *testing.T) {
 						{
 							Digests: intoto.DigestSet{
 								"sha256": "another",
-								"":       "another_com",
+								"":       "anmismatch_com",
 							},
 						},
 					},
@@ -1246,7 +1246,7 @@ func Test_Verify(t *testing.T) {
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "other_author_id",
+			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
 			environment:   prod,
@@ -1266,7 +1266,7 @@ func Test_Verify(t *testing.T) {
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "other_author_id",
+			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
 			environment:   prod,
@@ -1274,7 +1274,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256": "another",
-					"":       "another_com",
+					"":       "anmismatch_com",
 				},
 			},
 			policy:   policy,
@@ -1303,7 +1303,7 @@ func Test_Verify(t *testing.T) {
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "other_author_id",
+			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
 			environment:   prod,
@@ -1321,7 +1321,7 @@ func Test_Verify(t *testing.T) {
 						{
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "another_com",
+								"gitCommit": "anmismatch_com",
 							},
 						},
 					},
@@ -1334,7 +1334,7 @@ func Test_Verify(t *testing.T) {
 				},
 			},
 			result:        intoto.AttestationResultDeny,
-			authorID:      "other_author_id",
+			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
 			environment:   prod,
@@ -1368,7 +1368,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "not_another",
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			policy:   policy,
@@ -1394,7 +1394,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "git_another_com",
+					"gitCommit": "git_anmismatch_com",
 				},
 			},
 			policy:   policy,
@@ -1420,7 +1420,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"other":  "another",
-					"other2": "another_com",
+					"other2": "anmismatch_com",
 				},
 			},
 			policy:   policy,
@@ -1445,7 +1445,7 @@ func Test_Verify(t *testing.T) {
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
+					"gitCommit": "anmismatch_com",
 				},
 			},
 			policy: policy,
@@ -1540,7 +1540,7 @@ func Test_Verify(t *testing.T) {
 							URI: "the_uri",
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "another_com",
+								"gitCommit": "anmismatch_com",
 							},
 						},
 					},
@@ -1572,7 +1572,7 @@ func Test_Verify(t *testing.T) {
 							URI: "the_uri",
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "another_com",
+								"gitCommit": "anmismatch_com",
 							},
 						},
 					},
