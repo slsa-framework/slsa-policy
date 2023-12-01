@@ -27,27 +27,27 @@ func Test_verifyDigests(t *testing.T) {
 			name: "same digests",
 			attDigests: intoto.DigestSet{
 				"sha256":    "another",
-				"gitCommit": "anmismatch_com",
+				"gitCommit": "mismatch_another_com",
 			},
 			inputDigests: intoto.DigestSet{
-				"gitCommit": "anmismatch_com",
+				"gitCommit": "mismatch_another_com",
 				"sha256":    "another",
 			},
 		},
 		{
 			name: "subset in attestations",
 			attDigests: intoto.DigestSet{
-				"gitCommit": "anmismatch_com",
+				"gitCommit": "mismatch_another_com",
 			},
 			inputDigests: intoto.DigestSet{
-				"gitCommit": "anmismatch_com",
+				"gitCommit": "mismatch_another_com",
 			},
 		},
 		{
 			name: "empty input digests",
 			attDigests: intoto.DigestSet{
 				"sha256":    "another",
-				"gitCommit": "anmismatch_com",
+				"gitCommit": "mismatch_another_com",
 			},
 			expected: errs.ErrorInvalidInput,
 		},
@@ -55,10 +55,10 @@ func Test_verifyDigests(t *testing.T) {
 			name: "different digest names",
 			attDigests: intoto.DigestSet{
 				"a-sha256":    "another",
-				"a-gitCommit": "anmismatch_com",
+				"a-gitCommit": "mismatch_another_com",
 			},
 			inputDigests: intoto.DigestSet{
-				"gitCommit": "anmismatch_com",
+				"gitCommit": "mismatch_another_com",
 				"sha256":    "another",
 			},
 			expected: errs.ErrorMismatch,
@@ -67,10 +67,10 @@ func Test_verifyDigests(t *testing.T) {
 			name: "mismatch sha256 digest",
 			attDigests: intoto.DigestSet{
 				"sha256":    "not_another",
-				"gitCommit": "anmismatch_com",
+				"gitCommit": "mismatch_another_com",
 			},
 			inputDigests: intoto.DigestSet{
-				"gitCommit": "anmismatch_com",
+				"gitCommit": "mismatch_another_com",
 				"sha256":    "another",
 			},
 			expected: errs.ErrorMismatch,
@@ -103,13 +103,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 					"sha256":    "another",
 				},
 			},
@@ -120,13 +120,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 		},
@@ -136,7 +136,7 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			expected: errs.ErrorInvalidInput,
@@ -147,13 +147,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"a-sha256":    "another",
-					"a-gitCommit": "anmismatch_com",
+					"a-gitCommit": "mismatch_another_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 					"sha256":    "another",
 				},
 			},
@@ -165,13 +165,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "not_another",
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 					"sha256":    "another",
 				},
 			},
@@ -182,13 +182,13 @@ func Test_verifySubject(t *testing.T) {
 			attSubject: intoto.Subject{
 				Digests: intoto.DigestSet{
 					"sha256":    "not_another",
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 					"sha256":    "another",
 				},
 			},
@@ -200,12 +200,12 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "not_another",
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				Digests: intoto.DigestSet{
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 					"sha256":    "another",
 				},
 			},
@@ -217,13 +217,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256": "another",
-					"":       "anmismatch_com",
+					"":       "mismatch_another_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 					"sha256":    "another",
 				},
 			},
@@ -235,13 +235,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 					"":          "another",
 				},
 			},
@@ -259,7 +259,7 @@ func Test_verifySubject(t *testing.T) {
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 					"sha256":    "another",
 				},
 			},
@@ -271,13 +271,13 @@ func Test_verifySubject(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256": "another",
-					"":       "anmismatch_com",
+					"":       "mismatch_another_com",
 				},
 			},
 			inputSubject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 					"sha256":    "",
 				},
 			},
@@ -298,12 +298,19 @@ func Test_verifySubject(t *testing.T) {
 
 func Test_Verify(t *testing.T) {
 	t.Parallel()
+	subject := intoto.Subject{
+		URI: "the_uri",
+		Digests: intoto.DigestSet{
+			"sha256":    "another",
+			"gitCommit": "another_com",
+		},
+	}
 	subjects := []intoto.Subject{
 		{
 			URI: "the_uri",
 			Digests: intoto.DigestSet{
 				"sha256":    "another",
-				"gitCommit": "anmismatch_com",
+				"gitCommit": "another_com",
 			},
 			Annotations: map[string]interface{}{
 				attestation.EnvironmentAnnotation: "prod",
@@ -332,31 +339,34 @@ func Test_Verify(t *testing.T) {
 		ID:      author_id,
 		Version: author_version,
 	}
-	subject := intoto.Subject{
-		URI: "the_uri",
-		Digests: intoto.DigestSet{
-			"sha256":    "another",
-			"gitCommit": "anmismatch_com",
-		},
-	}
 	prod := "prod"
 	header := intoto.Header{
 		Type:          attestation.StatementType,
 		PredicateType: attestation.PredicateType,
 		Subjects:      subjects,
 	}
-	release_properties := map[string]interface{}{
+	releaseProperties := map[string]interface{}{
 		attestation.BuildLevelProperty: 3,
 	}
-	predicate := attestation.Predicate{
+	predicateAllow := attestation.Predicate{
 		Author:            author,
 		Policy:            policy,
 		ReleaseResult:     intoto.AttestationResultAllow,
-		ReleaseProperties: release_properties,
+		ReleaseProperties: releaseProperties,
 	}
-	att := &attestation.Attestation{
+	predicateDeny := attestation.Predicate{
+		Author:            author,
+		Policy:            policy,
+		ReleaseResult:     intoto.AttestationResultDeny,
+		ReleaseProperties: releaseProperties,
+	}
+	attAllow := &attestation.Attestation{
 		Header:    header,
-		Predicate: predicate,
+		Predicate: predicateAllow,
+	}
+	attDeny := &attestation.Attestation{
+		Header:    header,
+		Predicate: predicateDeny,
 	}
 	buildLevel := common.AsPointer(3)
 	tests := []struct {
@@ -374,7 +384,7 @@ func Test_Verify(t *testing.T) {
 		// Allow policies.
 		{
 			name:          "allow all fields set",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -391,7 +401,7 @@ func Test_Verify(t *testing.T) {
 					PredicateType: attestation.PredicateType,
 					Subjects:      subjects,
 				},
-				Predicate: predicate,
+				Predicate: predicateAllow,
 			},
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
@@ -410,7 +420,7 @@ func Test_Verify(t *testing.T) {
 					PredicateType: attestation.PredicateType + "a",
 					Subjects:      subjects,
 				},
-				Predicate: predicate,
+				Predicate: predicateAllow,
 			},
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
@@ -423,7 +433,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow mismatch author id",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
@@ -435,7 +445,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow mismatch author version",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: "mismatch_author_version",
@@ -455,12 +465,12 @@ func Test_Verify(t *testing.T) {
 						{
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "anmismatch_com",
+								"gitCommit": "mismatch_another_com",
 							},
 						},
 					},
 				},
-				Predicate: predicate,
+				Predicate: predicateAllow,
 			},
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
@@ -473,7 +483,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow empty request uri",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -482,7 +492,7 @@ func Test_Verify(t *testing.T) {
 			subject: intoto.Subject{
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			policy:   policy,
@@ -495,7 +505,7 @@ func Test_Verify(t *testing.T) {
 					Type:          attestation.StatementType,
 					PredicateType: attestation.PredicateType,
 				},
-				Predicate: predicate,
+				Predicate: predicateAllow,
 			},
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
@@ -508,7 +518,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow empty input subject",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -527,12 +537,12 @@ func Test_Verify(t *testing.T) {
 						{
 							Digests: intoto.DigestSet{
 								"sha256": "another",
-								"":       "anmismatch_com",
+								"":       "mismatch_another_com",
 							},
 						},
 					},
 				},
-				Predicate: predicate,
+				Predicate: predicateAllow,
 			},
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
@@ -545,7 +555,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow empty input digest key",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -555,7 +565,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256": "another",
-					"":       "anmismatch_com",
+					"":       "mismatch_another_com",
 				},
 			},
 			policy:   policy,
@@ -576,7 +586,7 @@ func Test_Verify(t *testing.T) {
 						},
 					},
 				},
-				Predicate: predicate,
+				Predicate: predicateAllow,
 			},
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
@@ -597,12 +607,12 @@ func Test_Verify(t *testing.T) {
 						{
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "anmismatch_com",
+								"gitCommit": "mismatch_another_com",
 							},
 						},
 					},
 				},
-				Predicate: predicate,
+				Predicate: predicateAllow,
 			},
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
@@ -621,7 +631,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow mismatch sha256 digest",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -631,7 +641,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "not_another",
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			policy:   policy,
@@ -639,7 +649,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow mismatch gitCommit digest",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -649,7 +659,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "git_anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			policy:   policy,
@@ -657,7 +667,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow mismatch digest not present",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -667,7 +677,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"other":  "another",
-					"other2": "anmismatch_com",
+					"other2": "mismatch_another_com",
 				},
 			},
 			policy:   policy,
@@ -675,7 +685,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow one of digests",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -684,14 +694,14 @@ func Test_Verify(t *testing.T) {
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "another_com",
 				},
 			},
 			policy: policy,
 		},
 		{
 			name:          "allow mismatch no digest",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -702,7 +712,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow mismatch level",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -714,7 +724,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow mismatch result",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -726,7 +736,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow mismatch env",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -737,7 +747,7 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "allow mismatch no env",
+			name: "allow mismatch no env att",
 			att: &attestation.Attestation{
 				Header: intoto.Header{
 					Type:          attestation.StatementType,
@@ -747,12 +757,12 @@ func Test_Verify(t *testing.T) {
 							URI: "the_uri",
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "anmismatch_com",
+								"gitCommit": "mismatch_another_com",
 							},
 						},
 					},
 				},
-				Predicate: predicate,
+				Predicate: predicateAllow,
 			},
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
@@ -764,7 +774,18 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "allow no env",
+			name:          "allow mismatch no env input",
+			att:           attAllow,
+			result:        intoto.AttestationResultAllow,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
+		},
+		{
+			name: "allow no env both",
 			att: &attestation.Attestation{
 				Header: intoto.Header{
 					Type:          attestation.StatementType,
@@ -774,12 +795,12 @@ func Test_Verify(t *testing.T) {
 							URI: "the_uri",
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "anmismatch_com",
+								"gitCommit": "another_com",
 							},
 						},
 					},
 				},
-				Predicate: predicate,
+				Predicate: predicateAllow,
 			},
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
@@ -790,7 +811,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow mismatch no org",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -817,7 +838,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow mismatch org uri",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -844,7 +865,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow mismatch org sha256",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -871,7 +892,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow mismatch org sha256",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -940,7 +961,7 @@ func Test_Verify(t *testing.T) {
 		// Allow with ignored fields.
 		{
 			name:        "allow ignore author version",
-			att:         att,
+			att:         attAllow,
 			result:      intoto.AttestationResultAllow,
 			authorID:    author_id,
 			buildLevel:  common.AsPointer(3),
@@ -965,7 +986,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow ignore build level",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -975,7 +996,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow ignore env",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -986,7 +1007,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow ignore digests",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -997,7 +1018,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow ignore author id",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
@@ -1008,7 +1029,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name:          "allow ignore policy",
-			att:           att,
+			att:           attAllow,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1018,16 +1039,8 @@ func Test_Verify(t *testing.T) {
 		},
 		// Deny policies.
 		{
-			name: "deny all fields set",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny all fields set",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1044,12 +1057,7 @@ func Test_Verify(t *testing.T) {
 					PredicateType: attestation.PredicateType,
 					Subjects:      subjects,
 				},
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
+				Predicate: predicateDeny,
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
@@ -1068,12 +1076,7 @@ func Test_Verify(t *testing.T) {
 					PredicateType: attestation.PredicateType + "a",
 					Subjects:      subjects,
 				},
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
+				Predicate: predicateDeny,
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
@@ -1085,16 +1088,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "deny mismatch author id",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch author id",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
@@ -1105,16 +1100,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "deny mismatch author version",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch author version",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: "mismatch_author_version",
@@ -1135,17 +1122,12 @@ func Test_Verify(t *testing.T) {
 						{
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "anmismatch_com",
+								"gitCommit": "mismatch_another_com",
 							},
 						},
 					},
 				},
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
+				Predicate: predicateDeny,
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "mismatch_author_id",
@@ -1157,16 +1139,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
-			name: "deny empty request uri",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny empty request uri",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
@@ -1175,7 +1149,7 @@ func Test_Verify(t *testing.T) {
 			subject: intoto.Subject{
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			policy:   policy,
@@ -1188,12 +1162,7 @@ func Test_Verify(t *testing.T) {
 					Type:          attestation.StatementType,
 					PredicateType: attestation.PredicateType,
 				},
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
+				Predicate: predicateDeny,
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "mismatch_author_id",
@@ -1205,16 +1174,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorInvalidField,
 		},
 		{
-			name: "deny empty input subject",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny empty input subject",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
@@ -1233,17 +1194,12 @@ func Test_Verify(t *testing.T) {
 						{
 							Digests: intoto.DigestSet{
 								"sha256": "another",
-								"":       "anmismatch_com",
+								"":       "mismatch_another_com",
 							},
 						},
 					},
 				},
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
+				Predicate: predicateDeny,
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "mismatch_author_id",
@@ -1255,16 +1211,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
-			name: "deny empty input digest key",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny empty input digest key",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      "mismatch_author_id",
 			authorVersion: author_version,
@@ -1274,7 +1222,7 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256": "another",
-					"":       "anmismatch_com",
+					"":       "mismatch_another_com",
 				},
 			},
 			policy:   policy,
@@ -1295,12 +1243,7 @@ func Test_Verify(t *testing.T) {
 						},
 					},
 				},
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
+				Predicate: predicateDeny,
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "mismatch_author_id",
@@ -1321,17 +1264,12 @@ func Test_Verify(t *testing.T) {
 						{
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "anmismatch_com",
+								"gitCommit": "mismatch_another_com",
 							},
 						},
 					},
 				},
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
+				Predicate: predicateDeny,
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      "mismatch_author_id",
@@ -1349,16 +1287,8 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorInvalidInput,
 		},
 		{
-			name: "deny mismatch sha256 digest",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch sha256 digest",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1368,23 +1298,15 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "not_another",
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			policy:   policy,
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name: "deny mismatch gitCommit digest",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch gitCommit digest",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1394,23 +1316,15 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"sha256":    "another",
-					"gitCommit": "git_anmismatch_com",
+					"gitCommit": "mismatch_another_com",
 				},
 			},
 			policy:   policy,
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name: "deny mismatch digest not present",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch digest not present",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1420,23 +1334,15 @@ func Test_Verify(t *testing.T) {
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
 					"other":  "another",
-					"other2": "anmismatch_com",
+					"other2": "mismatch_another_com",
 				},
 			},
 			policy:   policy,
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name: "deny one of digests",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny one of digests",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1445,22 +1351,14 @@ func Test_Verify(t *testing.T) {
 			subject: intoto.Subject{
 				URI: "the_uri",
 				Digests: intoto.DigestSet{
-					"gitCommit": "anmismatch_com",
+					"gitCommit": "another_com",
 				},
 			},
 			policy: policy,
 		},
 		{
-			name: "deny mismatch no digest",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch no digest",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1470,16 +1368,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
-			name: "deny mismatch level",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch level",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1490,16 +1380,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "deny mismatch result",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch result",
+			att:           attDeny,
 			result:        intoto.AttestationResultAllow,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1510,16 +1392,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "deny mismatch env",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch env",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1530,7 +1404,7 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "deny mismatch no env",
+			name: "deny mismatch no env att",
 			att: &attestation.Attestation{
 				Header: intoto.Header{
 					Type:          attestation.StatementType,
@@ -1540,17 +1414,12 @@ func Test_Verify(t *testing.T) {
 							URI: "the_uri",
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "anmismatch_com",
+								"gitCommit": "mismatch_another_com",
 							},
 						},
 					},
 				},
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
+				Predicate: predicateDeny,
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
@@ -1562,7 +1431,18 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "deny no env",
+			name:          "deny mismatch no env input",
+			att:           attDeny,
+			result:        intoto.AttestationResultDeny,
+			authorID:      author_id,
+			authorVersion: author_version,
+			buildLevel:    buildLevel,
+			subject:       subject,
+			policy:        policy,
+			expected:      errs.ErrorMismatch,
+		},
+		{
+			name: "deny no env both",
 			att: &attestation.Attestation{
 				Header: intoto.Header{
 					Type:          attestation.StatementType,
@@ -1572,17 +1452,12 @@ func Test_Verify(t *testing.T) {
 							URI: "the_uri",
 							Digests: intoto.DigestSet{
 								"sha256":    "another",
-								"gitCommit": "anmismatch_com",
+								"gitCommit": "another_com",
 							},
 						},
 					},
 				},
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
+				Predicate: predicateDeny,
 			},
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
@@ -1592,16 +1467,8 @@ func Test_Verify(t *testing.T) {
 			policy:        policy,
 		},
 		{
-			name: "deny mismatch no org",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch no org",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1627,16 +1494,8 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name: "deny mismatch org uri",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch org uri",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1662,16 +1521,8 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name: "deny mismatch org sha256",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch org sha256",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1697,16 +1548,8 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name: "deny mismatch org sha256",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny mismatch org sha256",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1774,16 +1617,8 @@ func Test_Verify(t *testing.T) {
 		},
 		// Deny with ignored fields.
 		{
-			name: "deny ignore author version",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:        "deny ignore author version",
+			att:         attDeny,
 			result:      intoto.AttestationResultDeny,
 			authorID:    author_id,
 			buildLevel:  common.AsPointer(3),
@@ -1807,16 +1642,8 @@ func Test_Verify(t *testing.T) {
 			},
 		},
 		{
-			name: "deny ignore build level",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny ignore build level",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1825,16 +1652,8 @@ func Test_Verify(t *testing.T) {
 			policy:        policy,
 		},
 		{
-			name: "deny ignore env",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny ignore env",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1844,16 +1663,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorMismatch,
 		},
 		{
-			name: "deny ignore digests",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny ignore digests",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
@@ -1863,16 +1674,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
-			name: "deny ignore author id",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny ignore author id",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorVersion: author_version,
 			buildLevel:    buildLevel,
@@ -1882,16 +1685,8 @@ func Test_Verify(t *testing.T) {
 			expected:      errs.ErrorInvalidInput,
 		},
 		{
-			name: "deny ignore policy",
-			att: &attestation.Attestation{
-				Header: header,
-				Predicate: attestation.Predicate{
-					Author:            author,
-					Policy:            policy,
-					ReleaseResult:     intoto.AttestationResultDeny,
-					ReleaseProperties: release_properties,
-				},
-			},
+			name:          "deny ignore policy",
+			att:           attDeny,
 			result:        intoto.AttestationResultDeny,
 			authorID:      author_id,
 			authorVersion: author_version,
