@@ -313,6 +313,37 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorMismatch,
 		},
 		{
+			name: "allow one of digests",
+			att: &attestation.Attestation{
+				Header: intoto.Header{
+					Type:          attestation.StatementType,
+					PredicateType: attestation.PredicateType,
+					Subjects:      subjects,
+				},
+				Predicate: attestation.Predicate{
+					Author: intoto.Author{
+						ID:      "author_id",
+						Version: "author_version",
+					},
+					Policy:        policy,
+					ReleaseResult: intoto.AttestationResultAllow,
+					ReleaseProperties: map[string]interface{}{
+						attestation.BuildLevelProperty: 3,
+					},
+				},
+			},
+			result:        intoto.AttestationResultAllow,
+			authorID:      "author_id",
+			authorVersion: "author_version",
+			buildLevel:    common.AsPointer(3),
+			environment:   "prod",
+			digests: intoto.DigestSet{
+				"other2": "another_com",
+			},
+			policy:   policy,
+			expected: errs.ErrorMismatch,
+		},
+		{
 			name: "allow mismatch no digest",
 			att: &attestation.Attestation{
 				Header: intoto.Header{

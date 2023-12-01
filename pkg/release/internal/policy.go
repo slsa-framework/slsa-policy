@@ -31,6 +31,7 @@ func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy
 	}, nil
 }
 
+// TODO: change return value to error only.
 func (p *Policy) Evaluate(releaseURI string, buildOpts options.BuildVerification) (int, error) {
 	if releaseURI == "" {
 		return -1, fmt.Errorf("%w: release URI is empty", errs.ErrorInvalidInput)
@@ -56,6 +57,12 @@ func (p *Policy) evaluateBuildPolicy(releaseURI string, buildOpts options.BuildV
 	if err != nil {
 		return -1, err
 	}
-
 	return level, nil
 }
+
+// func (p *Policy) Attestation(authorID string, digests intoto.DigestSet) ([]byte, error) {
+// 	if p.level < 0 {
+// 		// Verify(digests intoto.DigestSet, authorID string, result intoto.AttestationResult, options ...func(*Verification) error)
+// 	}
+// 	return nil, nil
+// }
