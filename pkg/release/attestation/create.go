@@ -11,12 +11,13 @@ import (
 
 type Creation struct {
 	attestation
+	safeMode bool
 }
 
-type CreationOptions func(*Creation) error
+type CreationOption func(*Creation) error
 
 // NOTE: See https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis.
-func CreationNew(subject intoto.Subject, authorID string, result ReleaseResult, options ...CreationOptions) (*Creation, error) {
+func CreationNew(subject intoto.Subject, authorID string, result ReleaseResult, options ...CreationOption) (*Creation, error) {
 	if err := subject.Validate(); err != nil {
 		return nil, err
 	}
@@ -54,7 +55,23 @@ func (a *Creation) ToBytes() ([]byte, error) {
 	return content, nil
 }
 
-func SetAuthorVersion(version string) func(*Creation) error {
+// TODO: unit tests.
+func SetSafeMode() CreationOption {
+	return func(a *Creation) error {
+		return a.setSafeMode()
+	}
+}
+
+func (a *Creation) setSafeMode() error {
+	a.safeMode = true
+	return nil
+}
+
+func (a *Creation) isSafeMode() bool {
+	return a.safeMode
+}
+
+func SetAuthorVersion(version string) CreationOption {
 	return func(a *Creation) error {
 		return a.setAuthorVersion(version)
 	}
@@ -65,13 +82,16 @@ func (a *Creation) setAuthorVersion(version string) error {
 	return nil
 }
 
-func SetEnvironment(env string) func(*Creation) error {
+func SetEnvironment(env string) CreationOption {
 	return func(a *Creation) error {
 		return a.setEnvironment(env)
 	}
 }
 
 func (a *Creation) setEnvironment(env string) error {
+	if a.isSafeMode() {
+		return fmt.Errorf("%w: safe mode enabled, cannot edit environment", errs.ErrorInvalidInput)
+	}
 	if a.attestation.Header.Subjects[0].Annotations == nil {
 		a.attestation.Header.Subjects[0].Annotations = make(map[string]interface{})
 	}
@@ -79,7 +99,7 @@ func (a *Creation) setEnvironment(env string) error {
 	return nil
 }
 
-func SetPolicy(policy map[string]intoto.Policy) func(*Creation) error {
+func SetPolicy(policy map[string]intoto.Policy) CreationOption {
 	return func(a *Creation) error {
 		return a.setPolicy(policy)
 	}
@@ -90,13 +110,16 @@ func (a *Creation) setPolicy(policy map[string]intoto.Policy) error {
 	return nil
 }
 
-func SetSlsaBuildLevel(level int) func(*Creation) error {
+func SetSlsaBuildLevel(level int) CreationOption {
 	return func(a *Creation) error {
 		return a.setSlsaBuildLevel(level)
 	}
 }
 
 func (a *Creation) setSlsaBuildLevel(level int) error {
+	if a.isSafeMode() {
+		return fmt.Errorf("%w: safe mode enabled, cannot edit SLSA build level", errs.ErrorInvalidInput)
+	}
 	if !a.isResultAllowed() {
 		return fmt.Errorf("%w: level cannot be set for %q result", errs.ErrorInvalidInput, a.attestation.Predicate.ReleaseResult)
 	}
@@ -116,7 +139,3 @@ func (a *Creation) setSlsaBuildLevel(level int) error {
 func (a *Creation) isResultAllowed() bool {
 	return a.attestation.Predicate.ReleaseResult == ReleaseResultAllow
 }
-
-// func (a * Creation) Result() ReleaseResult {
-// 	return a.attestation
-// }

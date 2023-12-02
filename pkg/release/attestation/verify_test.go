@@ -1903,7 +1903,7 @@ func Test_Verify(t *testing.T) {
 			}
 
 			// Create verification options.
-			var options []VerificationOptions
+			var options []VerificationOption
 			if tt.authorVersion != "" {
 				options = append(options, IsAuthorVersion(tt.authorVersion))
 			}

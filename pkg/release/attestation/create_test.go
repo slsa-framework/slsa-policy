@@ -296,7 +296,7 @@ func Test_CreationNew(t *testing.T) {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			var options []CreationOptions
+			var options []CreationOption
 			if tt.authorVersion != "" {
 				options = append(options, SetAuthorVersion(tt.authorVersion))
 			}

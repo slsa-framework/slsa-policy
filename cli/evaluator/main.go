@@ -77,7 +77,7 @@ func main() {
 	fmt.Println("err:", result.Error())
 	fmt.Println("allow:", result.IsAllow())
 	fmt.Println("deny:", result.IsDeny())
-	var createOpts []attestation.CreationOptions
+	var createOpts []attestation.CreationOption
 	att, err := result.AttestationNew("releaser_uri", createOpts...)
 	if err != nil {
 		panic(err)

@@ -49,20 +49,29 @@ func (p *Policy) Evaluate(releaseURI string, buildOpts options.BuildVerification
 	}
 }
 
+// TODO: Support safe options: AuthorVersion, Policy, release version.
 // Attestation creates a release attestation.
-func (r PolicyEvaluationResult) AttestationNew(authorID string, options ...attestation.CreationOptions) (*attestation.Creation, error) {
+func (r PolicyEvaluationResult) AttestationNew(authorID string, options ...attestation.CreationOption) (*attestation.Creation, error) {
 	if err := r.isValid(); err != nil {
 		return nil, err
 	}
 	subject := intoto.Subject{
 		URI:     r.releaseURI,
 		Digests: r.digests,
+		// Version.
 	}
 	result, err := r.result()
 	if err != nil {
 		return nil, err
 	}
-	att, err := attestation.CreationNew(subject, authorID, result, options...)
+	opts := []attestation.CreationOption{
+		attestation.SetSafeMode(), // We disable editing unsafe fields.
+		attestation.SetSlsaBuildLevel(r.level),
+	}
+	if r.environment != nil {
+		opts = append(opts, attestation.SetEnvironment(*r.environment))
+	}
+	att, err := attestation.CreationNew(subject, authorID, result, opts...)
 	if err != nil {
 		return nil, err
 	}

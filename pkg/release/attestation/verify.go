@@ -14,7 +14,7 @@ type Verification struct {
 	attestation
 }
 
-type VerificationOptions func(*Verification) error
+type VerificationOption func(*Verification) error
 
 func VerificationNew(reader io.ReadCloser) (*Verification, error) {
 	content, err := ioutil.ReadAll(reader)
@@ -31,13 +31,13 @@ func VerificationNew(reader io.ReadCloser) (*Verification, error) {
 	}, nil
 }
 
-func (v *Verification) Verify(authorID string, subject intoto.Subject, environment string, result ReleaseResult, options ...VerificationOptions) error {
+func (v *Verification) Verify(authorID string, subject intoto.Subject, environment string, result ReleaseResult, options ...VerificationOption) error {
 	// Statement type.
 	if v.attestation.Header.Type != statementType {
 		return fmt.Errorf("%w: attestation type (%q) != intoto type (%q)", errs.ErrorMismatch,
 			v.attestation.Header.Type, statementType)
 	}
-	// predicate type.
+	// Predicate type.
 	if v.attestation.Header.PredicateType != predicateType {
 		return fmt.Errorf("%w: attestation predicate type (%q) != release type (%q)", errs.ErrorMismatch,
 			v.attestation.Header.PredicateType, predicateType)
@@ -120,7 +120,7 @@ func verifyDigests(ds intoto.DigestSet, digests intoto.DigestSet) error {
 	return nil
 }
 
-func IsAuthorVersion(version string) func(*Verification) error {
+func IsAuthorVersion(version string) VerificationOption {
 	return func(v *Verification) error {
 		return v.isAuthorVersion(version)
 	}
@@ -170,7 +170,7 @@ func (v *Verification) verifyAnnotation(anno, value string) error {
 	return nil
 }
 
-func HasPolicy(name, uri string, digests intoto.DigestSet) func(*Verification) error {
+func HasPolicy(name, uri string, digests intoto.DigestSet) VerificationOption {
 	return func(v *Verification) error {
 		return v.hasPolicy(name, uri, digests)
 	}
@@ -192,7 +192,7 @@ func (v *Verification) hasPolicy(name, uri string, digests intoto.DigestSet) err
 	return nil
 }
 
-func IsSlsaBuildLevel(level int) func(*Verification) error {
+func IsSlsaBuildLevel(level int) VerificationOption {
 	return func(v *Verification) error {
 		return v.isSlsaBuildLevel(level)
 	}
@@ -224,7 +224,7 @@ func (v *Verification) isSlsaBuildLevel(level int) error {
 	return nil
 }
 
-func IsReleaseVersion(version string) func(*Verification) error {
+func IsReleaseVersion(version string) VerificationOption {
 	return func(v *Verification) error {
 		return v.isReleaseVersion(version)
 	}
