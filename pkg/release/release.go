@@ -64,13 +64,18 @@ func (r PolicyEvaluationResult) AttestationNew(authorID string, options ...attes
 	if err != nil {
 		return nil, err
 	}
+	// Set SLSA build level.
 	opts := []attestation.CreationOption{
-		attestation.SetSafeMode(), // We disable editing unsafe fields.
 		attestation.SetSlsaBuildLevel(r.level),
 	}
+	// Set environment if not empty.
 	if r.environment != nil {
 		opts = append(opts, attestation.SetEnvironment(*r.environment))
 	}
+	// Disable editing unsafe fields.
+	opts = append(opts, attestation.SetSafeMode())
+	// Add caller options.
+	opts = append(opts, options...)
 	att, err := attestation.CreationNew(subject, authorID, result, opts...)
 	if err != nil {
 		return nil, err
