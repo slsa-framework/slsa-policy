@@ -5,9 +5,9 @@ import (
 	"io"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
+	"github.com/laurentsimon/slsa-policy/pkg/release/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/organization"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/project"
-	"github.com/laurentsimon/slsa-policy/pkg/release/options"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
@@ -33,30 +33,30 @@ func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy
 }
 
 // TODO: change return value to error only.
-func (p *Policy) Evaluate(releaseURI string, buildOpts options.BuildVerification) (int, intoto.DigestSet, error) {
+func (p *Policy) Evaluate(digests intoto.DigestSet, releaseURI string, buildOpts options.BuildVerification) (int, error) {
 	if releaseURI == "" {
-		return -1, intoto.DigestSet{}, fmt.Errorf("%w: release URI is empty", errs.ErrorInvalidInput)
+		return -1, fmt.Errorf("%w: release URI is empty", errs.ErrorInvalidInput)
 	}
-	return p.evaluateBuildPolicy(releaseURI, buildOpts)
+	return p.evaluateBuildPolicy(digests, releaseURI, buildOpts)
 }
 
-func (p *Policy) evaluateBuildPolicy(releaseURI string, buildOpts options.BuildVerification) (int, intoto.DigestSet, error) {
+func (p *Policy) evaluateBuildPolicy(digests intoto.DigestSet, releaseURI string, buildOpts options.BuildVerification) (int, error) {
 	// Get the project policy for the artifact.
 	projectPolicy, exists := p.projectPolicies[releaseURI]
 	if !exists {
-		return -1, intoto.DigestSet{}, fmt.Errorf("%w: release's uri (%q) not present in project policies", errs.ErrorNotFound, releaseURI)
+		return -1, fmt.Errorf("%w: release's uri (%q) not present in project policies", errs.ErrorNotFound, releaseURI)
 	}
 
 	// Evaluate the org policy first.
-	err := p.orgPolicy.Evaluate(releaseURI, buildOpts)
+	err := p.orgPolicy.Evaluate(digests, releaseURI, buildOpts)
 	if err != nil {
-		return -1, intoto.DigestSet{}, err
+		return -1, err
 	}
 
 	// Evaluate the project policy first.
-	level, digests, err := projectPolicy.Evaluate(releaseURI, p.orgPolicy, buildOpts)
+	level, err := projectPolicy.Evaluate(digests, releaseURI, p.orgPolicy, buildOpts)
 	if err != nil {
-		return -1, intoto.DigestSet{}, err
+		return -1, err
 	}
-	return level, digests, nil
+	return level, nil
 }

@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/release/options"
+	"github.com/laurentsimon/slsa-policy/pkg/release/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
@@ -46,7 +46,7 @@ func (iter *bytesIterator) Error() error {
 }
 
 // Attestation verifier.
-func NewAttestationVerifier(publicationURI, builderID, sourceURI string, digests intoto.DigestSet) options.AttestationVerifier {
+func NewAttestationVerifier(digests intoto.DigestSet, publicationURI, builderID, sourceURI string) options.AttestationVerifier {
 	return &attesationVerifier{publicationURI: publicationURI,
 		builderID: builderID, sourceURI: sourceURI,
 		digests: digests}
@@ -59,11 +59,10 @@ type attesationVerifier struct {
 	digests        intoto.DigestSet
 }
 
-func (v *attesationVerifier) VerifyBuildAttestation(publicationURI, builderID, sourceURI string) (intoto.DigestSet, error) {
+func (v *attesationVerifier) VerifyBuildAttestation(digests intoto.DigestSet, publicationURI, builderID, sourceURI string) error {
 	if publicationURI == v.publicationURI && builderID == v.builderID && sourceURI == v.sourceURI {
-		return v.digests, nil
+		return nil
 	}
-	// NOTE: We always need a digest. No digest means the artifact cannot be found.
-	return v.digests, fmt.Errorf("%w: cannot verify release URI (%q) builder ID (%q) and source URI (%q)",
-		errs.ErrorVerification, publicationURI, builderID, sourceURI)
+	return fmt.Errorf("%w: cannot verify release URI (%q) builder ID (%q) source URI (%q) digests (%q)",
+		errs.ErrorVerification, publicationURI, builderID, sourceURI, digests)
 }

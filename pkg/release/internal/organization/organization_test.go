@@ -11,6 +11,8 @@ import (
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/common"
+	"github.com/laurentsimon/slsa-policy/pkg/release/internal/options"
+	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
 func Test_validateFormat(t *testing.T) {
@@ -619,7 +621,7 @@ func Test_Evaluate(t *testing.T) {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			err := tt.policy.Evaluate("any_repo", nil)
+			err := tt.policy.Evaluate(intoto.DigestSet{}, "any_repo", options.BuildVerification{})
 			if diff := cmp.Diff(tt.expected, err); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

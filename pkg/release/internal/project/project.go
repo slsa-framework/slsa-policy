@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-
-	"golang.org/x/exp/slices"
+	"slices"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
+	"github.com/laurentsimon/slsa-policy/pkg/release/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/organization"
-	"github.com/laurentsimon/slsa-policy/pkg/release/options"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
@@ -150,38 +149,39 @@ func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Pol
 }
 
 // Evaluate evaluates the policy.
-func (p *Policy) Evaluate(releaseURI string, orgPolicy organization.Policy, buildOpts options.BuildVerification) (int, intoto.DigestSet, error) {
+func (p *Policy) Evaluate(digests intoto.DigestSet, releaseURI string,
+	orgPolicy organization.Policy, buildOpts options.BuildVerification) (int, error) {
 	if buildOpts.Verifier == nil {
-		return -1, intoto.DigestSet{}, fmt.Errorf("%w: verifier is empty", errs.ErrorInvalidInput)
+		return -1, fmt.Errorf("%w: verifier is empty", errs.ErrorInvalidInput)
 	}
 	// If the policy has environment defined, the request must contain an environment.
 	if len(p.Release.Environment.AnyOf) > 0 && (buildOpts.Environment == nil || *buildOpts.Environment == "") {
-		return -1, intoto.DigestSet{}, fmt.Errorf("%w: build config's environment is empty but the policy has it defined (%q)",
+		return -1, fmt.Errorf("%w: build config's environment is empty but the policy has it defined (%q)",
 			errs.ErrorInvalidInput, p.Release.Environment.AnyOf)
 	}
 	// If the policy has no environment defined, the request must not contain an environment.
 	if len(p.Release.Environment.AnyOf) == 0 && buildOpts.Environment != nil {
-		return -1, intoto.DigestSet{}, fmt.Errorf("%w: build config's environment is set (%q) but the policy has none defined",
+		return -1, fmt.Errorf("%w: build config's environment is set (%q) but the policy has none defined",
 			errs.ErrorInvalidInput, *buildOpts.Environment)
 	}
 	// Verify the environment and request match.
 	if buildOpts.Environment != nil {
 		if *buildOpts.Environment == "" {
-			return -1, intoto.DigestSet{}, fmt.Errorf("%w: build config's environment is empty", errs.ErrorInvalidInput)
+			return -1, fmt.Errorf("%w: build config's environment is empty", errs.ErrorInvalidInput)
 		}
 		if !slices.Contains(p.Release.Environment.AnyOf, *buildOpts.Environment) {
-			return -1, intoto.DigestSet{}, fmt.Errorf("%w: failed to verify artifact (%q) for environment (%q): not defined in policy",
+			return -1, fmt.Errorf("%w: failed to verify artifact (%q) for environment (%q): not defined in policy",
 				errs.ErrorNotFound, releaseURI, *buildOpts.Environment)
 		}
 	}
 
 	// Verify build attestations.
-	digests, err := buildOpts.Verifier.VerifyBuildAttestation(releaseURI, p.BuildRequirements.RequireSlsaBuilder, p.BuildRequirements.Repository.URI)
+	err := buildOpts.Verifier.VerifyBuildAttestation(digests, releaseURI, p.BuildRequirements.RequireSlsaBuilder, p.BuildRequirements.Repository.URI)
 	if err != nil {
-		return -1, intoto.DigestSet{}, fmt.Errorf("%w: failed to verify artifact (%q) with builder ID (%q) and source URI (%q): %w",
+		return -1, fmt.Errorf("%w: failed to verify artifact (%q) with builder ID (%q) source URI (%q) digests (%q): %w",
 			errs.ErrorVerification, releaseURI, p.BuildRequirements.RequireSlsaBuilder,
-			p.BuildRequirements.Repository.URI, err)
+			p.BuildRequirements.Repository.URI, digests, err)
 	}
 
-	return orgPolicy.BuilderSlsaLevel(p.BuildRequirements.RequireSlsaBuilder), digests, nil
+	return orgPolicy.BuilderSlsaLevel(p.BuildRequirements.RequireSlsaBuilder), nil
 }

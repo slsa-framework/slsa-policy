@@ -6,8 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/laurentsimon/slsa-policy/pkg/release"
-	"github.com/laurentsimon/slsa-policy/pkg/release/attestation"
-	"github.com/laurentsimon/slsa-policy/pkg/release/options"
+	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator/files_reader"
 )
 
@@ -72,13 +71,16 @@ func main() {
 		panic(err)
 	}
 	releaseURI := "docker.io/my/image"
-	buildOpts := options.BuildVerification{} // TODO
-	result := pol.Evaluate(releaseURI, buildOpts)
+	buildOpts := release.BuildVerificationOption{} // TODO
+	digests := intoto.DigestSet{
+		"sha256": "abscde",
+	}
+	result := pol.Evaluate(digests, releaseURI, buildOpts)
 	fmt.Println("err:", result.Error())
 	fmt.Println("allow:", result.IsAllow())
 	fmt.Println("deny:", result.IsDeny())
-	var createOpts []attestation.CreationOption
-	att, err := result.AttestationNew("releaser_uri", createOpts...)
+	var createOpts []release.AttestationCreationOption
+	att, err := result.AttestationNew("author_uri", createOpts...)
 	if err != nil {
 		panic(err)
 	}

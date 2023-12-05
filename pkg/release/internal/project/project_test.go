@@ -9,8 +9,8 @@ import (
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/common"
+	"github.com/laurentsimon/slsa-policy/pkg/release/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal/organization"
-	"github.com/laurentsimon/slsa-policy/pkg/release/options"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
@@ -747,15 +747,14 @@ func Test_Evaluate(t *testing.T) {
 			// Create the verifier that succeeds for the right parameters.
 			var verifier options.AttestationVerifier
 			if !tt.noVerifier {
-				verifier = common.NewAttestationVerifier(tt.releaseURI,
-					tt.verifierOpts.builderID, tt.verifierOpts.sourceURI,
-					tt.verifierOpts.digests)
+				verifier = common.NewAttestationVerifier(tt.verifierOpts.digests, tt.releaseURI,
+					tt.verifierOpts.builderID, tt.verifierOpts.sourceURI)
 			}
 			opts := options.BuildVerification{
 				Verifier:    verifier,
 				Environment: tt.verifierOpts.environment,
 			}
-			level, digests, err := tt.policy.Evaluate(tt.releaseURI, *tt.org, opts)
+			level, err := tt.policy.Evaluate(digests, tt.releaseURI, *tt.org, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -763,9 +762,6 @@ func Test_Evaluate(t *testing.T) {
 				return
 			}
 			if diff := cmp.Diff(tt.level, level); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			if diff := cmp.Diff(tt.verifierOpts.digests, digests); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})

@@ -7,7 +7,8 @@ import (
 	"io/ioutil"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/release/options"
+	"github.com/laurentsimon/slsa-policy/pkg/release/internal/options"
+	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
 // Root defines a trusted root.
@@ -131,7 +132,7 @@ func (p *Policy) BuilderSlsaLevel(builderName string) int {
 }
 
 // Evaluate evaluates the policy.
-func (p *Policy) Evaluate(publicationURI string, buildOpts options.BuildVerification) error {
+func (p *Policy) Evaluate(digests intoto.DigestSet, publicationURI string, buildOpts options.BuildVerification) error {
 	// Nothing to do.
 	return nil
 }

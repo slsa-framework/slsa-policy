@@ -5,12 +5,24 @@ import (
 	"io"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/release/attestation"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal"
-	"github.com/laurentsimon/slsa-policy/pkg/release/options"
+	"github.com/laurentsimon/slsa-policy/pkg/release/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
+
+// AttestationVerifier defines an interface to verify attestations.
+type AttestationVerifier interface {
+	// Build attestations.
+	VerifyBuildAttestation(digests intoto.DigestSet, releaseURI, builderID, sourceURI string) error
+}
+
+// BuildVerificationOption defines the configuration to verify
+// build attestations.
+type BuildVerificationOption struct {
+	Verifier    AttestationVerifier
+	Environment *string
+}
 
 // Policy defines the release policy.
 type Policy struct {
@@ -26,6 +38,14 @@ type PolicyEvaluationResult struct {
 	environment *string
 }
 
+type internal_verifier struct {
+	buildOpts BuildVerificationOption
+}
+
+func (i *internal_verifier) VerifyBuildAttestation(digests intoto.DigestSet, releaseURI, builderID, sourceURI string) error {
+	return i.buildOpts.Verifier.VerifyBuildAttestation(digests, releaseURI, builderID, sourceURI)
+}
+
 // New creates a release policy.
 func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy, error) {
 	policy, err := internal.PolicyNew(org, projects)
@@ -38,8 +58,15 @@ func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy
 }
 
 // Evaluate evalues the release policy.
-func (p *Policy) Evaluate(releaseURI string, buildOpts options.BuildVerification) PolicyEvaluationResult {
-	level, digests, err := p.policy.Evaluate(releaseURI, buildOpts)
+func (p *Policy) Evaluate(digests intoto.DigestSet, releaseURI string, buildOpts BuildVerificationOption) PolicyEvaluationResult {
+	level, err := p.policy.Evaluate(digests, releaseURI,
+		options.BuildVerification{
+			Verifier: &internal_verifier{
+				buildOpts: buildOpts,
+			},
+			Environment: buildOpts.Environment,
+		},
+	)
 	return PolicyEvaluationResult{
 		level:       level,
 		err:         err,
@@ -51,7 +78,7 @@ func (p *Policy) Evaluate(releaseURI string, buildOpts options.BuildVerification
 
 // TODO: Support safe options: AuthorVersion, Policy, release version.
 // Attestation creates a release attestation.
-func (r PolicyEvaluationResult) AttestationNew(authorID string, options ...attestation.CreationOption) (*attestation.Creation, error) {
+func (r PolicyEvaluationResult) AttestationNew(authorID string, options ...AttestationCreationOption) (*Creation, error) {
 	if err := r.isValid(); err != nil {
 		return nil, err
 	}
@@ -65,18 +92,19 @@ func (r PolicyEvaluationResult) AttestationNew(authorID string, options ...attes
 		return nil, err
 	}
 	// Set SLSA build level.
-	opts := []attestation.CreationOption{
-		attestation.SetSlsaBuildLevel(r.level),
+	var opts []AttestationCreationOption
+	if r.IsAllow() {
+		opts = append(opts, SetSlsaBuildLevel(r.level))
 	}
 	// Set environment if not empty.
 	if r.environment != nil {
-		opts = append(opts, attestation.SetEnvironment(*r.environment))
+		opts = append(opts, SetEnvironment(*r.environment))
 	}
 	// Disable editing unsafe fields.
-	opts = append(opts, attestation.SetSafeMode())
+	opts = append(opts, SetSafeMode())
 	// Add caller options.
 	opts = append(opts, options...)
-	att, err := attestation.CreationNew(subject, authorID, result, opts...)
+	att, err := CreationNew(subject, authorID, result, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -95,14 +123,14 @@ func (r PolicyEvaluationResult) IsDeny() bool {
 	return r.err != nil
 }
 
-func (r PolicyEvaluationResult) result() (attestation.ReleaseResult, error) {
+func (r PolicyEvaluationResult) result() (ReleaseResult, error) {
 	if err := r.isValid(); err != nil {
-		return attestation.ReleaseResult(""), err
+		return ReleaseResult(""), err
 	}
 	if r.IsAllow() {
-		return attestation.ReleaseResultAllow, nil
+		return ReleaseResultAllow, nil
 	}
-	return attestation.ReleaseResultDeny, nil
+	return ReleaseResultDeny, nil
 }
 
 func (r PolicyEvaluationResult) isValid() error {
