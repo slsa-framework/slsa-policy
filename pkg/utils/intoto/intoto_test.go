@@ -27,21 +27,11 @@ func Test_ValidateSubject(t *testing.T) {
 			},
 		},
 		{
-			name: "no uri",
-			subject: Subject{
-				Digests: DigestSet{
-					"sha256":    "some_value",
-					"gitCommit": "another_value",
-				},
-			},
-			expected: errs.ErrorInvalidInput,
-		},
-		{
 			name: "not digests",
 			subject: Subject{
 				URI: "the_uri",
 			},
-			expected: errs.ErrorInvalidInput,
+			expected: errs.ErrorInvalidField,
 		},
 		{
 			name: "empty digest key",
@@ -52,7 +42,7 @@ func Test_ValidateSubject(t *testing.T) {
 					"":       "another_value",
 				},
 			},
-			expected: errs.ErrorInvalidInput,
+			expected: errs.ErrorInvalidField,
 		},
 		{
 			name: "empty digest value",
@@ -63,7 +53,7 @@ func Test_ValidateSubject(t *testing.T) {
 					"gitCommit": "",
 				},
 			},
-			expected: errs.ErrorInvalidInput,
+			expected: errs.ErrorInvalidField,
 		},
 	}
 	for _, tt := range tests {
@@ -95,7 +85,7 @@ func Test_ValidateDigests(t *testing.T) {
 		},
 		{
 			name:     "empty digests",
-			expected: errs.ErrorInvalidInput,
+			expected: errs.ErrorInvalidField,
 		},
 		{
 			name: "empty key",
@@ -103,7 +93,7 @@ func Test_ValidateDigests(t *testing.T) {
 				"sha256": "some_value",
 				"":       "another_value",
 			},
-			expected: errs.ErrorInvalidInput,
+			expected: errs.ErrorInvalidField,
 		},
 		{
 			name: "empty value",
@@ -111,7 +101,7 @@ func Test_ValidateDigests(t *testing.T) {
 				"sha256":    "some_value",
 				"gitCommit": "",
 			},
-			expected: errs.ErrorInvalidInput,
+			expected: errs.ErrorInvalidField,
 		},
 	}
 	for _, tt := range tests {
@@ -120,6 +110,92 @@ func Test_ValidateDigests(t *testing.T) {
 			t.Parallel()
 			err := tt.digests.Validate()
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+		})
+	}
+}
+
+func Test_ValidateResource(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		resource ResourceDescriptor
+		expected error
+	}{
+		{
+			name: "valid descriptor",
+			resource: ResourceDescriptor{
+				URI: "the_uri",
+			},
+		},
+		{
+			name:     "empty uri",
+			expected: errs.ErrorInvalidField,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt // Re-initializing variable so it is not changed while executing the closure below
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			err := tt.resource.Validate()
+			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+		})
+	}
+}
+
+func Test_GetAnnotationValue(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		anno     map[string]interface{}
+		value    string
+		expected error
+	}{
+		{
+			name: "nil annotations",
+		},
+		{
+			name: "empty annotations",
+			anno: map[string]interface{}{},
+		},
+		{
+			name: "anno with empty value",
+			anno: map[string]interface{}{
+				"key": "",
+			},
+		},
+		{
+			name: "anno with non empty value",
+			anno: map[string]interface{}{
+				"key": "value",
+			},
+			value: "value",
+		},
+		{
+			name: "anno with non string value",
+			anno: map[string]interface{}{
+				"key": 123,
+			},
+			expected: errs.ErrorInvalidField,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt // Re-initializing variable so it is not changed while executing the closure below
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			val, err := GetAnnotationValue(tt.anno, "key")
+			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			if err != nil {
+				return
+			}
+			if diff := cmp.Diff(tt.value, val); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})

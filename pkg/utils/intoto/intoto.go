@@ -58,25 +58,45 @@ type ResourceDescriptor struct {
 }
 
 func (s Subject) Validate() error {
-	if s.URI == "" {
-		return fmt.Errorf("%w: subject URI is empty", errs.ErrorInvalidInput)
-	}
 	return s.Digests.Validate()
+}
+
+func (r ResourceDescriptor) Validate() error {
+	if r.URI == "" {
+		return fmt.Errorf("%w: resource URI is empty", errs.ErrorInvalidField)
+	}
+	return nil
 }
 
 func (ds DigestSet) Validate() error {
 	if len(ds) == 0 {
-		return fmt.Errorf("%w: digests empty", errs.ErrorInvalidInput)
+		return fmt.Errorf("%w: digests empty", errs.ErrorInvalidField)
 	}
 	for k, v := range ds {
 		if k == "" {
-			return fmt.Errorf("%w: digests has empty key", errs.ErrorInvalidInput)
+			return fmt.Errorf("%w: digests has empty key", errs.ErrorInvalidField)
 		}
 		if v == "" {
-			return fmt.Errorf("%w: digests key (%q) has empty value", errs.ErrorInvalidInput, k)
+			return fmt.Errorf("%w: digests key (%q) has empty value", errs.ErrorInvalidField, k)
 		}
 	}
 	return nil
+}
+
+func GetAnnotationValue(anno map[string]interface{}, name string) (string, error) {
+	if anno == nil {
+		return "", nil
+	}
+	val, exists := anno[name]
+	if !exists {
+		return "", nil
+	}
+	valStr, ok := val.(string)
+	if !ok {
+		return "", fmt.Errorf("%w: package annotation (%q) is not a string (%T)", errs.ErrorInvalidField, name, val)
+	}
+	return valStr, nil
+
 }
 
 func Now() string {

@@ -101,7 +101,7 @@ func (p *Policy) validateRelease() error {
 func (p *Policy) validateBuildRequirements(builderNames []string) error {
 	// SLSA builder
 	//	1) must be set
-	//	2) must contain one the builders configued by the organization-level policy
+	//	2) must contain one the builders configured by the organization-level policy
 	//	3) must contain a repository URI.
 	if len(builderNames) == 0 {
 		return fmt.Errorf("%w: builder names are empty", errs.ErrorInvalidInput)

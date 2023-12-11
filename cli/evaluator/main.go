@@ -77,8 +77,9 @@ func main() {
 	}
 	result := pol.Evaluate(digests, releaseURI, buildOpts)
 	fmt.Println("err:", result.Error())
-	fmt.Println("allow:", result.IsAllow())
-	fmt.Println("deny:", result.IsDeny())
+	if result.Error() != nil {
+		panic(err)
+	}
 	var createOpts []release.AttestationCreationOption
 	att, err := result.AttestationNew("author_uri", createOpts...)
 	if err != nil {
