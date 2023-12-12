@@ -515,7 +515,6 @@ func Test_e2e(t *testing.T) {
 				policies[i] = content
 			}
 			projectsReader := common.NewBytesIterator(policies)
-
 			pol, err := PolicyNew(orgReader, projectsReader)
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)

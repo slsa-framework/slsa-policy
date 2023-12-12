@@ -1,6 +1,2 @@
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
-github.com/laurentsimon/slsa-e2e v0.0.1 h1:k2aCuab5JIB+/CcYwqs76es/Fn2t9XX0HfaU/N2qJck=
-github.com/laurentsimon/slsa-e2e v0.0.1/go.mod h1:4S8IgG6yImvxob5TKdC/zsaSpeYHBGTSCf0DTJD2xM4=
-golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 h1:MGwJjxBy0HJshjDNfLsYO8xppfqWlA5ZT9OhtUUhTNw=
-golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1/go.mod h1:FXUEEKJgO7OQYeo8N01OfiKP8RXMtf6e8aTskBGqWdc=
