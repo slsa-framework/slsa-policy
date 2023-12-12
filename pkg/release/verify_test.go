@@ -95,164 +95,6 @@ func Test_verifyDigests(t *testing.T) {
 	}
 }
 
-func Test_verifySubject(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name         string
-		attSubject   intoto.Subject
-		inputSubject intoto.Subject
-		expected     error
-	}{
-		{
-			name: "same subject",
-			attSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "mismatch_another_com",
-				},
-			},
-			inputSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"gitCommit": "mismatch_another_com",
-					"sha256":    "another",
-				},
-			},
-		},
-		{
-			name: "subset in attestations",
-			attSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "mismatch_another_com",
-				},
-			},
-			inputSubject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"gitCommit": "mismatch_another_com",
-				},
-			},
-		},
-		{
-			name: "empty input digests",
-			attSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "mismatch_another_com",
-				},
-			},
-			expected: errs.ErrorInvalidField,
-		},
-		{
-			name: "different digest names",
-			attSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"a-sha256":    "another",
-					"a-gitCommit": "mismatch_another_com",
-				},
-			},
-			inputSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"gitCommit": "mismatch_another_com",
-					"sha256":    "another",
-				},
-			},
-			expected: errs.ErrorMismatch,
-		},
-		{
-			name: "mismatch sha256 digest",
-			attSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"sha256":    "not_another",
-					"gitCommit": "mismatch_another_com",
-				},
-			},
-			inputSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"gitCommit": "mismatch_another_com",
-					"sha256":    "another",
-				},
-			},
-			expected: errs.ErrorMismatch,
-		},
-		{
-			name: "empty att digest key",
-			attSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"sha256": "another",
-					"":       "mismatch_another_com",
-				},
-			},
-			inputSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"gitCommit": "mismatch_another_com",
-					"sha256":    "another",
-				},
-			},
-			expected: errs.ErrorInvalidField,
-		},
-		{
-			name: "empty input digest key",
-			attSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "mismatch_another_com",
-				},
-			},
-			inputSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"gitCommit": "mismatch_another_com",
-					"":          "another",
-				},
-			},
-			expected: errs.ErrorInvalidField,
-		},
-		{
-			name: "empty att digest value",
-			attSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "",
-				},
-			},
-			inputSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"gitCommit": "mismatch_another_com",
-					"sha256":    "another",
-				},
-			},
-			expected: errs.ErrorInvalidField,
-		},
-		{
-			name: "empty input digest value",
-			attSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"sha256": "another",
-					"":       "mismatch_another_com",
-				},
-			},
-			inputSubject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"gitCommit": "mismatch_another_com",
-					"sha256":    "",
-				},
-			},
-			expected: errs.ErrorInvalidField,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt // Re-initializing variable so it is not changed while executing the closure below
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			err := verifySubject(tt.attSubject, tt.inputSubject)
-			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-		})
-	}
-}
-
 func Test_verifyAnnotation(t *testing.T) {
 	t.Parallel()
 
@@ -374,14 +216,14 @@ func Test_verifyAnnotation(t *testing.T) {
 // TODO: support time verification.
 func Test_Verify(t *testing.T) {
 	t.Parallel()
-	subject := intoto.Subject{
-		Digests: intoto.DigestSet{
-			"sha256":    "another",
-			"gitCommit": "another_com",
-		},
+	digests := intoto.DigestSet{
+		"sha256":    "another",
+		"gitCommit": "another_com",
 	}
 	subjects := []intoto.Subject{
-		subject,
+		intoto.Subject{
+			Digests: digests,
+		},
 	}
 	policy := map[string]intoto.Policy{
 		"org": {
@@ -438,7 +280,7 @@ func Test_Verify(t *testing.T) {
 	tests := []struct {
 		name               string
 		att                *attestation
-		subject            intoto.Subject
+		digests            intoto.DigestSet
 		authorID           string
 		authorVersion      string
 		packageVersion     string
@@ -457,7 +299,7 @@ func Test_Verify(t *testing.T) {
 			authorVersion:      authorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 		},
 		{
@@ -476,7 +318,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
@@ -496,7 +338,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
@@ -509,7 +351,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
@@ -522,7 +364,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
@@ -535,7 +377,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     "1.2.4",
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
@@ -554,7 +396,7 @@ func Test_Verify(t *testing.T) {
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageURI:         packageURI,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 		},
 		{
@@ -584,7 +426,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
@@ -610,7 +452,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
@@ -622,7 +464,7 @@ func Test_Verify(t *testing.T) {
 			authorVersion:      authorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
@@ -641,7 +483,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
@@ -680,7 +522,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
@@ -693,12 +535,9 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256": "another",
-					"":       "mismatch_another_com",
-				},
+			digests: intoto.DigestSet{
+				"sha256": "another",
+				"":       "mismatch_another_com",
 			},
 			policy:   policy,
 			expected: errs.ErrorInvalidField,
@@ -726,7 +565,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
@@ -753,12 +592,9 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject: intoto.Subject{
-				URI: "the_uri",
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "",
-				},
+			digests: intoto.DigestSet{
+				"sha256":    "another",
+				"gitCommit": "",
 			},
 			policy:   policy,
 			expected: errs.ErrorInvalidField,
@@ -772,11 +608,9 @@ func Test_Verify(t *testing.T) {
 			packageVersion:     packageVersion,
 			authorVersion:      authorVersion,
 			buildLevel:         buildLevel,
-			subject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"sha256":    "not_another",
-					"gitCommit": "mismatch_another_com",
-				},
+			digests: intoto.DigestSet{
+				"sha256":    "not_another",
+				"gitCommit": "mismatch_another_com",
 			},
 			policy:   policy,
 			expected: errs.ErrorMismatch,
@@ -790,11 +624,9 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"sha256":    "another",
-					"gitCommit": "mismatch_another_com",
-				},
+			digests: intoto.DigestSet{
+				"sha256":    "another",
+				"gitCommit": "mismatch_another_com",
 			},
 			policy:   policy,
 			expected: errs.ErrorMismatch,
@@ -808,11 +640,9 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"other":  "another",
-					"other2": "mismatch_another_com",
-				},
+			digests: intoto.DigestSet{
+				"other":  "another",
+				"other2": "mismatch_another_com",
 			},
 			policy:   policy,
 			expected: errs.ErrorMismatch,
@@ -826,10 +656,8 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject: intoto.Subject{
-				Digests: intoto.DigestSet{
-					"gitCommit": "another_com",
-				},
+			digests: intoto.DigestSet{
+				"gitCommit": "another_com",
 			},
 			policy: policy,
 		},
@@ -854,7 +682,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
@@ -867,7 +695,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: "dev",
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
@@ -894,7 +722,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageURI:         packageURI,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
@@ -906,7 +734,7 @@ func Test_Verify(t *testing.T) {
 			packageVersion: packageVersion,
 			authorVersion:  authorVersion,
 			buildLevel:     buildLevel,
-			subject:        subject,
+			digests:        digests,
 			policy:         policy,
 			expected:       errs.ErrorMismatch,
 		},
@@ -928,7 +756,7 @@ func Test_Verify(t *testing.T) {
 			authorVersion: authorVersion,
 			buildLevel:    buildLevel,
 			packageURI:    packageURI,
-			subject:       subject,
+			digests:       digests,
 			policy:        policy,
 		},
 		{
@@ -940,7 +768,7 @@ func Test_Verify(t *testing.T) {
 			packageURI:         packageURI,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy: map[string]intoto.Policy{
 				"not_org": {
 					URI: "org_uri",
@@ -968,7 +796,7 @@ func Test_Verify(t *testing.T) {
 			packageURI:         packageURI,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "no_org_uri",
@@ -996,7 +824,7 @@ func Test_Verify(t *testing.T) {
 			packageURI:         packageURI,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "org_uri",
@@ -1024,7 +852,7 @@ func Test_Verify(t *testing.T) {
 			packageURI:         packageURI,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "org_uri",
@@ -1062,7 +890,7 @@ func Test_Verify(t *testing.T) {
 			packageURI:         packageURI,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
@@ -1088,7 +916,7 @@ func Test_Verify(t *testing.T) {
 			packageURI:         packageURI,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
@@ -1101,7 +929,7 @@ func Test_Verify(t *testing.T) {
 			packageURI:         packageURI,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "org_uri",
@@ -1127,7 +955,7 @@ func Test_Verify(t *testing.T) {
 			packageURI:         packageURI,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 		},
 		{
@@ -1138,7 +966,7 @@ func Test_Verify(t *testing.T) {
 			buildLevel:     buildLevel,
 			packageURI:     packageURI,
 			packageVersion: packageVersion,
-			subject:        subject,
+			digests:        digests,
 			policy:         policy,
 			expected:       errs.ErrorMismatch,
 		},
@@ -1162,7 +990,7 @@ func Test_Verify(t *testing.T) {
 			packageURI:         packageURI,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
@@ -1175,7 +1003,7 @@ func Test_Verify(t *testing.T) {
 			packageURI:         packageURI,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
-			subject:            subject,
+			digests:            digests,
 		},
 	}
 	for _, tt := range tests {
@@ -1210,7 +1038,7 @@ func Test_Verify(t *testing.T) {
 			options = append(options, IsPackageEnvironment(tt.packageEnvironment))
 
 			// Verify.
-			err = verification.Verify(tt.authorID, tt.subject, tt.packageURI, options...)
+			err = verification.Verify(tt.authorID, tt.digests, tt.packageURI, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

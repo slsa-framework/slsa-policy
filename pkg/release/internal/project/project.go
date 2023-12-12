@@ -16,7 +16,7 @@ import (
 
 // Repository defines the repository.
 type Repository struct {
-	URI string `json:"require_slsa_builder"`
+	URI string `json:"uri"`
 }
 
 // BuildRequirements defines the build requirements.
@@ -30,7 +30,7 @@ type Environment struct {
 	AnyOf []string `json:"any_of"`
 }
 
-// Package defines pubication metadata, such as
+// Package defines publication metadata, such as
 // the URI and the target environment.
 type Package struct {
 	URI         string      `json:"uri"`

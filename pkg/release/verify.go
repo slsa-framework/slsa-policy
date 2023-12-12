@@ -31,7 +31,7 @@ func VerificationNew(reader io.ReadCloser) (*Verification, error) {
 	}, nil
 }
 
-func (v *Verification) Verify(authorID string, subject intoto.Subject, packageURI string, options ...AttestationVerificationOption) error {
+func (v *Verification) Verify(authorID string, digests intoto.DigestSet, packageURI string, options ...AttestationVerificationOption) error {
 	// Statement type.
 	if v.attestation.Header.Type != statementType {
 		return fmt.Errorf("%w: attestation type (%q) != intoto type (%q)", errs.ErrorMismatch,
@@ -46,7 +46,7 @@ func (v *Verification) Verify(authorID string, subject intoto.Subject, packageUR
 	if len(v.attestation.Header.Subjects) == 0 {
 		return fmt.Errorf("%w: no subjects in attestation", errs.ErrorInvalidField)
 	}
-	if err := verifySubject(v.attestation.Header.Subjects[0], subject); err != nil {
+	if err := verifyDigests(v.attestation.Header.Subjects[0].Digests, digests); err != nil {
 		return err
 	}
 	// Author ID.
@@ -102,21 +102,6 @@ func (v *Verification) verifyAnnotation(anno map[string]interface{}, name string
 			name, inputValue, name, attValue)
 	}
 
-	return nil
-}
-
-func verifySubject(ds, subject intoto.Subject) error {
-	// Validate the subjects.
-	if err := ds.Validate(); err != nil {
-		return fmt.Errorf("attestation subjects: %w", err)
-	}
-	if err := subject.Validate(); err != nil {
-		return fmt.Errorf("input subjects: %w", err)
-	}
-	// Compare the digests.
-	if err := verifyDigests(ds.Digests, subject.Digests); err != nil {
-		return err
-	}
 	return nil
 }
 
