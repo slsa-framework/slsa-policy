@@ -54,7 +54,7 @@ func Test_validateFormat(t *testing.T) {
 	}
 }
 
-func Test_validateRelease(t *testing.T) {
+func Test_validatePackage(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -70,7 +70,7 @@ func Test_validateRelease(t *testing.T) {
 		{
 			name: "set uri",
 			policy: &Policy{
-				Release: Release{
+				Package: Package{
 					URI: "non_empty_uri",
 				},
 			},
@@ -78,7 +78,7 @@ func Test_validateRelease(t *testing.T) {
 		{
 			name: "set uri and environment",
 			policy: &Policy{
-				Release: Release{
+				Package: Package{
 					URI: "non_empty_uri",
 					Environment: Environment{
 						AnyOf: []string{"dev", "prod"},
@@ -89,7 +89,7 @@ func Test_validateRelease(t *testing.T) {
 		{
 			name: "empty environment field",
 			policy: &Policy{
-				Release: Release{
+				Package: Package{
 					URI: "non_empty_uri",
 					Environment: Environment{
 						AnyOf: []string{"", "dev", "prod"},
@@ -104,7 +104,7 @@ func Test_validateRelease(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := tt.policy.validateRelease()
+			err := tt.policy.validatePackage()
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -208,7 +208,7 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Release: Release{
+					Package: Package{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -226,7 +226,7 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Release: Release{
+					Package: Package{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -241,11 +241,11 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "release uri re-use",
+			name: "package uri re-use",
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Release: Release{
+					Package: Package{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -257,7 +257,7 @@ func Test_FromReaders(t *testing.T) {
 				},
 				Policy{
 					Format: 1,
-					Release: Release{
+					Package: Package{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -272,11 +272,11 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "release uri re-use same env",
+			name: "package uri re-use same env",
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Release: Release{
+					Package: Package{
 						URI: "uri_set",
 						Environment: Environment{
 							AnyOf: []string{"dev"},
@@ -291,7 +291,7 @@ func Test_FromReaders(t *testing.T) {
 				},
 				Policy{
 					Format: 1,
-					Release: Release{
+					Package: Package{
 						URI: "uri_set",
 						Environment: Environment{
 							AnyOf: []string{"dev"},
@@ -309,11 +309,11 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "release uri re-use different env",
+			name: "package uri re-use different env",
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Release: Release{
+					Package: Package{
 						URI: "uri_set",
 						Environment: Environment{
 							AnyOf: []string{"prod"},
@@ -328,7 +328,7 @@ func Test_FromReaders(t *testing.T) {
 				},
 				Policy{
 					Format: 1,
-					Release: Release{
+					Package: Package{
 						URI: "uri_set",
 						Environment: Environment{
 							AnyOf: []string{"dev"},
@@ -346,11 +346,11 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "release uri re-use env set and not",
+			name: "package uri re-use env set and not",
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Release: Release{
+					Package: Package{
 						URI: "uri_set",
 						Environment: Environment{
 							AnyOf: []string{"prod"},
@@ -365,7 +365,7 @@ func Test_FromReaders(t *testing.T) {
 				},
 				Policy{
 					Format: 1,
-					Release: Release{
+					Package: Package{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -384,7 +384,7 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Release: Release{
+					Package: Package{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -402,7 +402,7 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				Policy{
 					Format: 1,
-					Release: Release{
+					Package: Package{
 						URI: "uri_set",
 					},
 					BuildRequirements: BuildRequirements{
@@ -440,7 +440,7 @@ func Test_FromReaders(t *testing.T) {
 			// Create the org policy (only the builder names are needed).
 			orgPolicy := organization.Policy{}
 			for i := range tt.builders {
-				orgPolicy.Roots.Build = append(orgPolicy.Roots.Build, organization.Root{Name: &tt.builders[i]})
+				orgPolicy.Roots.Build = append(orgPolicy.Roots.Build, organization.Root{Name: tt.builders[i]})
 			}
 
 			// Marshal the project policies into bytes.
@@ -480,23 +480,25 @@ func Test_Evaluate(t *testing.T) {
 		policy       *Policy
 		org          *organization.Policy
 		noVerifier   bool
-		releaseURI   string
+		packageURI   string
 		verifierOpts dummyVerifierOpts
 		level        int
 		expected     error
 	}{
 		{
 			name:       "no verifier defined",
-			releaseURI: "release_uri",
+			packageURI: "package_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							Name:      common.AsPointer("builder2"),
+							ID:        "builder2_id",
+							Name:      "builder2",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							Name:      common.AsPointer("builder1"),
+							ID:        "builder1_id",
+							Name:      "builder1",
 							SlsaLevel: common.AsPointer(1),
 						},
 					},
@@ -504,13 +506,13 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Release: Release{
+				Package: Package{
 					URI: "uri_set",
 				},
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder1",
 					Repository: Repository{
-						URI: "release_uri",
+						URI: "package_uri",
 					},
 				},
 			},
@@ -519,16 +521,18 @@ func Test_Evaluate(t *testing.T) {
 		},
 		{
 			name:       "builder 1 success",
-			releaseURI: "release_uri",
+			packageURI: "package_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							Name:      common.AsPointer("builder2"),
+							ID:        "builder2_id",
+							Name:      "builder2",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							Name:      common.AsPointer("builder1"),
+							ID:        "builder1_id",
+							Name:      "builder1",
 							SlsaLevel: common.AsPointer(1),
 						},
 					},
@@ -536,8 +540,8 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Release: Release{
-					URI: "release_uri",
+				Package: Package{
+					URI: "package_uri",
 				},
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder1",
@@ -548,23 +552,25 @@ func Test_Evaluate(t *testing.T) {
 			},
 			level: 1,
 			verifierOpts: dummyVerifierOpts{
-				builderID: "builder1",
+				builderID: "builder1_id",
 				sourceURI: "source_uri",
 				digests:   digests,
 			},
 		},
 		{
 			name:       "builder 2 success",
-			releaseURI: "release_uri",
+			packageURI: "package_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							Name:      common.AsPointer("builder2"),
+							ID:        "builder2_id",
+							Name:      "builder2",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							Name:      common.AsPointer("builder1"),
+							ID:        "builder1_id",
+							Name:      "builder1",
 							SlsaLevel: common.AsPointer(1),
 						},
 					},
@@ -572,8 +578,8 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Release: Release{
-					URI: "release_uri",
+				Package: Package{
+					URI: "package_uri",
 				},
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder2",
@@ -583,7 +589,7 @@ func Test_Evaluate(t *testing.T) {
 				},
 			},
 			verifierOpts: dummyVerifierOpts{
-				builderID: "builder2",
+				builderID: "builder2_id",
 				sourceURI: "source_uri",
 				digests:   digests,
 			},
@@ -591,16 +597,18 @@ func Test_Evaluate(t *testing.T) {
 		},
 		{
 			name:       "no builder is supported",
-			releaseURI: "release_uri",
+			packageURI: "package_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							Name:      common.AsPointer("builder2"),
+							ID:        "builder2_id",
+							Name:      "builder2",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							Name:      common.AsPointer("builder1"),
+							ID:        "builder1_id",
+							Name:      "builder1",
 							SlsaLevel: common.AsPointer(1),
 						},
 					},
@@ -608,8 +616,8 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Release: Release{
-					URI: "release_uri",
+				Package: Package{
+					URI: "package_uri",
 				},
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder2",
@@ -619,7 +627,7 @@ func Test_Evaluate(t *testing.T) {
 				},
 			},
 			verifierOpts: dummyVerifierOpts{
-				builderID: "builder3",
+				builderID: "builder3_id",
 				sourceURI: "source_uri",
 				digests:   digests,
 			},
@@ -627,16 +635,18 @@ func Test_Evaluate(t *testing.T) {
 		},
 		{
 			name:       "builder 2 different source",
-			releaseURI: "release_uri",
+			packageURI: "package_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							Name:      common.AsPointer("builder2"),
+							ID:        "builder2_id",
+							Name:      "builder2",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							Name:      common.AsPointer("builder1"),
+							ID:        "builder1_id",
+							Name:      "builder1",
 							SlsaLevel: common.AsPointer(1),
 						},
 					},
@@ -644,8 +654,8 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Release: Release{
-					URI: "release_uri",
+				Package: Package{
+					URI: "package_uri",
 				},
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder2",
@@ -655,7 +665,7 @@ func Test_Evaluate(t *testing.T) {
 				},
 			},
 			verifierOpts: dummyVerifierOpts{
-				builderID: "builder2",
+				builderID: "builder2_id",
 				sourceURI: "different_source_uri",
 				digests:   digests,
 			},
@@ -663,16 +673,18 @@ func Test_Evaluate(t *testing.T) {
 		},
 		{
 			name:       "request with env policy no env",
-			releaseURI: "release_uri",
+			packageURI: "package_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							Name:      common.AsPointer("builder2"),
+							ID:        "builder2_id",
+							Name:      "builder2",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							Name:      common.AsPointer("builder1"),
+							ID:        "builder1_id",
+							Name:      "builder1",
 							SlsaLevel: common.AsPointer(1),
 						},
 					},
@@ -680,8 +692,8 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Release: Release{
-					URI: "release_uri",
+				Package: Package{
+					URI: "package_uri",
 				},
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder1",
@@ -692,7 +704,7 @@ func Test_Evaluate(t *testing.T) {
 			},
 			level: 1,
 			verifierOpts: dummyVerifierOpts{
-				builderID:   "builder1",
+				builderID:   "builder1_id",
 				sourceURI:   "source_uri",
 				digests:     digests,
 				environment: common.AsPointer("dev"),
@@ -701,16 +713,18 @@ func Test_Evaluate(t *testing.T) {
 		},
 		{
 			name:       "request no env policy with env",
-			releaseURI: "release_uri",
+			packageURI: "package_uri",
 			org: &organization.Policy{
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							Name:      common.AsPointer("builder2"),
+							ID:        "builder2_id",
+							Name:      "builder2",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							Name:      common.AsPointer("builder1"),
+							ID:        "builder1_id",
+							Name:      "builder1",
 							SlsaLevel: common.AsPointer(1),
 						},
 					},
@@ -718,8 +732,8 @@ func Test_Evaluate(t *testing.T) {
 			},
 			policy: &Policy{
 				Format: 1,
-				Release: Release{
-					URI: "release_uri",
+				Package: Package{
+					URI: "package_uri",
 					Environment: Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
@@ -733,7 +747,7 @@ func Test_Evaluate(t *testing.T) {
 			},
 			level: 1,
 			verifierOpts: dummyVerifierOpts{
-				builderID: "builder1",
+				builderID: "builder1_id",
 				sourceURI: "source_uri",
 				digests:   digests,
 			},
@@ -747,14 +761,14 @@ func Test_Evaluate(t *testing.T) {
 			// Create the verifier that succeeds for the right parameters.
 			var verifier options.AttestationVerifier
 			if !tt.noVerifier {
-				verifier = common.NewAttestationVerifier(tt.verifierOpts.digests, tt.releaseURI,
+				verifier = common.NewAttestationVerifier(tt.verifierOpts.digests, tt.packageURI,
 					tt.verifierOpts.builderID, tt.verifierOpts.sourceURI)
 			}
 			opts := options.BuildVerification{
 				Verifier:    verifier,
 				Environment: tt.verifierOpts.environment,
 			}
-			level, err := tt.policy.Evaluate(digests, tt.releaseURI, *tt.org, opts)
+			level, err := tt.policy.Evaluate(digests, tt.packageURI, *tt.org, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

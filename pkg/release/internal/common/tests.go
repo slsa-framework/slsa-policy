@@ -46,23 +46,26 @@ func (iter *bytesIterator) Error() error {
 }
 
 // Attestation verifier.
-func NewAttestationVerifier(digests intoto.DigestSet, publicationURI, builderID, sourceURI string) options.AttestationVerifier {
-	return &attesationVerifier{publicationURI: publicationURI,
+func NewAttestationVerifier(digests intoto.DigestSet, packageURI, builderID, sourceURI string) options.AttestationVerifier {
+	return &attesationVerifier{packageURI: packageURI,
 		builderID: builderID, sourceURI: sourceURI,
 		digests: digests}
 }
 
 type attesationVerifier struct {
-	publicationURI string
-	builderID      string
-	sourceURI      string
-	digests        intoto.DigestSet
+	packageURI string
+	builderID  string
+	sourceURI  string
+	digests    intoto.DigestSet
 }
 
-func (v *attesationVerifier) VerifyBuildAttestation(digests intoto.DigestSet, publicationURI, builderID, sourceURI string) error {
-	if publicationURI == v.publicationURI && builderID == v.builderID && sourceURI == v.sourceURI {
+func (v *attesationVerifier) VerifyBuildAttestation(digests intoto.DigestSet, packageURI, builderID, sourceURI string) error {
+	if packageURI == v.packageURI && builderID == v.builderID && sourceURI == v.sourceURI {
 		return nil
 	}
-	return fmt.Errorf("%w: cannot verify release URI (%q) builder ID (%q) source URI (%q) digests (%q)",
-		errs.ErrorVerification, publicationURI, builderID, sourceURI, digests)
+	fmt.Println(v.packageURI, v.builderID, v.sourceURI)
+	fmt.Println(packageURI, builderID, sourceURI)
+
+	return fmt.Errorf("%w: cannot verify package URI (%q) builder ID (%q) source URI (%q) digests (%q)",
+		errs.ErrorVerification, packageURI, builderID, sourceURI, digests)
 }

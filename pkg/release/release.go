@@ -89,10 +89,10 @@ func (r PolicyEvaluationResult) AttestationNew(authorID string, options ...Attes
 	}
 	subject := intoto.Subject{
 		Digests: r.digests,
-		// Version.
 	}
 	packageDesc := intoto.ResourceDescriptor{
 		URI: r.packageURI,
+		// Version.
 	}
 	// Set environment if not empty.
 	if r.environment != nil {
@@ -105,7 +105,6 @@ func (r PolicyEvaluationResult) AttestationNew(authorID string, options ...Attes
 		// Set SLSA build level.
 		SetSlsaBuildLevel(r.level),
 	}
-
 	// Enter safe mode.
 	opts = append(opts, EnterSafeMode())
 	// Add caller options.
@@ -123,10 +122,7 @@ func (r PolicyEvaluationResult) Error() error {
 
 func (r PolicyEvaluationResult) isValid() error {
 	if r.packageURI == "" {
-		return fmt.Errorf("%w: empty release URI", errs.ErrorInternal)
-	}
-	if r.environment == nil {
-		return fmt.Errorf("%w: empty build options", errs.ErrorInternal)
+		return fmt.Errorf("%w: empty package URI", errs.ErrorInternal)
 	}
 	return nil
 }

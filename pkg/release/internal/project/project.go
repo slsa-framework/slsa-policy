@@ -30,9 +30,9 @@ type Environment struct {
 	AnyOf []string `json:"any_of"`
 }
 
-// Release defines pubication metadata, such as
+// Package defines pubication metadata, such as
 // the URI and the target environment.
-type Release struct {
+type Package struct {
 	URI         string      `json:"uri"`
 	Environment Environment `json:"environment"`
 }
@@ -40,7 +40,7 @@ type Release struct {
 // Policy defines the policy.
 type Policy struct {
 	Format            int               `json:"format"`
-	Release           Release           `json:"release"`
+	Package           Package           `json:"package"`
 	BuildRequirements BuildRequirements `json:"build"`
 }
 
@@ -66,7 +66,7 @@ func (p *Policy) validate(builderNames []string) error {
 	if err := p.validateFormat(); err != nil {
 		return err
 	}
-	if err := p.validateRelease(); err != nil {
+	if err := p.validatePackage(); err != nil {
 		return err
 	}
 	if err := p.validateBuildRequirements(builderNames); err != nil {
@@ -83,16 +83,16 @@ func (p *Policy) validateFormat() error {
 	return nil
 }
 
-func (p *Policy) validateRelease() error {
-	// Release must have a non-empty URI.
-	if p.Release.URI == "" {
-		return fmt.Errorf("%w: release's uri is empty", errs.ErrorInvalidField)
+func (p *Policy) validatePackage() error {
+	// Package must have a non-empty URI.
+	if p.Package.URI == "" {
+		return fmt.Errorf("%w: package's uri is empty", errs.ErrorInvalidField)
 	}
 	// Environment field, if set, must contain non-empty values.
-	for i := range p.Release.Environment.AnyOf {
-		val := &p.Release.Environment.AnyOf[i]
+	for i := range p.Package.Environment.AnyOf {
+		val := &p.Package.Environment.AnyOf[i]
 		if *val == "" {
-			return fmt.Errorf("%w: release's any_of value has an empty field", errs.ErrorInvalidField)
+			return fmt.Errorf("%w: package's any_of value has an empty field", errs.ErrorInvalidField)
 		}
 	}
 	return nil
@@ -119,7 +119,7 @@ func (p *Policy) validateBuildRequirements(builderNames []string) error {
 	return nil
 }
 
-// FromReaders creates a set of policies keyed by their release URI (and if present, the environment).
+// FromReaders creates a set of policies keyed by their package URI (and if present, the environment).
 func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Policy) (map[string]Policy, error) {
 	policies := make(map[string]Policy)
 	for readers.HasNext() {
@@ -134,9 +134,9 @@ func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Pol
 		// different environments in different files.
 		// If we want to support multiple files, they should all have the environment defined or none
 		// should.
-		uri := policy.Release.URI
+		uri := policy.Package.URI
 		if _, exists := policies[uri]; exists {
-			return nil, fmt.Errorf("%w: release's uri (%q) is defined more than once", errs.ErrorInvalidField, uri)
+			return nil, fmt.Errorf("%w: package's uri (%q) is defined more than once", errs.ErrorInvalidField, uri)
 		}
 		policies[uri] = *policy
 
@@ -149,18 +149,18 @@ func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Pol
 }
 
 // Evaluate evaluates the policy.
-func (p *Policy) Evaluate(digests intoto.DigestSet, releaseURI string,
+func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 	orgPolicy organization.Policy, buildOpts options.BuildVerification) (int, error) {
 	if buildOpts.Verifier == nil {
 		return -1, fmt.Errorf("%w: verifier is empty", errs.ErrorInvalidInput)
 	}
 	// If the policy has environment defined, the request must contain an environment.
-	if len(p.Release.Environment.AnyOf) > 0 && (buildOpts.Environment == nil || *buildOpts.Environment == "") {
+	if len(p.Package.Environment.AnyOf) > 0 && (buildOpts.Environment == nil || *buildOpts.Environment == "") {
 		return -1, fmt.Errorf("%w: build config's environment is empty but the policy has it defined (%q)",
-			errs.ErrorInvalidInput, p.Release.Environment.AnyOf)
+			errs.ErrorInvalidInput, p.Package.Environment.AnyOf)
 	}
 	// If the policy has no environment defined, the request must not contain an environment.
-	if len(p.Release.Environment.AnyOf) == 0 && buildOpts.Environment != nil {
+	if len(p.Package.Environment.AnyOf) == 0 && buildOpts.Environment != nil {
 		return -1, fmt.Errorf("%w: build config's environment is set (%q) but the policy has none defined",
 			errs.ErrorInvalidInput, *buildOpts.Environment)
 	}
@@ -169,17 +169,21 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, releaseURI string,
 		if *buildOpts.Environment == "" {
 			return -1, fmt.Errorf("%w: build config's environment is empty", errs.ErrorInvalidInput)
 		}
-		if !slices.Contains(p.Release.Environment.AnyOf, *buildOpts.Environment) {
+		if !slices.Contains(p.Package.Environment.AnyOf, *buildOpts.Environment) {
 			return -1, fmt.Errorf("%w: failed to verify artifact (%q) for environment (%q): not defined in policy",
-				errs.ErrorNotFound, releaseURI, *buildOpts.Environment)
+				errs.ErrorNotFound, packageURI, *buildOpts.Environment)
 		}
 	}
 
 	// Verify build attestations.
-	err := buildOpts.Verifier.VerifyBuildAttestation(digests, releaseURI, p.BuildRequirements.RequireSlsaBuilder, p.BuildRequirements.Repository.URI)
+	builderID, err := orgPolicy.BuilderID(p.BuildRequirements.RequireSlsaBuilder)
+	if err != nil {
+		return -1, err
+	}
+	err = buildOpts.Verifier.VerifyBuildAttestation(digests, packageURI, builderID, p.BuildRequirements.Repository.URI)
 	if err != nil {
 		return -1, fmt.Errorf("%w: failed to verify artifact (%q) with builder ID (%q) source URI (%q) digests (%q): %w",
-			errs.ErrorVerification, releaseURI, p.BuildRequirements.RequireSlsaBuilder,
+			errs.ErrorVerification, packageURI, p.BuildRequirements.RequireSlsaBuilder,
 			p.BuildRequirements.Repository.URI, digests, err)
 	}
 

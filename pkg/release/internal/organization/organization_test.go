@@ -69,13 +69,13 @@ func Test_RootBuilderNames(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							Name: common.AsPointer("builder1"),
+							Name: "builder1",
 						},
 						{
-							Name: common.AsPointer("builder2"),
+							Name: "builder2",
 						},
 						{
-							Name: common.AsPointer("builder3"),
+							Name: "builder3",
 						},
 					},
 				},
@@ -116,15 +116,15 @@ func Test_BuilderSlsaLevel(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							Name:      common.AsPointer("builder1"),
+							Name:      "builder1",
 							SlsaLevel: common.AsPointer(1),
 						},
 						{
-							Name:      common.AsPointer("builder2"),
+							Name:      "builder2",
 							SlsaLevel: common.AsPointer(3),
 						},
 						{
-							Name:      common.AsPointer("builder3"),
+							Name:      "builder3",
 							SlsaLevel: common.AsPointer(2),
 						},
 					},
@@ -139,15 +139,15 @@ func Test_BuilderSlsaLevel(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							Name:      common.AsPointer("builder1"),
+							Name:      "builder1",
 							SlsaLevel: common.AsPointer(1),
 						},
 						{
-							Name:      common.AsPointer("builder2"),
+							Name:      "builder2",
 							SlsaLevel: common.AsPointer(3),
 						},
 						{
-							Name:      common.AsPointer("builder3"),
+							Name:      "builder3",
 							SlsaLevel: common.AsPointer(2),
 						},
 					},
@@ -162,15 +162,15 @@ func Test_BuilderSlsaLevel(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							Name:      common.AsPointer("builder1"),
+							Name:      "builder1",
 							SlsaLevel: common.AsPointer(1),
 						},
 						{
-							Name:      common.AsPointer("builder2"),
+							Name:      "builder2",
 							SlsaLevel: common.AsPointer(3),
 						},
 						{
-							Name:      common.AsPointer("builder3"),
+							Name:      "builder3",
 							SlsaLevel: common.AsPointer(2),
 						},
 					},
@@ -185,15 +185,15 @@ func Test_BuilderSlsaLevel(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							Name:      common.AsPointer("builder1"),
+							Name:      "builder1",
 							SlsaLevel: common.AsPointer(1),
 						},
 						{
-							Name:      common.AsPointer("builder2"),
+							Name:      "builder2",
 							SlsaLevel: common.AsPointer(3),
 						},
 						{
-							Name:      common.AsPointer("builder3"),
+							Name:      "builder3",
 							SlsaLevel: common.AsPointer(2),
 						},
 					},
@@ -232,7 +232,7 @@ func Test_validateBuildRoots(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							Name:      common.AsPointer("the name"),
+							Name:      "the name",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -246,7 +246,7 @@ func Test_validateBuildRoots(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("builder id"),
+							ID:        "builder id",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -260,8 +260,8 @@ func Test_validateBuildRoots(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:   common.AsPointer("builder id"),
-							Name: common.AsPointer("the name"),
+							ID:   "builder id",
+							Name: "the name",
 						},
 					},
 				},
@@ -274,8 +274,8 @@ func Test_validateBuildRoots(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("builder id"),
-							Name:      common.AsPointer("the name"),
+							ID:        "builder id",
+							Name:      "the name",
 							SlsaLevel: common.AsPointer(-1),
 						},
 					},
@@ -289,8 +289,8 @@ func Test_validateBuildRoots(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("builder id"),
-							Name:      common.AsPointer("the name"),
+							ID:        "builder id",
+							Name:      "the name",
 							SlsaLevel: common.AsPointer(5),
 						},
 					},
@@ -304,8 +304,8 @@ func Test_validateBuildRoots(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("builder id"),
-							Name:      common.AsPointer("the name"),
+							ID:        "builder id",
+							Name:      "the name",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -318,13 +318,13 @@ func Test_validateBuildRoots(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("builder id"),
-							Name:      common.AsPointer("the name"),
+							ID:        "builder id",
+							Name:      "the name",
 							SlsaLevel: common.AsPointer(3),
 						},
 						{
-							ID:        common.AsPointer("builder id2"),
-							Name:      common.AsPointer("the name2"),
+							ID:        "builder id2",
+							Name:      "the name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -337,13 +337,13 @@ func Test_validateBuildRoots(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("builder id"),
-							Name:      common.AsPointer("the name"),
+							ID:        "builder id",
+							Name:      "the name",
 							SlsaLevel: common.AsPointer(3),
 						},
 						{
-							ID:        common.AsPointer("builder id"),
-							Name:      common.AsPointer("the name2"),
+							ID:        "builder id",
+							Name:      "the name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -357,13 +357,13 @@ func Test_validateBuildRoots(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("builder id"),
-							Name:      common.AsPointer("the name"),
+							ID:        "builder id",
+							Name:      "the name",
 							SlsaLevel: common.AsPointer(3),
 						},
 						{
-							ID:        common.AsPointer("builder id2"),
-							Name:      common.AsPointer("the name"),
+							ID:        "builder id2",
+							Name:      "the name",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -400,8 +400,8 @@ func Test_FromReader(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("https://github.com/actions/runner/github-hosted"),
-							Name:      common.AsPointer("github_actions_level_3"),
+							ID:        "https://github.com/actions/runner/github-hosted",
+							Name:      "github_actions_level_3",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -415,7 +415,7 @@ func Test_FromReader(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							Name:      common.AsPointer("github_actions_level_3"),
+							Name:      "github_actions_level_3",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -430,7 +430,7 @@ func Test_FromReader(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("https://github.com/actions/runner/github-hosted"),
+							ID:        "https://github.com/actions/runner/github-hosted",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -445,8 +445,8 @@ func Test_FromReader(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:   common.AsPointer("https://github.com/actions/runner/github-hosted"),
-							Name: common.AsPointer("github_actions_level_3"),
+							ID:   "https://github.com/actions/runner/github-hosted",
+							Name: "github_actions_level_3",
 						},
 					},
 				},
@@ -460,8 +460,8 @@ func Test_FromReader(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("https://github.com/actions/runner/github-hosted"),
-							Name:      common.AsPointer("github_actions_level_3"),
+							ID:        "https://github.com/actions/runner/github-hosted",
+							Name:      "github_actions_level_3",
 							SlsaLevel: common.AsPointer(-1),
 						},
 					},
@@ -476,8 +476,8 @@ func Test_FromReader(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("https://github.com/actions/runner/github-hosted"),
-							Name:      common.AsPointer("github_actions_level_3"),
+							ID:        "https://github.com/actions/runner/github-hosted",
+							Name:      "github_actions_level_3",
 							SlsaLevel: common.AsPointer(5),
 						},
 					},
@@ -498,8 +498,8 @@ func Test_FromReader(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("https://github.com/actions/runner/github-hosted"),
-							Name:      common.AsPointer("github_actions_level_3"),
+							ID:        "https://github.com/actions/runner/github-hosted",
+							Name:      "github_actions_level_3",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -514,8 +514,8 @@ func Test_FromReader(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("https://github.com/actions/runner/github-hosted"),
-							Name:      common.AsPointer("github_actions_level_3"),
+							ID:        "https://github.com/actions/runner/github-hosted",
+							Name:      "github_actions_level_3",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -530,13 +530,13 @@ func Test_FromReader(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("https://github.com/actions/runner/github-hosted"),
-							Name:      common.AsPointer("github_actions_level_3"),
+							ID:        "https://github.com/actions/runner/github-hosted",
+							Name:      "github_actions_level_3",
 							SlsaLevel: common.AsPointer(3),
 						},
 						{
-							ID:        common.AsPointer("https://cloudbuild.googleapis.com/GoogleHostedWorker"),
-							Name:      common.AsPointer("google_cloud_build_level_3"),
+							ID:        "https://cloudbuild.googleapis.com/GoogleHostedWorker",
+							Name:      "google_cloud_build_level_3",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -550,13 +550,13 @@ func Test_FromReader(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("https://github.com/actions/runner/github-hosted"),
-							Name:      common.AsPointer("same_name"),
+							ID:        "https://github.com/actions/runner/github-hosted",
+							Name:      "same_name",
 							SlsaLevel: common.AsPointer(3),
 						},
 						{
-							ID:        common.AsPointer("https://cloudbuild.googleapis.com/GoogleHostedWorker"),
-							Name:      common.AsPointer("same_name"),
+							ID:        "https://cloudbuild.googleapis.com/GoogleHostedWorker",
+							Name:      "same_name",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -571,13 +571,13 @@ func Test_FromReader(t *testing.T) {
 				Roots: Roots{
 					Build: []Root{
 						{
-							ID:        common.AsPointer("same_id"),
-							Name:      common.AsPointer("github_actions_level_3"),
+							ID:        "same_id",
+							Name:      "github_actions_level_3",
 							SlsaLevel: common.AsPointer(3),
 						},
 						{
-							ID:        common.AsPointer("same_id"),
-							Name:      common.AsPointer("google_cloud_build_level_3"),
+							ID:        "same_id",
+							Name:      "google_cloud_build_level_3",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},

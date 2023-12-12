@@ -13,9 +13,9 @@ import (
 
 // Root defines a trusted root.
 type Root struct {
-	ID        *string `json:"id"`
-	Name      *string `json:"name"`
-	SlsaLevel *int    `json:"slsa_level"`
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	SlsaLevel *int   `json:"slsa_level"`
 }
 
 // Roots defines a set of truted roots.
@@ -80,23 +80,23 @@ func (p *Policy) validateBuildRoots() error {
 	for i := range p.Roots.Build {
 		build := &p.Roots.Build[i]
 		// ID must be defined and non-empty.
-		if build.ID == nil || *build.ID == "" {
-			return fmt.Errorf("%w: build's id is not defined or is empty", errs.ErrorInvalidField)
+		if build.ID == "" {
+			return fmt.Errorf("%w: build's id is empty", errs.ErrorInvalidField)
 		}
 		// ID must be unique.
-		if _, exists := ids[*build.ID]; exists {
-			return fmt.Errorf("%w: build's name (%q) is defined more than once", errs.ErrorInvalidField, *build.ID)
+		if _, exists := ids[build.ID]; exists {
+			return fmt.Errorf("%w: build's name (%q) is defined more than once", errs.ErrorInvalidField, build.ID)
 		}
-		ids[*build.ID] = true
+		ids[build.ID] = true
 		// Name must be defined and non-empty.
-		if build.Name == nil || *build.Name == "" {
-			return fmt.Errorf("%w: build's name is not defined or is empty", errs.ErrorInvalidField)
+		if build.Name == "" {
+			return fmt.Errorf("%w: build's name is empty", errs.ErrorInvalidField)
 		}
 		// Name must be unique.
-		if _, exists := names[*build.Name]; exists {
-			return fmt.Errorf("%w: build's name (%q) is defined more than once", errs.ErrorInvalidField, *build.Name)
+		if _, exists := names[build.Name]; exists {
+			return fmt.Errorf("%w: build's name (%q) is defined more than once", errs.ErrorInvalidField, build.Name)
 		}
-		names[*build.Name] = true
+		names[build.Name] = true
 		// Level must be defined.
 		if build.SlsaLevel == nil {
 			return fmt.Errorf("%w: build's slsa_level is not defined", errs.ErrorInvalidField)
@@ -115,15 +115,25 @@ func (p *Policy) RootBuilderNames() []string {
 	var names []string
 	for i := range p.Roots.Build {
 		builder := &p.Roots.Build[i]
-		names = append(names, *builder.Name)
+		names = append(names, builder.Name)
 	}
 	return names
+}
+
+func (p *Policy) BuilderID(builderName string) (string, error) {
+	for i := range p.Roots.Build {
+		builder := &p.Roots.Build[i]
+		if builderName == builder.Name {
+			return builder.ID, nil
+		}
+	}
+	return "", fmt.Errorf("%w: builder ID (%q) is not defined", errs.ErrorMismatch, builderName)
 }
 
 func (p *Policy) BuilderSlsaLevel(builderName string) int {
 	for i := range p.Roots.Build {
 		builder := &p.Roots.Build[i]
-		if builderName == *builder.Name {
+		if builderName == builder.Name {
 			return *builder.SlsaLevel
 		}
 	}
