@@ -544,7 +544,7 @@ func Test_e2e(t *testing.T) {
 			if diff := cmp.Diff([]intoto.Subject{tt.subject}, att.attestation.Header.Subjects); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
-			if diff := cmp.Diff(result.packageURI, att.attestation.Predicate.Package.URI); diff != "" {
+			if diff := cmp.Diff(tt.packageURI, att.attestation.Predicate.Package.URI); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			properties := att.attestation.Predicate.Properties
