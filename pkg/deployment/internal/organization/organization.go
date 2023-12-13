@@ -78,7 +78,7 @@ func (p *Policy) validateReleaseRoots() error {
 	}
 	// Each root must have all its fields defined.
 	// Also validate that
-	//  1) the names given to releaseers are unique
+	//  1) the names given to releasers are unique
 	//  2) the ids do not repeat
 	names := make(map[string]bool)
 	ids := make(map[string]bool)
@@ -115,7 +115,7 @@ func (p *Policy) validateReleaseRoots() error {
 	return nil
 }
 
-// ReleaseerNames returns the list of trusted releaseer names.
+// ReleaseerNames returns the list of trusted releaser names.
 func (p *Policy) RootReleaserNames() []string {
 	var names []string
 	for i := range p.Roots.Release {
@@ -127,12 +127,12 @@ func (p *Policy) RootReleaserNames() []string {
 
 func (p *Policy) ReleaserID(releaserName string) (string, error) {
 	for i := range p.Roots.Release {
-		releaseer := &p.Roots.Release[i]
-		if releaserName == releaseer.Name {
-			return releaseer.ID, nil
+		releaser := &p.Roots.Release[i]
+		if releaserName == releaser.Name {
+			return releaser.ID, nil
 		}
 	}
-	return "", fmt.Errorf("%w: releaseer ID (%q) is not defined", errs.ErrorMismatch, releaserName)
+	return "", fmt.Errorf("%w: releaser ID (%q) is not defined", errs.ErrorMismatch, releaserName)
 }
 
 func (p *Policy) ReleaserBuildMaxSlsaLevel(releaserName string) int {
