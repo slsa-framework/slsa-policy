@@ -212,7 +212,7 @@ func Test_verifyAnnotation(t *testing.T) {
 	}
 }
 
-// TODO: split up the function.
+// TODO: split up the function?
 // TODO: support time verification.
 func Test_Verify(t *testing.T) {
 	t.Parallel()
