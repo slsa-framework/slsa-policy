@@ -31,7 +31,7 @@ func VerificationNew(reader io.ReadCloser) (*Verification, error) {
 	}, nil
 }
 
-func (v *Verification) Verify(authorID string, digests intoto.DigestSet, packageURI string, options ...AttestationVerificationOption) error {
+func (v *Verification) Verify(creatorID string, digests intoto.DigestSet, packageURI string, options ...AttestationVerificationOption) error {
 	// Statement type.
 	if v.attestation.Header.Type != statementType {
 		return fmt.Errorf("%w: attestation type (%q) != intoto type (%q)", errs.ErrorMismatch,
@@ -49,13 +49,13 @@ func (v *Verification) Verify(authorID string, digests intoto.DigestSet, package
 	if err := verifyDigests(v.attestation.Header.Subjects[0].Digests, digests); err != nil {
 		return err
 	}
-	// Author ID.
-	if authorID == "" {
-		return fmt.Errorf("%w: author ID is empty", errs.ErrorInvalidField)
+	// Creator ID.
+	if creatorID == "" {
+		return fmt.Errorf("%w: creator ID is empty", errs.ErrorInvalidField)
 	}
-	if authorID != v.attestation.Predicate.Author.ID {
-		return fmt.Errorf("%w: author ID (%q) != attestation author id (%q)", errs.ErrorMismatch,
-			authorID, v.attestation.Predicate.Author.ID)
+	if creatorID != v.attestation.Predicate.Creator.ID {
+		return fmt.Errorf("%w: creator ID (%q) != attestation creator id (%q)", errs.ErrorMismatch,
+			creatorID, v.attestation.Predicate.Creator.ID)
 	}
 	// Package.
 	if err := v.verifyPackage(packageURI); err != nil {
@@ -162,16 +162,16 @@ func (v *Verification) isPackageVersion(version string) error {
 	return nil
 }
 
-func IsAuthorVersion(version string) AttestationVerificationOption {
+func IsCreatorVersion(version string) AttestationVerificationOption {
 	return func(v *Verification) error {
-		return v.isAuthorVersion(version)
+		return v.isCreatorVersion(version)
 	}
 }
 
-func (v *Verification) isAuthorVersion(version string) error {
-	if version != v.attestation.Predicate.Author.Version {
+func (v *Verification) isCreatorVersion(version string) error {
+	if version != v.attestation.Predicate.Creator.Version {
 		return fmt.Errorf("%w: version (%q) != attestation version (%q)", errs.ErrorMismatch,
-			version, v.attestation.Predicate.Author.Version)
+			version, v.attestation.Predicate.Creator.Version)
 	}
 	return nil
 }

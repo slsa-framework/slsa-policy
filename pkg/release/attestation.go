@@ -5,7 +5,7 @@ import (
 )
 
 type predicate struct {
-	Author               intoto.Author             `json:"author"`
+	Creator              intoto.Creator            `json:"creator"`
 	CreationTime         string                    `json:"creationTime"`
 	Policy               map[string]intoto.Policy  `json:"policy,omitempty"`
 	Package              intoto.ResourceDescriptor `json:"package"`

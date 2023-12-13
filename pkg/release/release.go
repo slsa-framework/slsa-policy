@@ -78,9 +78,8 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string, buildOpts
 	}
 }
 
-// TODO: Support safe options: AuthorVersion, Policy, release version.
 // Attestation creates a release attestation.
-func (r PolicyEvaluationResult) AttestationNew(authorID string, options ...AttestationCreationOption) (*Creation, error) {
+func (r PolicyEvaluationResult) AttestationNew(creatorID string, options ...AttestationCreationOption) (*Creation, error) {
 	if r.Error() != nil {
 		return nil, fmt.Errorf("%w: evaluation failed. Cannot create attestation", errs.ErrorInternal)
 	}
@@ -109,7 +108,7 @@ func (r PolicyEvaluationResult) AttestationNew(authorID string, options ...Attes
 	opts = append(opts, EnterSafeMode())
 	// Add caller options.
 	opts = append(opts, options...)
-	att, err := CreationNew(authorID, subject, packageDesc, opts...)
+	att, err := CreationNew(creatorID, subject, packageDesc, opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -23,13 +23,13 @@ func Test_CreationNew(t *testing.T) {
 		URI: "the_uri",
 	}
 	tests := []struct {
-		name          string
-		subject       intoto.Subject
-		authorVersion string
-		buildLevel    *int
-		packageDesc   intoto.ResourceDescriptor
-		policy        map[string]intoto.Policy
-		expected      error
+		name           string
+		subject        intoto.Subject
+		creatorVersion string
+		buildLevel     *int
+		packageDesc    intoto.ResourceDescriptor
+		policy         map[string]intoto.Policy
+		expected       error
 	}{
 		{
 			name:        "subject and package set",
@@ -74,16 +74,16 @@ func Test_CreationNew(t *testing.T) {
 			expected:    errs.ErrorInvalidInput,
 		},
 		{
-			name:          "result with version",
-			subject:       subject,
-			packageDesc:   packageDesc,
-			authorVersion: "my_version",
+			name:           "result with version",
+			subject:        subject,
+			packageDesc:    packageDesc,
+			creatorVersion: "my_version",
 		},
 		{
-			name:          "result with author version",
-			subject:       subject,
-			packageDesc:   packageDesc,
-			authorVersion: "my_version",
+			name:           "result with creator version",
+			subject:        subject,
+			packageDesc:    packageDesc,
+			creatorVersion: "my_version",
 		},
 		{
 			name:        "result with level",
@@ -145,8 +145,8 @@ func Test_CreationNew(t *testing.T) {
 					environmentAnnotation: "prod",
 				},
 			},
-			buildLevel:    common.AsPointer(4),
-			authorVersion: "my_version",
+			buildLevel:     common.AsPointer(4),
+			creatorVersion: "my_version",
 			policy: map[string]intoto.Policy{
 				"org": intoto.Policy{
 					URI: "policy1_uri",
@@ -170,8 +170,8 @@ func Test_CreationNew(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			var options []AttestationCreationOption
-			if tt.authorVersion != "" {
-				options = append(options, SetAuthorVersion(tt.authorVersion))
+			if tt.creatorVersion != "" {
+				options = append(options, SetCreatorVersion(tt.creatorVersion))
 			}
 			if tt.buildLevel != nil {
 				options = append(options, SetSlsaBuildLevel(*tt.buildLevel))
@@ -179,7 +179,7 @@ func Test_CreationNew(t *testing.T) {
 			if tt.policy != nil {
 				options = append(options, SetPolicy(tt.policy))
 			}
-			att, err := CreationNew("author_id", tt.subject, tt.packageDesc, options...)
+			att, err := CreationNew("creator_id", tt.subject, tt.packageDesc, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -198,12 +198,12 @@ func Test_CreationNew(t *testing.T) {
 			if diff := cmp.Diff([]intoto.Subject{tt.subject}, att.Header.Subjects); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
-			// Author ID must match.
-			if diff := cmp.Diff("author_id", att.Predicate.Author.ID); diff != "" {
+			// Creator ID must match.
+			if diff := cmp.Diff("creator_id", att.Predicate.Creator.ID); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
-			// Author version must match.
-			if diff := cmp.Diff(tt.authorVersion, att.Predicate.Author.Version); diff != "" {
+			// Creator version must match.
+			if diff := cmp.Diff(tt.creatorVersion, att.Predicate.Creator.Version); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			// Policy must match.
@@ -258,7 +258,7 @@ func Test_EnterSafeMode(t *testing.T) {
 			packageDesc: packageDesc,
 			options: []AttestationCreationOption{
 				EnterSafeMode(),
-				SetAuthorVersion("v1.2.3"),
+				SetCreatorVersion("v1.2.3"),
 				SetPolicy(map[string]intoto.Policy{
 					"org": intoto.Policy{
 						URI: "policy1_uri",
@@ -292,7 +292,7 @@ func Test_EnterSafeMode(t *testing.T) {
 			options: []AttestationCreationOption{
 				SetSlsaBuildLevel(4),
 				EnterSafeMode(),
-				SetAuthorVersion("v1.2.3"),
+				SetCreatorVersion("v1.2.3"),
 				SetPolicy(map[string]intoto.Policy{
 					"org": intoto.Policy{
 						URI: "policy1_uri",
@@ -305,7 +305,7 @@ func Test_EnterSafeMode(t *testing.T) {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			_, err := CreationNew("author_id", tt.subject, tt.packageDesc, tt.options...)
+			_, err := CreationNew("creator_id", tt.subject, tt.packageDesc, tt.options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

@@ -17,8 +17,8 @@ type Header struct {
 	Subjects      []Subject `json:"subjects"`
 }
 
-// Author is the author of the attestation.
-type Author struct {
+// Creator is the author of the attestation.
+type Creator struct {
 	ID      string `json:"id"`
 	Version string `json:"version,omitempty"`
 }
