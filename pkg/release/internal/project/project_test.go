@@ -475,6 +475,48 @@ func Test_Evaluate(t *testing.T) {
 		"sha256": "val256",
 		"sha512": "val512",
 	}
+	packageURI := "package_uri"
+	sourceURI := "source_uri"
+	projectBuilder1 := &Policy{
+		Format: 1,
+		Package: Package{
+			URI: packageURI,
+		},
+		BuildRequirements: BuildRequirements{
+			RequireSlsaBuilder: "builder1",
+			Repository: Repository{
+				URI: sourceURI,
+			},
+		},
+	}
+	projectBuilder2 := &Policy{
+		Format: 1,
+		Package: Package{
+			URI: packageURI,
+		},
+		BuildRequirements: BuildRequirements{
+			RequireSlsaBuilder: "builder2",
+			Repository: Repository{
+				URI: sourceURI,
+			},
+		},
+	}
+	org := &organization.Policy{
+		Roots: organization.Roots{
+			Build: []organization.Root{
+				{
+					ID:        "builder2_id",
+					Name:      "builder2",
+					SlsaLevel: common.AsPointer(2),
+				},
+				{
+					ID:        "builder1_id",
+					Name:      "builder1",
+					SlsaLevel: common.AsPointer(1),
+				},
+			},
+		},
+	}
 	tests := []struct {
 		name         string
 		policy       *Policy
@@ -487,225 +529,69 @@ func Test_Evaluate(t *testing.T) {
 	}{
 		{
 			name:       "no verifier defined",
-			packageURI: "package_uri",
-			org: &organization.Policy{
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder2_id",
-							Name:      "builder2",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder1_id",
-							Name:      "builder1",
-							SlsaLevel: common.AsPointer(1),
-						},
-					},
-				},
-			},
-			policy: &Policy{
-				Format: 1,
-				Package: Package{
-					URI: "uri_set",
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaBuilder: "builder1",
-					Repository: Repository{
-						URI: "package_uri",
-					},
-				},
-			},
+			packageURI: packageURI,
+			org:        org,
+			policy:     projectBuilder1,
 			noVerifier: true,
 			expected:   errs.ErrorInvalidInput,
 		},
 		{
 			name:       "builder 1 success",
-			packageURI: "package_uri",
-			org: &organization.Policy{
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder2_id",
-							Name:      "builder2",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder1_id",
-							Name:      "builder1",
-							SlsaLevel: common.AsPointer(1),
-						},
-					},
-				},
-			},
-			policy: &Policy{
-				Format: 1,
-				Package: Package{
-					URI: "package_uri",
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaBuilder: "builder1",
-					Repository: Repository{
-						URI: "source_uri",
-					},
-				},
-			},
-			level: 1,
+			packageURI: packageURI,
+			org:        org,
+			policy:     projectBuilder1,
+			level:      1,
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder1_id",
-				sourceURI: "source_uri",
+				sourceURI: sourceURI,
 				digests:   digests,
 			},
 		},
 		{
 			name:       "builder 2 success",
-			packageURI: "package_uri",
-			org: &organization.Policy{
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder2_id",
-							Name:      "builder2",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder1_id",
-							Name:      "builder1",
-							SlsaLevel: common.AsPointer(1),
-						},
-					},
-				},
-			},
-			policy: &Policy{
-				Format: 1,
-				Package: Package{
-					URI: "package_uri",
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaBuilder: "builder2",
-					Repository: Repository{
-						URI: "source_uri",
-					},
-				},
-			},
+			packageURI: packageURI,
+			org:        org,
+			policy:     projectBuilder2,
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder2_id",
-				sourceURI: "source_uri",
+				sourceURI: sourceURI,
 				digests:   digests,
 			},
 			level: 2,
 		},
 		{
 			name:       "no builder is supported",
-			packageURI: "package_uri",
-			org: &organization.Policy{
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder2_id",
-							Name:      "builder2",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder1_id",
-							Name:      "builder1",
-							SlsaLevel: common.AsPointer(1),
-						},
-					},
-				},
-			},
-			policy: &Policy{
-				Format: 1,
-				Package: Package{
-					URI: "package_uri",
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaBuilder: "builder2",
-					Repository: Repository{
-						URI: "source_uri",
-					},
-				},
-			},
+			packageURI: packageURI,
+			org:        org,
+			policy:     projectBuilder2,
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder3_id",
-				sourceURI: "source_uri",
+				sourceURI: sourceURI,
 				digests:   digests,
 			},
 			expected: errs.ErrorVerification,
 		},
 		{
 			name:       "builder 2 different source",
-			packageURI: "package_uri",
-			org: &organization.Policy{
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder2_id",
-							Name:      "builder2",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder1_id",
-							Name:      "builder1",
-							SlsaLevel: common.AsPointer(1),
-						},
-					},
-				},
-			},
-			policy: &Policy{
-				Format: 1,
-				Package: Package{
-					URI: "package_uri",
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaBuilder: "builder2",
-					Repository: Repository{
-						URI: "source_uri",
-					},
-				},
-			},
+			packageURI: packageURI,
+			org:        org,
+			policy:     projectBuilder2,
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder2_id",
-				sourceURI: "different_source_uri",
+				sourceURI: sourceURI + "_different",
 				digests:   digests,
 			},
 			expected: errs.ErrorVerification,
 		},
 		{
 			name:       "request with env policy no env",
-			packageURI: "package_uri",
-			org: &organization.Policy{
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder2_id",
-							Name:      "builder2",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder1_id",
-							Name:      "builder1",
-							SlsaLevel: common.AsPointer(1),
-						},
-					},
-				},
-			},
-			policy: &Policy{
-				Format: 1,
-				Package: Package{
-					URI: "package_uri",
-				},
-				BuildRequirements: BuildRequirements{
-					RequireSlsaBuilder: "builder1",
-					Repository: Repository{
-						URI: "source_uri",
-					},
-				},
-			},
-			level: 1,
+			packageURI: packageURI,
+			org:        org,
+			policy:     projectBuilder1,
+			level:      1,
 			verifierOpts: dummyVerifierOpts{
 				builderID:   "builder1_id",
-				sourceURI:   "source_uri",
+				sourceURI:   sourceURI,
 				digests:     digests,
 				environment: common.AsPointer("dev"),
 			},
@@ -713,27 +599,12 @@ func Test_Evaluate(t *testing.T) {
 		},
 		{
 			name:       "request no env policy with env",
-			packageURI: "package_uri",
-			org: &organization.Policy{
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder2_id",
-							Name:      "builder2",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder1_id",
-							Name:      "builder1",
-							SlsaLevel: common.AsPointer(1),
-						},
-					},
-				},
-			},
+			packageURI: packageURI,
+			org:        org,
 			policy: &Policy{
 				Format: 1,
 				Package: Package{
-					URI: "package_uri",
+					URI: packageURI,
 					Environment: Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
@@ -741,14 +612,14 @@ func Test_Evaluate(t *testing.T) {
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder1",
 					Repository: Repository{
-						URI: "source_uri",
+						URI: sourceURI,
 					},
 				},
 			},
 			level: 1,
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder1_id",
-				sourceURI: "source_uri",
+				sourceURI: sourceURI,
 				digests:   digests,
 			},
 			expected: errs.ErrorInvalidInput,

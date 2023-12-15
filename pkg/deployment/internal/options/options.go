@@ -1,13 +1,9 @@
 package options
 
-import (
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
-)
-
 // AttestationVerifier defines an interface to verify attestations.
 type AttestationVerifier interface {
-	// Release attestations.
-	VerifyReleaseAttestation(digests intoto.DigestSet, releaseURI, releaserID string) error
+	// Release attestations. The string returned contains the value of the environment, if present.
+	VerifyReleaseAttestation(packageURI string, environment []string, releaserID string) (*string, error)
 }
 
 // ReleaseVerification defines the configuration to verify

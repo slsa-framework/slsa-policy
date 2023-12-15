@@ -16,6 +16,9 @@ type Root struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
 	SlsaLevel *int   `json:"slsa_level"`
+	// TODO: list of repositories the builder is allowed to attest to:
+	// example: GitHub can attest to github.com/* only, GCB can attest to github.com/*
+	// gitlab.com/*, etc.
 }
 
 // Roots defines a set of truted roots.

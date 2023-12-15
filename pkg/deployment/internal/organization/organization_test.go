@@ -55,80 +55,56 @@ func Test_validateFormat(t *testing.T) {
 	}
 }
 
-func Test_RootReleaserNames(t *testing.T) {
+func Test_MaxBuildSlsaLevel(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name      string
-		policy    *Policy
-		releasers []string
+		name   string
+		policy Policy
+		level  int
 	}{
 		{
-			name: "set releasers",
-			policy: &Policy{
+			name:  "max different values",
+			level: 4,
+			policy: Policy{
 				Roots: Roots{
 					Release: []Root{
 						{
-							Name: "releaser1",
+							Build: Build{
+								MaxSlsaLevel: common.AsPointer(4),
+							},
 						},
 						{
-							Name: "releaser2",
-						},
-						{
-							Name: "releaser3",
-						},
-					},
-				},
-			},
-			releasers: []string{"releaser1", "releaser2", "releaser3"},
-		},
-		{
-			name:   "empty releasers",
-			policy: &Policy{},
-		},
-	}
-	for _, tt := range tests {
-		tt := tt // Re-initializing variable so it is not changed while executing the closure below
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			releasers := tt.policy.RootReleaserNames()
-			if diff := cmp.Diff(tt.releasers, releasers); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-		})
-	}
-}
-
-func Test_ReleaserBuildMaxSlsaLevel(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name     string
-		policy   *Policy
-		releaser string
-		level    int
-	}{
-		{
-			name:     "releaser 1",
-			releaser: "releaser1",
-			level:    1,
-			policy: &Policy{
-				Roots: Roots{
-					Release: []Root{
-						{
-							Name: "releaser1",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(1),
 							},
 						},
 						{
-							Name: "releaser2",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
 							},
 						},
+					},
+				},
+			},
+		},
+		{
+			name:  "max same values",
+			level: 2,
+			policy: Policy{
+				Roots: Roots{
+					Release: []Root{
 						{
-							Name: "releaser3",
+							Build: Build{
+								MaxSlsaLevel: common.AsPointer(2),
+							},
+						},
+						{
+							Build: Build{
+								MaxSlsaLevel: common.AsPointer(2),
+							},
+						},
+						{
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(2),
 							},
@@ -138,89 +114,11 @@ func Test_ReleaserBuildMaxSlsaLevel(t *testing.T) {
 			},
 		},
 		{
-			name:     "releaser 2",
-			releaser: "releaser2",
-			level:    3,
-			policy: &Policy{
+			name:  "empty values",
+			level: -1,
+			policy: Policy{
 				Roots: Roots{
-					Release: []Root{
-						{
-							Name: "releaser1",
-							Build: Build{
-								MaxSlsaLevel: common.AsPointer(1),
-							},
-						},
-						{
-							Name: "releaser2",
-							Build: Build{
-								MaxSlsaLevel: common.AsPointer(3),
-							},
-						},
-						{
-							Name: "releaser3",
-							Build: Build{
-								MaxSlsaLevel: common.AsPointer(2),
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name:     "releaser 3",
-			releaser: "releaser3",
-			level:    2,
-			policy: &Policy{
-				Roots: Roots{
-					Release: []Root{
-						{
-							Name: "releaser1",
-							Build: Build{
-								MaxSlsaLevel: common.AsPointer(1),
-							},
-						},
-						{
-							Name: "releaser2",
-							Build: Build{
-								MaxSlsaLevel: common.AsPointer(3),
-							},
-						},
-						{
-							Name: "releaser3",
-							Build: Build{
-								MaxSlsaLevel: common.AsPointer(2),
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name:     "unknown releaser",
-			releaser: "unknown",
-			level:    -1,
-			policy: &Policy{
-				Roots: Roots{
-					Release: []Root{
-						{
-							Name: "releaser1",
-							Build: Build{
-								MaxSlsaLevel: common.AsPointer(1),
-							},
-						},
-						{
-							Name: "releaser2",
-							Build: Build{
-								MaxSlsaLevel: common.AsPointer(3),
-							},
-						},
-						{
-							Name: "releaser3",
-							Build: Build{
-								MaxSlsaLevel: common.AsPointer(2),
-							},
-						},
-					},
+					Release: []Root{},
 				},
 			},
 		},
@@ -229,7 +127,7 @@ func Test_ReleaserBuildMaxSlsaLevel(t *testing.T) {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			level := tt.policy.ReleaserBuildMaxSlsaLevel(tt.releaser)
+			level := tt.policy.MaxBuildSlsaLevel()
 			if diff := cmp.Diff(tt.level, level); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -256,7 +154,6 @@ func Test_validateReleaseRoots(t *testing.T) {
 				Roots: Roots{
 					Release: []Root{
 						{
-							Name: "the name",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
 							},
@@ -288,8 +185,7 @@ func Test_validateReleaseRoots(t *testing.T) {
 				Roots: Roots{
 					Release: []Root{
 						{
-							ID:   "releaser id",
-							Name: "the name",
+							ID: "releaser id",
 						},
 					},
 				},
@@ -302,8 +198,7 @@ func Test_validateReleaseRoots(t *testing.T) {
 				Roots: Roots{
 					Release: []Root{
 						{
-							ID:   "releaser id",
-							Name: "the name",
+							ID: "releaser id",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(-1),
 							},
@@ -319,8 +214,7 @@ func Test_validateReleaseRoots(t *testing.T) {
 				Roots: Roots{
 					Release: []Root{
 						{
-							ID:   "releaser id",
-							Name: "the name",
+							ID: "releaser id",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(5),
 							},
@@ -336,8 +230,7 @@ func Test_validateReleaseRoots(t *testing.T) {
 				Roots: Roots{
 					Release: []Root{
 						{
-							ID:   "releaser id",
-							Name: "the name",
+							ID: "releaser id",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
 							},
@@ -352,15 +245,13 @@ func Test_validateReleaseRoots(t *testing.T) {
 				Roots: Roots{
 					Release: []Root{
 						{
-							ID:   "releaser id",
-							Name: "the name",
+							ID: "releaser id",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
 							},
 						},
 						{
-							ID:   "releaser id2",
-							Name: "the name2",
+							ID: "releaser id2",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
 							},
@@ -375,39 +266,13 @@ func Test_validateReleaseRoots(t *testing.T) {
 				Roots: Roots{
 					Release: []Root{
 						{
-							ID:   "releaser id",
-							Name: "the name",
+							ID: "releaser id",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
 							},
 						},
 						{
-							ID:   "releaser id",
-							Name: "the name2",
-							Build: Build{
-								MaxSlsaLevel: common.AsPointer(3),
-							},
-						},
-					},
-				},
-			},
-			expected: errs.ErrorInvalidField,
-		},
-		{
-			name: "two roots with same name",
-			policy: &Policy{
-				Roots: Roots{
-					Release: []Root{
-						{
-							ID:   "releaser id",
-							Name: "the name",
-							Build: Build{
-								MaxSlsaLevel: common.AsPointer(3),
-							},
-						},
-						{
-							ID:   "releaser id2",
-							Name: "the name",
+							ID: "releaser id",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
 							},

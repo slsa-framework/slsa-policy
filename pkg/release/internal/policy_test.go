@@ -33,13 +33,13 @@ func Test_PolicyNew(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -48,7 +48,7 @@ func Test_PolicyNew(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri1",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -60,7 +60,7 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri2",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -79,13 +79,13 @@ func Test_PolicyNew(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -94,7 +94,7 @@ func Test_PolicyNew(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri1",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -106,7 +106,7 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri2",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -126,13 +126,13 @@ func Test_PolicyNew(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name"),
+							ID:        "builder_id1",
+							Name:      "builder_name",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name"),
+							ID:        "builder_id2",
+							Name:      "builder_name",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -141,7 +141,7 @@ func Test_PolicyNew(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri1",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -153,7 +153,7 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri2",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -173,13 +173,13 @@ func Test_PolicyNew(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -188,7 +188,7 @@ func Test_PolicyNew(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -200,7 +200,7 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -220,13 +220,13 @@ func Test_PolicyNew(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -235,7 +235,7 @@ func Test_PolicyNew(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri",
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
@@ -250,7 +250,7 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -270,13 +270,13 @@ func Test_PolicyNew(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -285,7 +285,7 @@ func Test_PolicyNew(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri",
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
@@ -300,7 +300,7 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri",
 						Environment: project.Environment{
 							AnyOf: []string{"prod"},
@@ -323,13 +323,13 @@ func Test_PolicyNew(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -338,7 +338,7 @@ func Test_PolicyNew(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri",
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
@@ -353,7 +353,7 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri",
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
@@ -376,13 +376,13 @@ func Test_PolicyNew(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -391,7 +391,7 @@ func Test_PolicyNew(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri1",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -403,7 +403,7 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri2",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -423,13 +423,13 @@ func Test_PolicyNew(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -438,7 +438,7 @@ func Test_PolicyNew(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri1",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -450,7 +450,7 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri2",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -527,13 +527,13 @@ func Test_Evaluate(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -542,7 +542,7 @@ func Test_Evaluate(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri1",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -554,7 +554,7 @@ func Test_Evaluate(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri2",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -580,13 +580,13 @@ func Test_Evaluate(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -595,7 +595,7 @@ func Test_Evaluate(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri1",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -607,7 +607,7 @@ func Test_Evaluate(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri2",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -634,13 +634,13 @@ func Test_Evaluate(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -649,7 +649,7 @@ func Test_Evaluate(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri1",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -661,7 +661,7 @@ func Test_Evaluate(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri2",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -689,13 +689,13 @@ func Test_Evaluate(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -704,7 +704,7 @@ func Test_Evaluate(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri1",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -716,7 +716,7 @@ func Test_Evaluate(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri2",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -743,13 +743,13 @@ func Test_Evaluate(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -758,7 +758,7 @@ func Test_Evaluate(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri1",
 						Environment: project.Environment{
 							AnyOf: []string{"dev", "prod"},
@@ -773,7 +773,7 @@ func Test_Evaluate(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri2",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -801,13 +801,13 @@ func Test_Evaluate(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -816,7 +816,7 @@ func Test_Evaluate(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri1",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -828,7 +828,7 @@ func Test_Evaluate(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri2",
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
@@ -857,13 +857,13 @@ func Test_Evaluate(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        common.AsPointer("builder_id1"),
-							Name:      common.AsPointer("builder_name1"),
+							ID:        "builder_id1",
+							Name:      "builder_name1",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        common.AsPointer("builder_id2"),
-							Name:      common.AsPointer("builder_name2"),
+							ID:        "builder_id2",
+							Name:      "builder_name2",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
@@ -872,7 +872,7 @@ func Test_Evaluate(t *testing.T) {
 			projects: []project.Policy{
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri1",
 					},
 					BuildRequirements: project.BuildRequirements{
@@ -884,7 +884,7 @@ func Test_Evaluate(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Release: project.Release{
+					Package: project.Package{
 						URI: "release_uri2",
 					},
 					BuildRequirements: project.BuildRequirements{

@@ -9,3 +9,11 @@ type ReadCloserIterator interface {
 	HasNext() bool
 	Error() error
 }
+
+// NamedReadCloserIterator defines an iterator interface to read
+// from a read closer and return an ID as well.
+type NamedReadCloserIterator interface {
+	Next() (string, io.ReadCloser)
+	HasNext() bool
+	Error() error
+}

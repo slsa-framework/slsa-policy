@@ -63,8 +63,6 @@ func (v *attesationVerifier) VerifyBuildAttestation(digests intoto.DigestSet, pa
 	if packageURI == v.packageURI && builderID == v.builderID && sourceURI == v.sourceURI {
 		return nil
 	}
-	fmt.Println(v.packageURI, v.builderID, v.sourceURI)
-	fmt.Println(packageURI, builderID, sourceURI)
 
 	return fmt.Errorf("%w: cannot verify package URI (%q) builder ID (%q) source URI (%q) digests (%q)",
 		errs.ErrorVerification, packageURI, builderID, sourceURI, digests)

@@ -14,8 +14,10 @@ import (
 // Root defines a trusted root.
 type Root struct {
 	ID    string `json:"id"`
-	Name  string `json:"name"`
 	Build Build  `json:"build"`
+	// TODO: Have a field to indicate which package URIs the releaser is allowed to
+	// attest to. This assumes every organization has a central registry to make their
+	// releases accessible.
 }
 
 // Build defines the build metadata.
@@ -78,9 +80,7 @@ func (p *Policy) validateReleaseRoots() error {
 	}
 	// Each root must have all its fields defined.
 	// Also validate that
-	//  1) the names given to releasers are unique
 	//  2) the ids do not repeat
-	names := make(map[string]bool)
 	ids := make(map[string]bool)
 	for i := range p.Roots.Release {
 		release := &p.Roots.Release[i]
@@ -93,15 +93,6 @@ func (p *Policy) validateReleaseRoots() error {
 			return fmt.Errorf("%w: release's name (%q) is defined more than once", errs.ErrorInvalidField, release.ID)
 		}
 		ids[release.ID] = true
-		// Name must be defined and non-empty.
-		if release.Name == "" {
-			return fmt.Errorf("%w: release's name is empty", errs.ErrorInvalidField)
-		}
-		// Name must be unique.
-		if _, exists := names[release.Name]; exists {
-			return fmt.Errorf("%w: release's name (%q) is defined more than once", errs.ErrorInvalidField, release.Name)
-		}
-		names[release.Name] = true
 		// Build Level must be defined.
 		if release.Build.MaxSlsaLevel == nil {
 			return fmt.Errorf("%w: release's max_slsa_level is not defined", errs.ErrorInvalidField)
@@ -115,35 +106,15 @@ func (p *Policy) validateReleaseRoots() error {
 	return nil
 }
 
-// ReleaseerNames returns the list of trusted releaser names.
-func (p *Policy) RootReleaserNames() []string {
-	var names []string
+func (p *Policy) MaxBuildSlsaLevel() int {
+	max := -1
 	for i := range p.Roots.Release {
 		releaser := &p.Roots.Release[i]
-		names = append(names, releaser.Name)
-	}
-	return names
-}
-
-func (p *Policy) ReleaserID(releaserName string) (string, error) {
-	for i := range p.Roots.Release {
-		releaser := &p.Roots.Release[i]
-		if releaserName == releaser.Name {
-			return releaser.ID, nil
+		if *releaser.Build.MaxSlsaLevel > max {
+			max = *releaser.Build.MaxSlsaLevel
 		}
 	}
-	return "", fmt.Errorf("%w: releaser ID (%q) is not defined", errs.ErrorMismatch, releaserName)
-}
-
-func (p *Policy) ReleaserBuildMaxSlsaLevel(releaserName string) int {
-	for i := range p.Roots.Release {
-		releaser := &p.Roots.Release[i]
-		if releaserName == releaser.Name {
-			return *releaser.Build.MaxSlsaLevel
-		}
-	}
-	// This should never happen.
-	return -1
+	return max
 }
 
 // Evaluate evaluates the policy.
