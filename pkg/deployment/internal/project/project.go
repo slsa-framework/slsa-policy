@@ -30,14 +30,14 @@ type Package struct {
 	Environment Environment `json:"environment"`
 }
 
-type principal struct {
+type Principal struct {
 	URI string `json:"uri"`
 }
 
 // Policy defines the policy.
 type Policy struct {
 	Format            int               `json:"format"`
-	Principal         principal         `json:"principal"`
+	Principal         Principal         `json:"principal"`
 	Packages          []Package         `json:"releases"`
 	BuildRequirements BuildRequirements `json:"build"`
 }
@@ -92,6 +92,9 @@ func (p *Policy) validatePrincipal() error {
 }
 
 func (p *Policy) validatePackages() error {
+	if len(p.Packages) == 0 {
+		return fmt.Errorf("%w: no packages", errs.ErrorInvalidField)
+	}
 	packages := make(map[string]bool, len(p.Packages))
 	for i := range p.Packages {
 		pkg := &p.Packages[i]
@@ -147,7 +150,6 @@ func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organizatio
 		if err != nil {
 			return nil, err
 		}
-
 		// The policy ID must be unique across all projects.
 		if _, exists := policies[id]; exists {
 			return nil, fmt.Errorf("%w: policy id (%q) is defined more than once", errs.ErrorInvalidField, id)

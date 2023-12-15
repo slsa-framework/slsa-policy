@@ -16,7 +16,7 @@ func AsPointer[K interface{}](o K) *K {
 }
 
 // Bytes iterator.
-func NewBytesIterator(values [][]byte, uniqueID bool) iterator.NamedReadCloserIterator {
+func NewNamedBytesIterator(values [][]byte, uniqueID bool) iterator.NamedReadCloserIterator {
 	return &bytesIterator{values: values, index: -1, uniqueID: uniqueID}
 }
 
@@ -33,9 +33,9 @@ func (iter *bytesIterator) Next() (string, io.ReadCloser) {
 	}
 	iter.index++
 	if iter.uniqueID {
-		return fmt.Sprintf("%d", iter.index), io.NopCloser(bytes.NewReader(iter.values[iter.index]))
+		return fmt.Sprintf("policy_id%d", iter.index), io.NopCloser(bytes.NewReader(iter.values[iter.index]))
 	}
-	return fmt.Sprintf("%d", 0), io.NopCloser(bytes.NewReader(iter.values[iter.index]))
+	return fmt.Sprintf("policy_id%d", 0), io.NopCloser(bytes.NewReader(iter.values[iter.index]))
 }
 
 func (iter *bytesIterator) HasNext() bool {
@@ -50,7 +50,7 @@ func (iter *bytesIterator) Error() error {
 }
 
 // Attestation verifier.
-func NewAttestationVerifier(packageURI, env string, releaserID string) options.AttestationVerifier {
+func NewAttestationVerifier(packageURI, env, releaserID string) options.AttestationVerifier {
 	return &attesationVerifier{packageURI: packageURI, releaserID: releaserID, env: env}
 }
 
@@ -64,8 +64,10 @@ func (v *attesationVerifier) VerifyReleaseAttestation(packageURI string, env []s
 	if packageURI == v.packageURI && releaserID == v.releaserID &&
 		((v.env != "" && len(env) > 0 && slices.Contains(env, v.env)) ||
 			(v.env == "" && len(env) == 0)) {
+		if v.env == "" {
+			return nil, nil
+		}
 		return &v.env, nil
 	}
-
 	return nil, fmt.Errorf("%w: cannot verify package URI (%q) releaser ID (%q) env (%q)", errs.ErrorVerification, packageURI, releaserID, env)
 }

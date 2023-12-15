@@ -32,10 +32,9 @@ func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy
 	}, nil
 }
 
-// TODO: change return value to error only.
 func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string, buildOpts options.BuildVerification) (int, error) {
 	if packageURI == "" {
-		return -1, fmt.Errorf("%w: package URI is empty", errs.ErrorInvalidInput)
+		return -1, fmt.Errorf("%w: package uri is empty", errs.ErrorInvalidInput)
 	}
 	return p.evaluateBuildPolicy(digests, packageURI, buildOpts)
 }
@@ -47,13 +46,13 @@ func (p *Policy) evaluateBuildPolicy(digests intoto.DigestSet, packageURI string
 		return -1, fmt.Errorf("%w: package's uri (%q) not present in project policies", errs.ErrorNotFound, packageURI)
 	}
 
-	// Evaluate the org policy first.
+	// Evaluate the org policy.
 	err := p.orgPolicy.Evaluate(digests, packageURI, buildOpts)
 	if err != nil {
 		return -1, err
 	}
 
-	// Evaluate the project policy first.
+	// Evaluate the project policy.
 	level, err := projectPolicy.Evaluate(digests, packageURI, p.orgPolicy, buildOpts)
 	if err != nil {
 		return -1, err

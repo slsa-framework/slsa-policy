@@ -17,23 +17,23 @@ func Test_validateFormat(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		policy   *Policy
+		policy   Policy
 		expected error
 	}{
 		{
 			name: "format is 1",
-			policy: &Policy{
+			policy: Policy{
 				Format: 1,
 			},
 		},
 		{
 			name:     "no format defined",
-			policy:   &Policy{},
+			policy:   Policy{},
 			expected: errs.ErrorInvalidField,
 		},
 		{
 			name: "format is not 1",
-			policy: &Policy{
+			policy: Policy{
 				Format: 2,
 			},
 			expected: errs.ErrorInvalidField,
@@ -57,20 +57,20 @@ func Test_validatePrincipal(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		policy   *Policy
+		policy   Policy
 		expected error
 	}{
 		{
 			name: "uri present",
-			policy: &Policy{
-				Principal: principal{
+			policy: Policy{
+				Principal: Principal{
 					URI: "the_uri",
 				},
 			},
 		},
 		{
 			name:     "uri not present",
-			policy:   &Policy{},
+			policy:   Policy{},
 			expected: errs.ErrorInvalidField,
 		},
 	}
@@ -91,14 +91,14 @@ func Test_getPackage(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		policy   *Policy
+		policy   Policy
 		uri      string
 		expected error
 	}{
 		{
 			name: "uri present",
 			uri:  "uri2",
-			policy: &Policy{
+			policy: Policy{
 				Packages: []Package{
 					{
 						URI: "uri1",
@@ -113,7 +113,7 @@ func Test_getPackage(t *testing.T) {
 			name:     "uri not present",
 			expected: errs.ErrorNotFound,
 			uri:      "uri3",
-			policy: &Policy{
+			policy: Policy{
 				Packages: []Package{
 					{
 						URI: "uri1",
@@ -219,12 +219,12 @@ func Test_validatePackages(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		policy   *Policy
+		policy   Policy
 		expected error
 	}{
 		{
 			name: "two valid packages",
-			policy: &Policy{
+			policy: Policy{
 				Packages: []Package{
 					{
 						URI: "the_uri",
@@ -244,7 +244,7 @@ func Test_validatePackages(t *testing.T) {
 		{
 			name:     "duplicate uri",
 			expected: errs.ErrorInvalidField,
-			policy: &Policy{
+			policy: Policy{
 				Packages: []Package{
 					{
 						URI: "the_uri",
@@ -264,7 +264,7 @@ func Test_validatePackages(t *testing.T) {
 		{
 			name:     "empty env",
 			expected: errs.ErrorInvalidField,
-			policy: &Policy{
+			policy: Policy{
 				Packages: []Package{
 					{
 						URI: "the_uri",
@@ -284,7 +284,7 @@ func Test_validatePackages(t *testing.T) {
 		{
 			name:     "missing uri",
 			expected: errs.ErrorInvalidField,
-			policy: &Policy{
+			policy: Policy{
 				Packages: []Package{
 					{
 						URI: "the_uri",
@@ -299,6 +299,11 @@ func Test_validatePackages(t *testing.T) {
 					},
 				},
 			},
+		},
+		{
+			name:     "no packages",
+			expected: errs.ErrorInvalidField,
+			policy:   Policy{},
 		},
 	}
 	for _, tt := range tests {
@@ -318,14 +323,14 @@ func Test_validateBuildRequirements(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		policy        *Policy
+		policy        Policy
 		maxBuildLevel int
 		expected      error
 	}{
 		{
 			name:          "same levels",
 			maxBuildLevel: 3,
-			policy: &Policy{
+			policy: Policy{
 				BuildRequirements: BuildRequirements{
 					RequireSlsaLevel: common.AsPointer(3),
 				},
@@ -334,7 +339,7 @@ func Test_validateBuildRequirements(t *testing.T) {
 		{
 			name:          "lower requried level",
 			maxBuildLevel: 3,
-			policy: &Policy{
+			policy: Policy{
 				BuildRequirements: BuildRequirements{
 					RequireSlsaLevel: common.AsPointer(2),
 				},
@@ -344,7 +349,7 @@ func Test_validateBuildRequirements(t *testing.T) {
 			name:          "higher requried level",
 			expected:      errs.ErrorInvalidField,
 			maxBuildLevel: 3,
-			policy: &Policy{
+			policy: Policy{
 				BuildRequirements: BuildRequirements{
 					RequireSlsaLevel: common.AsPointer(4),
 				},
@@ -354,7 +359,7 @@ func Test_validateBuildRequirements(t *testing.T) {
 			name:          "negative level",
 			expected:      errs.ErrorInvalidField,
 			maxBuildLevel: -1,
-			policy: &Policy{
+			policy: Policy{
 				BuildRequirements: BuildRequirements{
 					RequireSlsaLevel: common.AsPointer(4),
 				},
@@ -364,7 +369,7 @@ func Test_validateBuildRequirements(t *testing.T) {
 			name:          "large level",
 			expected:      errs.ErrorInvalidField,
 			maxBuildLevel: 5,
-			policy: &Policy{
+			policy: Policy{
 				BuildRequirements: BuildRequirements{
 					RequireSlsaLevel: common.AsPointer(4),
 				},
@@ -374,7 +379,7 @@ func Test_validateBuildRequirements(t *testing.T) {
 			name:          "negative policy level",
 			expected:      errs.ErrorInvalidField,
 			maxBuildLevel: 3,
-			policy: &Policy{
+			policy: Policy{
 				BuildRequirements: BuildRequirements{
 					RequireSlsaLevel: common.AsPointer(-1),
 				},
@@ -384,7 +389,7 @@ func Test_validateBuildRequirements(t *testing.T) {
 			name:          "large policy level",
 			expected:      errs.ErrorInvalidField,
 			maxBuildLevel: 5,
-			policy: &Policy{
+			policy: Policy{
 				BuildRequirements: BuildRequirements{
 					RequireSlsaLevel: common.AsPointer(5),
 				},
@@ -410,17 +415,21 @@ func Test_Evaluate(t *testing.T) {
 		releaserID string
 		env        string
 	}
-	org := &organization.Policy{
+	releaserID1 := "releaser_id1"
+	releaserID2 := "releaser_id2"
+	packageURI1 := "package_uri1"
+	packageURI2 := "package_uri2"
+	org := organization.Policy{
 		Roots: organization.Roots{
 			Release: []organization.Root{
 				{
-					ID: "releaser_id1",
+					ID: releaserID1,
 					Build: organization.Build{
 						MaxSlsaLevel: common.AsPointer(3),
 					},
 				},
 				{
-					ID: "releaser_id2",
+					ID: releaserID2,
 					Build: organization.Build{
 						MaxSlsaLevel: common.AsPointer(2),
 					},
@@ -428,19 +437,19 @@ func Test_Evaluate(t *testing.T) {
 			},
 		},
 	}
-	project := &Policy{
+	project := Policy{
 		BuildRequirements: BuildRequirements{
 			RequireSlsaLevel: common.AsPointer(2),
 		},
 		Packages: []Package{
 			{
-				URI: "package_uri",
+				URI: packageURI1,
 				Environment: Environment{
 					AnyOf: []string{"dev", "prod"},
 				},
 			},
 			{
-				URI: "package_uri2",
+				URI: packageURI2,
 				Environment: Environment{
 					AnyOf: []string{"dev", "prod"},
 				},
@@ -448,15 +457,14 @@ func Test_Evaluate(t *testing.T) {
 		},
 	}
 	vopts := dummyVerifierOpts{
-		releaserID: "releaser_id2",
-		packageURI: "package_uri",
+		releaserID: releaserID2,
+		packageURI: packageURI1,
 		env:        "prod",
 	}
-	packageURI := "package_uri"
 	tests := []struct {
 		name         string
-		policy       *Policy
-		org          *organization.Policy
+		policy       Policy
+		org          organization.Policy
 		noVerifier   bool
 		packageURI   string
 		verifierOpts dummyVerifierOpts
@@ -465,7 +473,7 @@ func Test_Evaluate(t *testing.T) {
 		{
 			name:         "passing",
 			verifierOpts: vopts,
-			packageURI:   packageURI,
+			packageURI:   packageURI1,
 			org:          org,
 			policy:       project,
 		},
@@ -474,7 +482,7 @@ func Test_Evaluate(t *testing.T) {
 			expected:     errs.ErrorInvalidInput,
 			noVerifier:   true,
 			verifierOpts: vopts,
-			packageURI:   packageURI,
+			packageURI:   packageURI1,
 			org:          org,
 			policy:       project,
 		},
@@ -482,7 +490,7 @@ func Test_Evaluate(t *testing.T) {
 			name:         "package uri not present",
 			expected:     errs.ErrorNotFound,
 			verifierOpts: vopts,
-			packageURI:   packageURI + "_not",
+			packageURI:   packageURI1 + "_not",
 			org:          org,
 			policy:       project,
 		},
@@ -490,18 +498,18 @@ func Test_Evaluate(t *testing.T) {
 			name:         "root levels too low",
 			expected:     errs.ErrorVerification,
 			verifierOpts: vopts,
-			packageURI:   packageURI,
-			org: &organization.Policy{
+			packageURI:   packageURI1,
+			org: organization.Policy{
 				Roots: organization.Roots{
 					Release: []organization.Root{
 						{
-							ID: "releaser_id1",
+							ID: releaserID1,
 							Build: organization.Build{
 								MaxSlsaLevel: common.AsPointer(1),
 							},
 						},
 						{
-							ID: "releaser_id2",
+							ID: releaserID2,
 							Build: organization.Build{
 								MaxSlsaLevel: common.AsPointer(1),
 							},
@@ -515,11 +523,11 @@ func Test_Evaluate(t *testing.T) {
 			name:     "env mismatch",
 			expected: errs.ErrorVerification,
 			verifierOpts: dummyVerifierOpts{
-				releaserID: "releaser_id2",
+				releaserID: releaserID2,
 				packageURI: "package_uri",
 				env:        "staging",
 			},
-			packageURI: packageURI,
+			packageURI: packageURI1,
 			org:        org,
 			policy:     project,
 		},
@@ -537,7 +545,7 @@ func Test_Evaluate(t *testing.T) {
 			opts := options.ReleaseVerification{
 				Verifier: verifier,
 			}
-			err := tt.policy.Evaluate(tt.packageURI, *tt.org, opts)
+			err := tt.policy.Evaluate(tt.packageURI, tt.org, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -561,7 +569,7 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				{
 					Format: 1,
-					Principal: principal{
+					Principal: Principal{
 						URI: "principal_uri",
 					},
 					Packages: []Package{
@@ -578,7 +586,7 @@ func Test_FromReaders(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: principal{
+					Principal: Principal{
 						URI: "principal_uri2",
 					},
 					Packages: []Package{
@@ -602,7 +610,7 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				{
 					Format: 1,
-					Principal: principal{
+					Principal: Principal{
 						URI: "principal_uri",
 					},
 					Packages: []Package{
@@ -619,7 +627,7 @@ func Test_FromReaders(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: principal{
+					Principal: Principal{
 						URI: "principal_uri",
 					},
 					Packages: []Package{
@@ -644,7 +652,7 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				{
 					Format: 1,
-					Principal: principal{
+					Principal: Principal{
 						URI: "principal_uri",
 					},
 					Packages: []Package{
@@ -661,7 +669,7 @@ func Test_FromReaders(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: principal{
+					Principal: Principal{
 						URI: "principal_uri2",
 					},
 					Packages: []Package{
@@ -686,7 +694,7 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				{
 					Format: 1,
-					Principal: principal{
+					Principal: Principal{
 						URI: "principal_uri",
 					},
 					Packages: []Package{
@@ -740,7 +748,7 @@ func Test_FromReaders(t *testing.T) {
 				policies[i] = content
 			}
 			// Create the project iterator.
-			iter := common.NewBytesIterator(policies, !tt.buggyIterator)
+			iter := common.NewNamedBytesIterator(policies, !tt.buggyIterator)
 
 			// Call the constructor.
 			_, err := FromReaders(iter, orgPolicy)

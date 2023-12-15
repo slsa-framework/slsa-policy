@@ -8,7 +8,6 @@ import (
 
 	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
 // Root defines a trusted root.
@@ -118,7 +117,7 @@ func (p *Policy) MaxBuildSlsaLevel() int {
 }
 
 // Evaluate evaluates the policy.
-func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string, releaseOpts options.ReleaseVerification) error {
+func (p *Policy) Evaluate(packageURI string, releaseOpts options.ReleaseVerification) error {
 	// Nothing to do.
 	return nil
 }

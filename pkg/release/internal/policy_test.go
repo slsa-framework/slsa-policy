@@ -27,7 +27,7 @@ func Test_PolicyNew(t *testing.T) {
 	sourceURI2 := "source_uri2"
 	builderID1 := "builder_id1"
 	builderID2 := "builder_id2"
-	org := &organization.Policy{
+	org := organization.Policy{
 		Format: 1,
 		Roots: organization.Roots{
 			Build: []organization.Root{
@@ -73,7 +73,7 @@ func Test_PolicyNew(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		org      *organization.Policy
+		org      organization.Policy
 		projects []project.Policy
 		expected error
 	}{
@@ -84,7 +84,7 @@ func Test_PolicyNew(t *testing.T) {
 		},
 		{
 			name: "same builder id",
-			org: &organization.Policy{
+			org: organization.Policy{
 				Format: 1,
 				Roots: organization.Roots{
 					Build: []organization.Root{
@@ -106,7 +106,7 @@ func Test_PolicyNew(t *testing.T) {
 		},
 		{
 			name: "same builder name",
-			org: &organization.Policy{
+			org: organization.Policy{
 				Format: 1,
 				Roots: organization.Roots{
 					Build: []organization.Root{
@@ -127,7 +127,7 @@ func Test_PolicyNew(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "same release uri",
+			name: "same package uri",
 			org:  org,
 			projects: []project.Policy{
 				{
@@ -332,7 +332,7 @@ func Test_PolicyNew(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			// Org policy.
-			content, err := json.Marshal(*tt.org)
+			content, err := json.Marshal(tt.org)
 			if err != nil {
 				t.Fatalf("failed to marshal: %v", err)
 			}
@@ -376,7 +376,7 @@ func Test_Evaluate(t *testing.T) {
 	sourceURI2 := "source_uri2"
 	builderID1 := "builder_id1"
 	builderID2 := "builder_id2"
-	org := &organization.Policy{
+	org := organization.Policy{
 		Format: 1,
 		Roots: organization.Roots{
 			Build: []organization.Root{
@@ -426,7 +426,7 @@ func Test_Evaluate(t *testing.T) {
 	}
 	tests := []struct {
 		name         string
-		org          *organization.Policy
+		org          organization.Policy
 		projects     []project.Policy
 		verifierOpts dummyVerifierOpts
 		level        int
@@ -574,7 +574,7 @@ func Test_Evaluate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			// Org policy.
-			content, err := json.Marshal(*tt.org)
+			content, err := json.Marshal(tt.org)
 			if err != nil {
 				t.Fatalf("failed to marshal: %v", err)
 			}
