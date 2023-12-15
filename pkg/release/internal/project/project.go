@@ -174,7 +174,10 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 				errs.ErrorNotFound, packageURI, *buildOpts.Environment)
 		}
 	}
-
+	// Validate digests.
+	if err := digests.Validate(); err != nil {
+		return -1, err
+	}
 	// Verify build attestations.
 	builderID, err := orgPolicy.BuilderID(p.BuildRequirements.RequireSlsaBuilder)
 	if err != nil {

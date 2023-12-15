@@ -10,6 +10,7 @@ import (
 	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/organization"
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
+	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
 
@@ -171,12 +172,16 @@ func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organizatio
 }
 
 // Evaluate evaluates a policy.
-func (p *Policy) Evaluate(packageURI string,
+func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 	orgPolicy organization.Policy, releaseOpts options.ReleaseVerification) error {
 	if releaseOpts.Verifier == nil {
 		return fmt.Errorf("%w: verifier is empty", errs.ErrorInvalidInput)
 	}
 
+	// Validate the digest.
+	if err := digests.Validate(); err != nil {
+		return err
+	}
 	// Get the package for principal URI.
 	pkg, err := p.getPackage(packageURI)
 	if err != nil {
@@ -199,7 +204,7 @@ func (p *Policy) Evaluate(packageURI string,
 			continue
 		}
 		// We have a candidate.
-		verifiedEnv, err := releaseOpts.Verifier.VerifyReleaseAttestation(packageURI, env, releaser.ID)
+		verifiedEnv, err := releaseOpts.Verifier.VerifyReleaseAttestation(digests, packageURI, env, releaser.ID)
 		if err != nil {
 			// Verification failed, continue.
 			allErrs = append(allErrs, err)

@@ -8,6 +8,7 @@ import (
 
 	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
+	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
 
@@ -50,18 +51,20 @@ func (iter *bytesIterator) Error() error {
 }
 
 // Attestation verifier.
-func NewAttestationVerifier(packageURI, env, releaserID string) options.AttestationVerifier {
-	return &attesationVerifier{packageURI: packageURI, releaserID: releaserID, env: env}
+func NewAttestationVerifier(digests intoto.DigestSet, packageURI, env, releaserID string) options.AttestationVerifier {
+	return &attesationVerifier{digests: digests, packageURI: packageURI, releaserID: releaserID, env: env}
 }
 
 type attesationVerifier struct {
 	packageURI string
 	releaserID string
 	env        string
+	digests    intoto.DigestSet
 }
 
-func (v *attesationVerifier) VerifyReleaseAttestation(packageURI string, env []string, releaserID string) (*string, error) {
+func (v *attesationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, packageURI string, env []string, releaserID string) (*string, error) {
 	if packageURI == v.packageURI && releaserID == v.releaserID &&
+		mapEq(digests, v.digests) &&
 		((v.env != "" && len(env) > 0 && slices.Contains(env, v.env)) ||
 			(v.env == "" && len(env) == 0)) {
 		if v.env == "" {
@@ -70,4 +73,20 @@ func (v *attesationVerifier) VerifyReleaseAttestation(packageURI string, env []s
 		return &v.env, nil
 	}
 	return nil, fmt.Errorf("%w: cannot verify package URI (%q) releaser ID (%q) env (%q)", errs.ErrorVerification, packageURI, releaserID, env)
+}
+
+func mapEq(m1, m2 map[string]string) bool {
+	if len(m1) != len(m2) {
+		return false
+	}
+	for k, v := range m1 {
+		vv, exists := m2[k]
+		if !exists {
+			return false
+		}
+		if vv != v {
+			return false
+		}
+	}
+	return true
 }

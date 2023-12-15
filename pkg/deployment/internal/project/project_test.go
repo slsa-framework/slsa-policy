@@ -10,6 +10,7 @@ import (
 	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/organization"
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
+	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
 func Test_validateFormat(t *testing.T) {
@@ -411,6 +412,7 @@ func Test_validateBuildRequirements(t *testing.T) {
 func Test_Evaluate(t *testing.T) {
 	t.Parallel()
 	type dummyVerifierOpts struct {
+		digests    intoto.DigestSet
 		packageURI string
 		releaserID string
 		env        string
@@ -419,6 +421,10 @@ func Test_Evaluate(t *testing.T) {
 	releaserID2 := "releaser_id2"
 	packageURI1 := "package_uri1"
 	packageURI2 := "package_uri2"
+	digests := intoto.DigestSet{
+		"sha256": "val256",
+		"sha512": "val512",
+	}
 	org := organization.Policy{
 		Roots: organization.Roots{
 			Release: []organization.Root{
@@ -457,6 +463,7 @@ func Test_Evaluate(t *testing.T) {
 		},
 	}
 	vopts := dummyVerifierOpts{
+		digests:    digests,
 		releaserID: releaserID2,
 		packageURI: packageURI1,
 		env:        "prod",
@@ -467,6 +474,7 @@ func Test_Evaluate(t *testing.T) {
 		org          organization.Policy
 		noVerifier   bool
 		packageURI   string
+		digests      intoto.DigestSet
 		verifierOpts dummyVerifierOpts
 		expected     error
 	}{
@@ -474,8 +482,64 @@ func Test_Evaluate(t *testing.T) {
 			name:         "passing",
 			verifierOpts: vopts,
 			packageURI:   packageURI1,
+			digests:      digests,
 			org:          org,
 			policy:       project,
+		},
+		{
+			name:         "empty digests",
+			expected:     errs.ErrorInvalidField,
+			verifierOpts: vopts,
+			packageURI:   packageURI1,
+			org:          org,
+			policy:       project,
+		},
+		{
+			name:         "empty digest value",
+			expected:     errs.ErrorInvalidField,
+			verifierOpts: vopts,
+			packageURI:   packageURI1,
+			digests: intoto.DigestSet{
+				"sha256": "val256",
+				"":       "val512",
+			},
+			org:    org,
+			policy: project,
+		},
+		{
+			name:         "digest mismatch",
+			expected:     errs.ErrorVerification,
+			verifierOpts: vopts,
+			packageURI:   packageURI1,
+			digests: intoto.DigestSet{
+				"sha256": "val256_different",
+				"sha512": "val512",
+			},
+			org:    org,
+			policy: project,
+		},
+		{
+			name:         "digest mismatch single match",
+			expected:     errs.ErrorVerification,
+			verifierOpts: vopts,
+			packageURI:   packageURI1,
+			digests: intoto.DigestSet{
+				"sha512": "val512",
+			},
+			org:    org,
+			policy: project,
+		},
+		{
+			name:         "empty digest key",
+			expected:     errs.ErrorInvalidField,
+			verifierOpts: vopts,
+			packageURI:   packageURI1,
+			digests: intoto.DigestSet{
+				"sha256": "val256",
+				"sha512": "",
+			},
+			org:    org,
+			policy: project,
 		},
 		{
 			name:         "no verifier",
@@ -483,6 +547,7 @@ func Test_Evaluate(t *testing.T) {
 			noVerifier:   true,
 			verifierOpts: vopts,
 			packageURI:   packageURI1,
+			digests:      digests,
 			org:          org,
 			policy:       project,
 		},
@@ -491,6 +556,7 @@ func Test_Evaluate(t *testing.T) {
 			expected:     errs.ErrorNotFound,
 			verifierOpts: vopts,
 			packageURI:   packageURI1 + "_not",
+			digests:      digests,
 			org:          org,
 			policy:       project,
 		},
@@ -499,6 +565,7 @@ func Test_Evaluate(t *testing.T) {
 			expected:     errs.ErrorVerification,
 			verifierOpts: vopts,
 			packageURI:   packageURI1,
+			digests:      digests,
 			org: organization.Policy{
 				Roots: organization.Roots{
 					Release: []organization.Root{
@@ -528,6 +595,7 @@ func Test_Evaluate(t *testing.T) {
 				env:        "staging",
 			},
 			packageURI: packageURI1,
+			digests:    digests,
 			org:        org,
 			policy:     project,
 		},
@@ -539,13 +607,13 @@ func Test_Evaluate(t *testing.T) {
 			// Create the verifier that succeeds for the right parameters.
 			var verifier options.AttestationVerifier
 			if !tt.noVerifier {
-				verifier = common.NewAttestationVerifier(tt.packageURI,
+				verifier = common.NewAttestationVerifier(tt.verifierOpts.digests, tt.packageURI,
 					tt.verifierOpts.env, tt.verifierOpts.releaserID)
 			}
 			opts := options.ReleaseVerification{
 				Verifier: verifier,
 			}
-			err := tt.policy.Evaluate(tt.packageURI, tt.org, opts)
+			err := tt.policy.Evaluate(tt.digests, tt.packageURI, tt.org, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

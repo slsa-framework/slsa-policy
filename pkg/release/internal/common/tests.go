@@ -60,11 +60,25 @@ type attesationVerifier struct {
 }
 
 func (v *attesationVerifier) VerifyBuildAttestation(digests intoto.DigestSet, packageURI, builderID, sourceURI string) error {
-	if packageURI == v.packageURI && builderID == v.builderID && sourceURI == v.sourceURI {
+	if packageURI == v.packageURI && builderID == v.builderID && sourceURI == v.sourceURI && mapEq(digests, v.digests) {
 		return nil
 	}
-	fmt.Println(builderID, sourceURI, packageURI, digests)
-	fmt.Println(v.builderID, v.sourceURI, v.packageURI, v.digests)
 	return fmt.Errorf("%w: cannot verify package URI (%q) builder ID (%q) source URI (%q) digests (%q)",
 		errs.ErrorVerification, packageURI, builderID, sourceURI, digests)
+}
+
+func mapEq(m1, m2 map[string]string) bool {
+	if len(m1) != len(m2) {
+		return false
+	}
+	for k, v := range m1 {
+		vv, exists := m2[k]
+		if !exists {
+			return false
+		}
+		if vv != v {
+			return false
+		}
+	}
+	return true
 }

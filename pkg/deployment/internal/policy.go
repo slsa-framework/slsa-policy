@@ -8,6 +8,7 @@ import (
 	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/organization"
 	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/project"
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
+	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
 
@@ -31,12 +32,15 @@ func PolicyNew(org io.ReadCloser, projects iterator.NamedReadCloserIterator) (*P
 	}, nil
 }
 
-func (p *Policy) Evaluate(packageURI, policyID string, releaseOpts options.ReleaseVerification) error {
+func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI, policyID string, releaseOpts options.ReleaseVerification) error {
 	if packageURI == "" {
 		return fmt.Errorf("%w: package uri is empty", errs.ErrorInvalidInput)
 	}
 	if policyID == "" {
 		return fmt.Errorf("%w: policy id is empty", errs.ErrorInvalidInput)
+	}
+	if err := digests.Validate(); err != nil {
+		return err
 	}
 	// Get the project policy for the artifact.
 	projectPolicy, exists := p.projectPolicies[policyID]
@@ -45,13 +49,13 @@ func (p *Policy) Evaluate(packageURI, policyID string, releaseOpts options.Relea
 	}
 
 	// Evaluate the org policy.
-	err := p.orgPolicy.Evaluate(packageURI, releaseOpts)
+	err := p.orgPolicy.Evaluate(digests, packageURI, releaseOpts)
 	if err != nil {
 		return err
 	}
 
 	// Evaluate the project policy.
-	if err := projectPolicy.Evaluate(packageURI, p.orgPolicy, releaseOpts); err != nil {
+	if err := projectPolicy.Evaluate(digests, packageURI, p.orgPolicy, releaseOpts); err != nil {
 		return err
 	}
 	return nil
