@@ -10,7 +10,6 @@ import (
 	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/options"
 	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/organization"
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	// "github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
 func Test_validateFormat(t *testing.T) {
