@@ -97,6 +97,20 @@ func (a *Creation) setPolicy(policy map[string]intoto.Policy) error {
 	return nil
 }
 
+func SetPackageVersion(version string) AttestationCreationOption {
+	return func(a *Creation) error {
+		return a.setPackageVersion(version)
+	}
+}
+
+func (a *Creation) setPackageVersion(version string) error {
+	if a.attestation.Predicate.Package.Annotations == nil {
+		a.attestation.Predicate.Package.Annotations = make(map[string]interface{})
+	}
+	a.attestation.Predicate.Package.Annotations[versionAnnotation] = version
+	return nil
+}
+
 func SetSlsaBuildLevel(level int) AttestationCreationOption {
 	return func(a *Creation) error {
 		return a.setSlsaBuildLevel(level)

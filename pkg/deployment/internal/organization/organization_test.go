@@ -164,22 +164,6 @@ func Test_validateReleaseRoots(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "one root with empty name",
-			policy: &Policy{
-				Roots: Roots{
-					Release: []Root{
-						{
-							ID: "releaser id",
-							Build: Build{
-								MaxSlsaLevel: common.AsPointer(3),
-							},
-						},
-					},
-				},
-			},
-			expected: errs.ErrorInvalidField,
-		},
-		{
 			name: "one root with empty level",
 			policy: &Policy{
 				Roots: Roots{

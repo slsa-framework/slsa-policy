@@ -19,6 +19,57 @@ import (
 
 func Test_PolicyNew(t *testing.T) {
 	t.Parallel()
+	packageURI1 := "package_uri1"
+	packageURI2 := "package_uri2"
+	builderName1 := "builder_name1"
+	builderName2 := "builder_name2"
+	sourceURI1 := "source_uri1"
+	sourceURI2 := "source_uri2"
+	builderID1 := "builder_id1"
+	builderID2 := "builder_id2"
+	org := &organization.Policy{
+		Format: 1,
+		Roots: organization.Roots{
+			Build: []organization.Root{
+				{
+					ID:        builderID1,
+					Name:      builderName1,
+					SlsaLevel: common.AsPointer(2),
+				},
+				{
+					ID:        builderID2,
+					Name:      builderName2,
+					SlsaLevel: common.AsPointer(3),
+				},
+			},
+		},
+	}
+	projects := []project.Policy{
+		{
+			Format: 1,
+			Package: project.Package{
+				URI: packageURI1,
+			},
+			BuildRequirements: project.BuildRequirements{
+				RequireSlsaBuilder: builderName1,
+				Repository: project.Repository{
+					URI: sourceURI1,
+				},
+			},
+		},
+		{
+			Format: 1,
+			Package: project.Package{
+				URI: packageURI2,
+			},
+			BuildRequirements: project.BuildRequirements{
+				RequireSlsaBuilder: builderName2,
+				Repository: project.Repository{
+					URI: sourceURI2,
+				},
+			},
+		},
+	}
 
 	tests := []struct {
 		name     string
@@ -27,50 +78,9 @@ func Test_PolicyNew(t *testing.T) {
 		expected error
 	}{
 		{
-			name: "valid policies",
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
-			projects: []project.Policy{
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri1",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
-						Repository: project.Repository{
-							URI: "source_uri1",
-						},
-					},
-				},
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri2",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
-						Repository: project.Repository{
-							URI: "source_uri2",
-						},
-					},
-				},
-			},
+			name:     "valid policies",
+			org:      org,
+			projects: projects,
 		},
 		{
 			name: "same builder id",
@@ -80,43 +90,18 @@ func Test_PolicyNew(t *testing.T) {
 					Build: []organization.Root{
 						{
 							ID:        "builder_id",
-							Name:      "builder_name1",
+							Name:      builderName1,
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
 							ID:        "builder_id",
-							Name:      "builder_name2",
+							Name:      builderName2,
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
 				},
 			},
-			projects: []project.Policy{
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri1",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
-						Repository: project.Repository{
-							URI: "source_uri1",
-						},
-					},
-				},
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri2",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
-						Repository: project.Repository{
-							URI: "source_uri2",
-						},
-					},
-				},
-			},
+			projects: projects,
 			expected: errs.ErrorInvalidField,
 		},
 		{
@@ -126,87 +111,46 @@ func Test_PolicyNew(t *testing.T) {
 				Roots: organization.Roots{
 					Build: []organization.Root{
 						{
-							ID:        "builder_id1",
+							ID:        builderID1,
 							Name:      "builder_name",
 							SlsaLevel: common.AsPointer(2),
 						},
 						{
-							ID:        "builder_id2",
+							ID:        builderID2,
 							Name:      "builder_name",
 							SlsaLevel: common.AsPointer(3),
 						},
 					},
 				},
 			},
-			projects: []project.Policy{
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri1",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
-						Repository: project.Repository{
-							URI: "source_uri1",
-						},
-					},
-				},
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri2",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
-						Repository: project.Repository{
-							URI: "source_uri2",
-						},
-					},
-				},
-			},
+			projects: projects,
 			expected: errs.ErrorInvalidField,
 		},
 		{
 			name: "same release uri",
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
+			org:  org,
 			projects: []project.Policy{
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri",
+						URI: packageURI1,
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
+						RequireSlsaBuilder: builderName1,
 						Repository: project.Repository{
-							URI: "source_uri1",
+							URI: sourceURI1,
 						},
 					},
 				},
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri",
+						URI: packageURI1,
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
+						RequireSlsaBuilder: builderName2,
 						Repository: project.Repository{
-							URI: "source_uri2",
+							URI: sourceURI2,
 						},
 					},
 				},
@@ -214,49 +158,33 @@ func Test_PolicyNew(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "same release uri env set and not",
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
+			name: "same package uri env set and not",
+			org:  org,
 			projects: []project.Policy{
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri",
+						URI: packageURI1,
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
 						},
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
+						RequireSlsaBuilder: builderName1,
 						Repository: project.Repository{
-							URI: "source_uri1",
+							URI: sourceURI1,
 						},
 					},
 				},
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri",
+						URI: packageURI1,
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
+						RequireSlsaBuilder: builderName2,
 						Repository: project.Repository{
-							URI: "source_uri2",
+							URI: sourceURI2,
 						},
 					},
 				},
@@ -264,52 +192,36 @@ func Test_PolicyNew(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "same release uri different env",
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
+			name: "same package uri different env",
+			org:  org,
 			projects: []project.Policy{
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri",
+						URI: packageURI1,
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
 						},
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
+						RequireSlsaBuilder: builderName1,
 						Repository: project.Repository{
-							URI: "source_uri1",
+							URI: sourceURI1,
 						},
 					},
 				},
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri",
+						URI: packageURI1,
 						Environment: project.Environment{
 							AnyOf: []string{"prod"},
 						},
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
+						RequireSlsaBuilder: builderName2,
 						Repository: project.Repository{
-							URI: "source_uri2",
+							URI: sourceURI2,
 						},
 					},
 				},
@@ -317,52 +229,36 @@ func Test_PolicyNew(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "same release uri same env",
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
+			name: "same package uri same env",
+			org:  org,
 			projects: []project.Policy{
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri",
+						URI: packageURI1,
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
 						},
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
+						RequireSlsaBuilder: builderName1,
 						Repository: project.Repository{
-							URI: "source_uri1",
+							URI: sourceURI1,
 						},
 					},
 				},
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri",
+						URI: packageURI1,
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
 						},
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
+						RequireSlsaBuilder: builderName2,
 						Repository: project.Repository{
-							URI: "source_uri2",
+							URI: sourceURI2,
 						},
 					},
 				},
@@ -371,45 +267,29 @@ func Test_PolicyNew(t *testing.T) {
 		},
 		{
 			name: "builder does not exist",
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
+			org:  org,
 			projects: []project.Policy{
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri1",
+						URI: packageURI1,
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "other_builder_name1",
+						RequireSlsaBuilder: builderName1 + "_mismatch",
 						Repository: project.Repository{
-							URI: "source_uri1",
+							URI: sourceURI1,
 						},
 					},
 				},
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri2",
+						URI: packageURI2,
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
+						RequireSlsaBuilder: builderName2,
 						Repository: project.Repository{
-							URI: "source_uri2",
+							URI: sourceURI2,
 						},
 					},
 				},
@@ -418,45 +298,29 @@ func Test_PolicyNew(t *testing.T) {
 		},
 		{
 			name: "same source valid",
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
+			org:  org,
 			projects: []project.Policy{
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri1",
+						URI: packageURI1,
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
+						RequireSlsaBuilder: builderName1,
 						Repository: project.Repository{
-							URI: "source_uri",
+							URI: sourceURI1,
 						},
 					},
 				},
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri2",
+						URI: packageURI2,
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
+						RequireSlsaBuilder: builderName2,
 						Repository: project.Repository{
-							URI: "source_uri",
+							URI: sourceURI1,
 						},
 					},
 				},
@@ -504,282 +368,146 @@ func Test_Evaluate(t *testing.T) {
 		"sha256": "val256",
 		"sha512": "val512",
 	}
+	packageURI1 := "package_uri1"
+	packageURI2 := "package_uri2"
+	builderName1 := "builder_name1"
+	builderName2 := "builder_name2"
+	sourceURI1 := "source_uri1"
+	sourceURI2 := "source_uri2"
+	builderID1 := "builder_id1"
+	builderID2 := "builder_id2"
+	org := &organization.Policy{
+		Format: 1,
+		Roots: organization.Roots{
+			Build: []organization.Root{
+				{
+					ID:        builderID1,
+					Name:      builderName1,
+					SlsaLevel: common.AsPointer(2),
+				},
+				{
+					ID:        builderID2,
+					Name:      builderName2,
+					SlsaLevel: common.AsPointer(3),
+				},
+			},
+		},
+	}
+	projects := []project.Policy{
+		{
+			Format: 1,
+			Package: project.Package{
+				URI: packageURI1,
+			},
+			BuildRequirements: project.BuildRequirements{
+				RequireSlsaBuilder: builderName1,
+				Repository: project.Repository{
+					URI: sourceURI1,
+				},
+			},
+		},
+		{
+			Format: 1,
+			Package: project.Package{
+				URI: packageURI2,
+			},
+			BuildRequirements: project.BuildRequirements{
+				RequireSlsaBuilder: builderName2,
+				Repository: project.Repository{
+					URI: sourceURI2,
+				},
+			},
+		},
+	}
+	vopts := dummyVerifierOpts{
+		builderID: builderID1,
+		sourceURI: sourceURI1,
+		digests:   digests,
+	}
 	tests := []struct {
 		name         string
 		org          *organization.Policy
 		projects     []project.Policy
 		verifierOpts dummyVerifierOpts
 		level        int
-		releaseURI   string
+		packageURI   string
 		expected     error
 	}{
 		{
-			name:       "builder 1 success",
-			releaseURI: "release_uri1",
-			level:      2,
-			verifierOpts: dummyVerifierOpts{
-				builderID: "builder_name1",
-				sourceURI: "source_uri1",
-				digests:   digests,
-			},
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
-			projects: []project.Policy{
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri1",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
-						Repository: project.Repository{
-							URI: "source_uri1",
-						},
-					},
-				},
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri2",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
-						Repository: project.Repository{
-							URI: "source_uri2",
-						},
-					},
-				},
-			},
+			name:         "builder 1 success",
+			packageURI:   packageURI1,
+			level:        2,
+			verifierOpts: vopts,
+			org:          org,
+			projects:     projects,
 		},
 		{
-			name:       "mismatch release uri",
-			releaseURI: "mismatch_release_uri1",
-			level:      2,
-			verifierOpts: dummyVerifierOpts{
-				builderID: "builder_name1",
-				sourceURI: "source_uri1",
-				digests:   digests,
-			},
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
-			projects: []project.Policy{
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri1",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
-						Repository: project.Repository{
-							URI: "source_uri1",
-						},
-					},
-				},
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri2",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
-						Repository: project.Repository{
-							URI: "source_uri2",
-						},
-					},
-				},
-			},
-			expected: errs.ErrorNotFound,
+			name:         "mismatch package uri",
+			packageURI:   packageURI1 + "_mismatch",
+			level:        2,
+			verifierOpts: vopts,
+			org:          org,
+			projects:     projects,
+			expected:     errs.ErrorNotFound,
 		},
 		{
 			name:       "mismatch source uri",
-			releaseURI: "release_uri1",
+			packageURI: packageURI1,
 			level:      2,
 			verifierOpts: dummyVerifierOpts{
-				builderID: "builder_name1",
-				sourceURI: "mismatch_source_uri1",
+				builderID: builderID1,
+				sourceURI: sourceURI1 + "_mismatch",
 				digests:   digests,
 			},
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
-			projects: []project.Policy{
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri1",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
-						Repository: project.Repository{
-							URI: "source_uri1",
-						},
-					},
-				},
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri2",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
-						Repository: project.Repository{
-							URI: "source_uri2",
-						},
-					},
-				},
-			},
+			org:      org,
+			projects: projects,
 			expected: errs.ErrorVerification,
 		},
 		{
 			name:       "request with env policy no env",
-			releaseURI: "release_uri1",
+			packageURI: packageURI1,
 			level:      2,
 			verifierOpts: dummyVerifierOpts{
-				builderID:   "builder_name1",
-				sourceURI:   "source_uri1",
+				builderID:   builderID1,
+				sourceURI:   sourceURI1,
 				digests:     digests,
 				environment: common.AsPointer("dev"),
 			},
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
-			projects: []project.Policy{
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri1",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
-						Repository: project.Repository{
-							URI: "source_uri1",
-						},
-					},
-				},
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri2",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
-						Repository: project.Repository{
-							URI: "source_uri2",
-						},
-					},
-				},
-			},
+			org:      org,
+			projects: projects,
 			expected: errs.ErrorInvalidInput,
 		},
 		{
-			name:       "request no env policy with env",
-			releaseURI: "release_uri1",
-			level:      2,
-			verifierOpts: dummyVerifierOpts{
-				builderID: "builder_name1",
-				sourceURI: "source_uri1",
-				digests:   digests,
-			},
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
+			name:         "request no env policy with env",
+			packageURI:   packageURI1,
+			level:        2,
+			verifierOpts: vopts,
+			org:          org,
 			projects: []project.Policy{
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri1",
+						URI: packageURI1,
 						Environment: project.Environment{
 							AnyOf: []string{"dev", "prod"},
 						},
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
+						RequireSlsaBuilder: builderName1,
 						Repository: project.Repository{
-							URI: "source_uri1",
+							URI: sourceURI1,
 						},
 					},
 				},
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri2",
+						URI: packageURI2,
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
+						RequireSlsaBuilder: builderName2,
 						Repository: project.Repository{
-							URI: "source_uri2",
+							URI: sourceURI2,
 						},
 					},
 				},
@@ -788,56 +516,40 @@ func Test_Evaluate(t *testing.T) {
 		},
 		{
 			name:       "success builder 2 with dev env",
-			releaseURI: "release_uri2",
+			packageURI: packageURI2,
 			level:      3,
 			verifierOpts: dummyVerifierOpts{
-				builderID:   "builder_name2",
-				sourceURI:   "source_uri2",
+				builderID:   builderID2,
+				sourceURI:   sourceURI2,
 				digests:     digests,
 				environment: common.AsPointer("dev"),
 			},
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
+			org: org,
 			projects: []project.Policy{
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri1",
+						URI: packageURI1,
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
+						RequireSlsaBuilder: builderName1,
 						Repository: project.Repository{
-							URI: "source_uri1",
+							URI: sourceURI1,
 						},
 					},
 				},
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: "release_uri2",
+						URI: packageURI2,
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
 						},
 					},
 					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
+						RequireSlsaBuilder: builderName2,
 						Repository: project.Repository{
-							URI: "source_uri2",
+							URI: sourceURI2,
 						},
 					},
 				},
@@ -845,56 +557,15 @@ func Test_Evaluate(t *testing.T) {
 		},
 		{
 			name:       "mismatch builder id",
-			releaseURI: "release_uri1",
+			packageURI: packageURI1,
 			level:      2,
 			verifierOpts: dummyVerifierOpts{
-				builderID: "mismatch_builder_name1",
-				sourceURI: "source_uri1",
+				builderID: builderName1 + "_mismatch",
+				sourceURI: sourceURI1,
 				digests:   digests,
 			},
-			org: &organization.Policy{
-				Format: 1,
-				Roots: organization.Roots{
-					Build: []organization.Root{
-						{
-							ID:        "builder_id1",
-							Name:      "builder_name1",
-							SlsaLevel: common.AsPointer(2),
-						},
-						{
-							ID:        "builder_id2",
-							Name:      "builder_name2",
-							SlsaLevel: common.AsPointer(3),
-						},
-					},
-				},
-			},
-			projects: []project.Policy{
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri1",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name1",
-						Repository: project.Repository{
-							URI: "source_uri1",
-						},
-					},
-				},
-				{
-					Format: 1,
-					Package: project.Package{
-						URI: "release_uri2",
-					},
-					BuildRequirements: project.BuildRequirements{
-						RequireSlsaBuilder: "builder_name2",
-						Repository: project.Repository{
-							URI: "source_uri2",
-						},
-					},
-				},
-			},
+			org:      org,
+			projects: projects,
 			expected: errs.ErrorVerification,
 		},
 	}
@@ -928,13 +599,13 @@ func Test_Evaluate(t *testing.T) {
 				return
 			}
 			// Create the verifier.
-			verifier := common.NewAttestationVerifier(tt.verifierOpts.digests, tt.releaseURI,
+			verifier := common.NewAttestationVerifier(tt.verifierOpts.digests, tt.packageURI,
 				tt.verifierOpts.builderID, tt.verifierOpts.sourceURI)
 			opts := options.BuildVerification{
 				Verifier:    verifier,
 				Environment: tt.verifierOpts.environment,
 			}
-			level, err := policy.Evaluate(tt.verifierOpts.digests, tt.releaseURI, opts)
+			level, err := policy.Evaluate(tt.verifierOpts.digests, tt.packageURI, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

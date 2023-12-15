@@ -19,8 +19,12 @@ func Test_CreationNew(t *testing.T) {
 			"gitCommit": "another_value",
 		},
 	}
+	packageURI := "package_uri"
 	packageDesc := intoto.ResourceDescriptor{
-		URI: "the_uri",
+		URI: packageURI,
+		Annotations: map[string]interface{}{
+			versionAnnotation: "package_version",
+		},
 	}
 	tests := []struct {
 		name           string
@@ -39,39 +43,39 @@ func Test_CreationNew(t *testing.T) {
 		{
 			name:     "result with no package URI",
 			subject:  subject,
-			expected: errs.ErrorInvalidInput,
+			expected: errs.ErrorInvalidField,
 		},
 		{
 			name: "result with no subject digests",
 			subject: intoto.Subject{
-				URI: "the_uri",
+				URI: packageURI,
 			},
 			packageDesc: packageDesc,
-			expected:    errs.ErrorInvalidInput,
+			expected:    errs.ErrorInvalidField,
 		},
 		{
 			name: "result with empty digest value",
 			subject: intoto.Subject{
-				URI: "the_uri",
+				URI: packageURI,
 				Digests: intoto.DigestSet{
 					"sha256":    "some_value",
 					"gitCommit": "",
 				},
 			},
 			packageDesc: packageDesc,
-			expected:    errs.ErrorInvalidInput,
+			expected:    errs.ErrorInvalidField,
 		},
 		{
 			name: "result with empty digest key",
 			subject: intoto.Subject{
-				URI: "the_uri",
+				URI: packageURI,
 				Digests: intoto.DigestSet{
 					"sha256": "some_value",
 					"":       "another_value",
 				},
 			},
 			packageDesc: packageDesc,
-			expected:    errs.ErrorInvalidInput,
+			expected:    errs.ErrorInvalidField,
 		},
 		{
 			name:           "result with version",
@@ -109,7 +113,7 @@ func Test_CreationNew(t *testing.T) {
 			name:    "result with env",
 			subject: subject,
 			packageDesc: intoto.ResourceDescriptor{
-				URI: "the_uri",
+				URI: packageURI,
 				Annotations: map[string]interface{}{
 					environmentAnnotation: "prod",
 				},
@@ -140,7 +144,7 @@ func Test_CreationNew(t *testing.T) {
 			name:    "result with all set",
 			subject: subject,
 			packageDesc: intoto.ResourceDescriptor{
-				URI: "the_uri",
+				URI: packageURI,
 				Annotations: map[string]interface{}{
 					environmentAnnotation: "prod",
 				},
@@ -237,8 +241,12 @@ func Test_EnterSafeMode(t *testing.T) {
 			"gitCommit": "another_value",
 		},
 	}
+	packageURI := "package_uri"
 	packageDesc := intoto.ResourceDescriptor{
-		URI: "the_uri",
+		URI: packageURI,
+		Annotations: map[string]interface{}{
+			versionAnnotation: "package_version",
+		},
 	}
 	tests := []struct {
 		name        string
