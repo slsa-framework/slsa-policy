@@ -90,9 +90,6 @@ func (r PolicyEvaluationResult) AttestationNew(creatorID string, options ...Atte
 	opts = append(opts, EnterSafeMode())
 	// Add caller options.
 	opts = append(opts, options...)
-	if r.principal == nil {
-		return nil, fmt.Errorf("%w: principal is nil", errs.ErrorInternal)
-	}
 	context := map[string]string{
 		contextPrincipal: r.principal.URI,
 	}
