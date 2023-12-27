@@ -22,6 +22,8 @@ type attestation struct {
 type properties map[string]interface{}
 
 const (
-	statementType = "https://in-toto.io/Statement/v1"
-	predicateType = "https://slsa.dev/deployment_attestation/v0.1"
+	statementType        = "https://in-toto.io/Statement/v1"
+	predicateType        = "https://slsa.dev/deployment_attestation/v0.1"
+	contextTypePrincipal = "https://slsa.dev/deployment/contextType/Principal"
+	contextPrincipal     = "https://slsa.dev/deployment/context/principal"
 )

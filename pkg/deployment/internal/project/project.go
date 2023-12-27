@@ -173,19 +173,19 @@ func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organizatio
 
 // Evaluate evaluates a policy.
 func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
-	orgPolicy organization.Policy, releaseOpts options.ReleaseVerification) error {
+	orgPolicy organization.Policy, releaseOpts options.ReleaseVerification) (*Principal, error) {
 	if releaseOpts.Verifier == nil {
-		return fmt.Errorf("%w: verifier is empty", errs.ErrorInvalidInput)
+		return nil, fmt.Errorf("%w: verifier is empty", errs.ErrorInvalidInput)
 	}
 
 	// Validate the digest.
 	if err := digests.Validate(); err != nil {
-		return err
+		return nil, err
 	}
 	// Get the package for principal URI.
 	pkg, err := p.getPackage(packageURI)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	env := pkg.Environment.AnyOf
@@ -215,12 +215,13 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 
 		// Sanity check.
 		if err := validateEnv(env, verifiedEnv); err != nil {
-			return err
+			return nil, err
 		}
-
-		return nil
+		// The target URI of the policy.
+		cpy := p.Principal
+		return &cpy, nil
 	}
-	return fmt.Errorf("%w: cannot verify: %v", errs.ErrorVerification, allErrs)
+	return nil, fmt.Errorf("%w: cannot verify: %v", errs.ErrorVerification, allErrs)
 }
 
 func validateEnv(env []string, verifiedEnv *string) error {

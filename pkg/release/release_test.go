@@ -27,7 +27,8 @@ func Test_AttestationNew(t *testing.T) {
 	level := 2
 	packageURI := "package_uri"
 	environment := common.AsPointer("prod")
-	creatorVersion := "v1.2.3"
+	creatorID := "creator_id"
+	creatorVersion := "creato_version"
 	policy := map[string]intoto.Policy{
 		"org": intoto.Policy{
 			URI: "policy1_uri",
@@ -44,7 +45,6 @@ func Test_AttestationNew(t *testing.T) {
 			},
 		},
 	}
-	creatorID := "creator_id"
 	tests := []struct {
 		name           string
 		creatorID      string
@@ -148,6 +148,12 @@ func Test_AttestationNew(t *testing.T) {
 			if err != nil {
 				return
 			}
+			if diff := cmp.Diff(statementType, att.Header.Type); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			if diff := cmp.Diff(predicateType, att.Header.PredicateType); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
 			if diff := cmp.Diff(tt.creatorID, att.attestation.Predicate.Creator.ID); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -195,9 +201,6 @@ func Test_e2e(t *testing.T) {
 	digests := intoto.DigestSet{
 		"sha256":    "some_value",
 		"gitCommit": "another_value",
-	}
-	subject := intoto.Subject{
-		Digests: digests,
 	}
 
 	packageURI := "package_uri"
@@ -280,7 +283,7 @@ func Test_e2e(t *testing.T) {
 		org                organization.Policy
 		projects           []project.Policy
 		options            []AttestationCreationOption
-		subject            intoto.Subject
+		digests            intoto.DigestSet
 		packageEnvironment *string
 		packageVersion     string
 		packageURI         string
@@ -309,7 +312,7 @@ func Test_e2e(t *testing.T) {
 			},
 			packageURI: packageURI,
 			// Fields to validate the created attestation.
-			subject:        subject,
+			digests:        digests,
 			buildLevel:     githubLevel,
 			creatorVersion: creatorVersion,
 			policy:         policy,
@@ -330,7 +333,7 @@ func Test_e2e(t *testing.T) {
 			},
 			packageURI: packageURI,
 			// Fields to validate the created attestation.
-			subject:        subject,
+			digests:        digests,
 			buildLevel:     githubLevel,
 			creatorVersion: creatorVersion,
 			policy:         policy,
@@ -367,7 +370,7 @@ func Test_e2e(t *testing.T) {
 			},
 			packageURI: packageURI,
 			// Fields to validate the created attestation.
-			subject:        subject,
+			digests:        digests,
 			buildLevel:     githubLevel,
 			creatorVersion: creatorVersion,
 			policy:         policy,
@@ -391,7 +394,7 @@ func Test_e2e(t *testing.T) {
 			},
 			packageURI: packageURI,
 			// Fields to validate the created attestation.
-			subject:        subject,
+			digests:        digests,
 			buildLevel:     githubLevel,
 			creatorVersion: creatorVersion,
 			policy:         policy,
@@ -427,7 +430,7 @@ func Test_e2e(t *testing.T) {
 			},
 			packageURI: packageURI,
 			// Fields to validate the created attestation.
-			subject:        subject,
+			digests:        digests,
 			buildLevel:     githubLevel,
 			creatorVersion: creatorVersion,
 			policy:         policy,
@@ -436,7 +439,7 @@ func Test_e2e(t *testing.T) {
 			sourceURI: sourceURI,
 		},
 		{
-			name:      "not autor version",
+			name:      "no author version",
 			creatorID: creatorID,
 			// Policies to evaluate.
 			org:                orgPolicy,
@@ -448,7 +451,7 @@ func Test_e2e(t *testing.T) {
 			},
 			packageURI: packageURI,
 			// Fields to validate the created attestation.
-			subject:    subject,
+			digests:    digests,
 			buildLevel: githubLevel,
 			policy:     policy,
 			// Builder that the verifier will use.
@@ -468,7 +471,7 @@ func Test_e2e(t *testing.T) {
 			},
 			packageURI: packageURI,
 			// Fields to validate the created attestation.
-			subject:        subject,
+			digests:        digests,
 			buildLevel:     githubLevel,
 			creatorVersion: creatorVersion,
 			// Builder that the verifier will use.
@@ -488,7 +491,7 @@ func Test_e2e(t *testing.T) {
 			},
 			packageURI: packageURI,
 			// Fields to validate the created attestation.
-			subject:        subject,
+			digests:        digests,
 			buildLevel:     githubLevel,
 			creatorVersion: creatorVersion,
 			policy:         policy,
@@ -524,12 +527,12 @@ func Test_e2e(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)
 			}
-			verifier := common.NewAttestationVerifier(tt.subject.Digests, tt.packageURI, tt.builderID, tt.sourceURI)
+			verifier := common.NewAttestationVerifier(tt.digests, tt.packageURI, tt.builderID, tt.sourceURI)
 			opts := BuildVerificationOption{
 				Verifier:    verifier,
 				Environment: tt.packageEnvironment,
 			}
-			result := pol.Evaluate(tt.subject.Digests, tt.packageURI, opts)
+			result := pol.Evaluate(tt.digests, tt.packageURI, opts)
 			if diff := cmp.Diff(tt.errorEvaluate, result.Error(), cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -572,48 +575,10 @@ func Test_e2e(t *testing.T) {
 			}
 
 			// Verify.
-			err = verification.Verify(tt.creatorID, tt.subject.Digests, tt.packageURI, options...)
+			err = verification.Verify(tt.creatorID, tt.digests, tt.packageURI, options...)
 			if diff := cmp.Diff(tt.errorVerify, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
-			/*if diff := cmp.Diff(tt.creatorID, att.attestation.Predicate.Creator.ID); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			if diff := cmp.Diff([]intoto.Subject{tt.subject}, att.attestation.Header.Subjects); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			if diff := cmp.Diff(tt.packageURI, att.attestation.Predicate.Package.URI); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			properties := att.attestation.Predicate.Properties
-			val, exists := properties[buildLevelProperty]
-			if !exists {
-				t.Fatalf("%q property does not exist: \n", buildLevelProperty)
-			}
-			v, ok := val.(int)
-			if !ok {
-				t.Fatalf("%q is not an int: %T\n", val, val)
-			}
-			if diff := cmp.Diff(tt.level, v); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			var expectedEnv string
-			if tt.environment != nil {
-				expectedEnv = *tt.environment
-			}
-			env, err := intoto.GetAnnotationValue(att.attestation.Predicate.Package.Annotations, environmentAnnotation)
-			if err != nil {
-				t.Fatalf("failed to retrieve annotation: %v\n", err)
-			}
-			if diff := cmp.Diff(expectedEnv, env); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			if diff := cmp.Diff(tt.creatorVersion, att.attestation.Predicate.Creator.Version); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			if diff := cmp.Diff(tt.policy, att.attestation.Predicate.Policy); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}*/
 		})
 	}
 }

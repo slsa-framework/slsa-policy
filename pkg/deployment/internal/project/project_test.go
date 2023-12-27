@@ -444,6 +444,9 @@ func Test_Evaluate(t *testing.T) {
 		},
 	}
 	project := Policy{
+		Principal: Principal{
+			URI: "principal_uri",
+		},
 		BuildRequirements: BuildRequirements{
 			RequireSlsaLevel: common.AsPointer(2),
 		},
@@ -613,8 +616,14 @@ func Test_Evaluate(t *testing.T) {
 			opts := options.ReleaseVerification{
 				Verifier: verifier,
 			}
-			err := tt.policy.Evaluate(tt.digests, tt.packageURI, tt.org, opts)
+			principal, err := tt.policy.Evaluate(tt.digests, tt.packageURI, tt.org, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			if err != nil {
+				return
+			}
+			if diff := cmp.Diff(*principal, project.Principal); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})

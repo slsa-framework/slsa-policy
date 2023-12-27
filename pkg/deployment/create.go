@@ -9,6 +9,7 @@ import (
 
 type Creation struct {
 	attestation
+	safeMode bool
 }
 
 type AttestationCreationOption func(*Creation) error
@@ -74,4 +75,19 @@ func SetPolicy(policy map[string]intoto.Policy) AttestationCreationOption {
 func (a *Creation) setPolicy(policy map[string]intoto.Policy) error {
 	a.attestation.Predicate.Policy = policy
 	return nil
+}
+
+func EnterSafeMode() AttestationCreationOption {
+	return func(a *Creation) error {
+		return a.enterSafeMode()
+	}
+}
+
+func (a *Creation) enterSafeMode() error {
+	a.safeMode = true
+	return nil
+}
+
+func (a *Creation) isSafeMode() bool {
+	return a.safeMode
 }

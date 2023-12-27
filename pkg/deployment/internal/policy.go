@@ -32,31 +32,32 @@ func PolicyNew(org io.ReadCloser, projects iterator.NamedReadCloserIterator) (*P
 	}, nil
 }
 
-func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI, policyID string, releaseOpts options.ReleaseVerification) error {
+func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI, policyID string, releaseOpts options.ReleaseVerification) (*project.Principal, error) {
 	if packageURI == "" {
-		return fmt.Errorf("%w: package uri is empty", errs.ErrorInvalidInput)
+		return nil, fmt.Errorf("%w: package uri is empty", errs.ErrorInvalidInput)
 	}
 	if policyID == "" {
-		return fmt.Errorf("%w: policy id is empty", errs.ErrorInvalidInput)
+		return nil, fmt.Errorf("%w: policy id is empty", errs.ErrorInvalidInput)
 	}
 	if err := digests.Validate(); err != nil {
-		return err
+		return nil, err
 	}
 	// Get the project policy for the artifact.
 	projectPolicy, exists := p.projectPolicies[policyID]
 	if !exists {
-		return fmt.Errorf("%w: policy id (%q) not present in project policies", errs.ErrorNotFound, policyID)
+		return nil, fmt.Errorf("%w: policy id (%q) not present in project policies", errs.ErrorNotFound, policyID)
 	}
 
 	// Evaluate the org policy.
 	err := p.orgPolicy.Evaluate(digests, packageURI, releaseOpts)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Evaluate the project policy.
-	if err := projectPolicy.Evaluate(digests, packageURI, p.orgPolicy, releaseOpts); err != nil {
-		return err
+	principal, err := projectPolicy.Evaluate(digests, packageURI, p.orgPolicy, releaseOpts)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return principal, nil
 }

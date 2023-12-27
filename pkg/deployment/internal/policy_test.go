@@ -1010,12 +1010,18 @@ func Test_Evaluate(t *testing.T) {
 			opts := options.ReleaseVerification{
 				Verifier: verifier,
 			}
-			err = policy.Evaluate(tt.digests, tt.packageURI, tt.policyID, opts)
+			principal, err := policy.Evaluate(tt.digests, tt.packageURI, tt.policyID, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			if err != nil {
 				return
+			}
+			if len(tt.projects) < 2 {
+				t.Fatalf("internal error. number of projects: %d", len(tt.projects))
+			}
+			if diff := cmp.Diff(tt.projects[1].Principal, *principal, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})
 	}
