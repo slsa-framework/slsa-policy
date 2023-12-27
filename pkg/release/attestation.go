@@ -11,6 +11,8 @@ type predicate struct {
 	Package              intoto.ResourceDescriptor `json:"package"`
 	Properties           properties                `json:"properties,omitempty"`
 	DependencyProperties map[string]properties     `json:"dependencyProperties,omitempty"`
+	// TODO: add inputs as a list of intoto.ResourceDescriptor, so that we can
+	// indicate which attestations were used.
 }
 
 type attestation struct {
@@ -22,7 +24,7 @@ type properties map[string]interface{}
 
 const (
 	statementType      = "https://in-toto.io/Statement/v1"
-	predicateType      = "https://slsa.dev/release_attestation/v1"
+	predicateType      = "https://slsa.dev/release_attestation/v0.1"
 	buildLevelProperty = "slsa.dev/build/level"
 	// TODO: make these public for users to be able to construct subjects.
 	environmentAnnotation = "environment"

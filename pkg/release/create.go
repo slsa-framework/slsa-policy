@@ -25,7 +25,6 @@ func CreationNew(creatorID string, subject intoto.Subject, packageDesc intoto.Re
 	if err := packageDesc.Validate(); err != nil {
 		return nil, err
 	}
-	// Validate the digests.
 	att := Creation{
 		attestation: attestation{
 			Header: intoto.Header{
@@ -59,7 +58,6 @@ func (a *Creation) ToBytes() ([]byte, error) {
 	return content, nil
 }
 
-// TODO: unit tests.
 func EnterSafeMode() AttestationCreationOption {
 	return func(a *Creation) error {
 		return a.enterSafeMode()

@@ -26,6 +26,23 @@ func Test_CreationNew(t *testing.T) {
 			versionAnnotation: "package_version",
 		},
 	}
+	policy := map[string]intoto.Policy{
+		"org": intoto.Policy{
+			URI: "policy1_uri",
+			Digests: intoto.DigestSet{
+				"sha256":    "value1",
+				"commitSha": "value2",
+			},
+		},
+		"project": intoto.Policy{
+			URI: "policy2_uri",
+			Digests: intoto.DigestSet{
+				"sha256":    "value3",
+				"commitSha": "value4",
+			},
+		},
+	}
+	creatorVersion := "creator_version"
 	tests := []struct {
 		name           string
 		subject        intoto.Subject
@@ -46,17 +63,14 @@ func Test_CreationNew(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "result with no subject digests",
-			subject: intoto.Subject{
-				URI: packageURI,
-			},
+			name:        "result with no subject digests",
+			subject:     intoto.Subject{},
 			packageDesc: packageDesc,
 			expected:    errs.ErrorInvalidField,
 		},
 		{
 			name: "result with empty digest value",
 			subject: intoto.Subject{
-				URI: packageURI,
 				Digests: intoto.DigestSet{
 					"sha256":    "some_value",
 					"gitCommit": "",
@@ -68,7 +82,6 @@ func Test_CreationNew(t *testing.T) {
 		{
 			name: "result with empty digest key",
 			subject: intoto.Subject{
-				URI: packageURI,
 				Digests: intoto.DigestSet{
 					"sha256": "some_value",
 					"":       "another_value",
@@ -78,16 +91,10 @@ func Test_CreationNew(t *testing.T) {
 			expected:    errs.ErrorInvalidField,
 		},
 		{
-			name:           "result with version",
-			subject:        subject,
-			packageDesc:    packageDesc,
-			creatorVersion: "my_version",
-		},
-		{
 			name:           "result with creator version",
 			subject:        subject,
 			packageDesc:    packageDesc,
-			creatorVersion: "my_version",
+			creatorVersion: creatorVersion,
 		},
 		{
 			name:        "result with level",
@@ -123,22 +130,7 @@ func Test_CreationNew(t *testing.T) {
 			name:        "result with policy",
 			subject:     subject,
 			packageDesc: packageDesc,
-			policy: map[string]intoto.Policy{
-				"org": intoto.Policy{
-					URI: "policy1_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "value1",
-						"commitSha": "value2",
-					},
-				},
-				"project": intoto.Policy{
-					URI: "policy2_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "value3",
-						"commitSha": "value4",
-					},
-				},
-			},
+			policy:      policy,
 		},
 		{
 			name:    "result with all set",
@@ -150,23 +142,8 @@ func Test_CreationNew(t *testing.T) {
 				},
 			},
 			buildLevel:     common.AsPointer(4),
-			creatorVersion: "my_version",
-			policy: map[string]intoto.Policy{
-				"org": intoto.Policy{
-					URI: "policy1_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "value1",
-						"commitSha": "value2",
-					},
-				},
-				"project": intoto.Policy{
-					URI: "policy2_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "value3",
-						"commitSha": "value4",
-					},
-				},
-			},
+			creatorVersion: creatorVersion,
+			policy:         policy,
 		},
 	}
 	for _, tt := range tests {

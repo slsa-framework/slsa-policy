@@ -50,13 +50,10 @@ func (v *Verification) Verify(creatorID string, digests intoto.DigestSet, packag
 		return err
 	}
 	// Creator ID.
-	if creatorID == "" {
-		return fmt.Errorf("%w: creator ID is empty", errs.ErrorInvalidField)
+	if err := v.verifyCreatorID(creatorID); err != nil {
+		return err
 	}
-	if creatorID != v.attestation.Predicate.Creator.ID {
-		return fmt.Errorf("%w: creator ID (%q) != attestation creator id (%q)", errs.ErrorMismatch,
-			creatorID, v.attestation.Predicate.Creator.ID)
-	}
+
 	// Package.
 	if err := v.verifyPackage(packageURI); err != nil {
 		return err
@@ -70,6 +67,17 @@ func (v *Verification) Verify(creatorID string, digests intoto.DigestSet, packag
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (v *Verification) verifyCreatorID(creatorID string) error {
+	if creatorID == "" {
+		return fmt.Errorf("%w: creator ID is empty", errs.ErrorInvalidField)
+	}
+	if creatorID != v.attestation.Predicate.Creator.ID {
+		return fmt.Errorf("%w: creator ID (%q) != attestation creator id (%q)", errs.ErrorMismatch,
+			creatorID, v.attestation.Predicate.Creator.ID)
 	}
 	return nil
 }

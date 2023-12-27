@@ -272,14 +272,14 @@ func Test_Verify(t *testing.T) {
 		Package:      packageDesc,
 		Properties:   releaseProperties,
 	}
-	att := &attestation{
+	att := attestation{
 		Header:    header,
 		Predicate: pred,
 	}
 	buildLevel := common.AsPointer(3)
 	tests := []struct {
 		name               string
-		att                *attestation
+		att                attestation
 		digests            intoto.DigestSet
 		creatorID          string
 		creatorVersion     string
@@ -304,7 +304,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "mismatch statement type",
-			att: &attestation{
+			att: attestation{
 				Header: intoto.Header{
 					Type:          statementType + "q",
 					PredicateType: predicateType,
@@ -324,7 +324,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "mismatch predicate type",
-			att: &attestation{
+			att: attestation{
 				Header: intoto.Header{
 					Type:          statementType,
 					PredicateType: predicateType + "a",
@@ -345,7 +345,7 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "mismatch creator id",
 			att:                att,
-			creatorID:          "mismatch_creatorID",
+			creatorID:          creatorID + "_mismatch",
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
@@ -359,7 +359,7 @@ func Test_Verify(t *testing.T) {
 			name:               "mismatch creator version",
 			att:                att,
 			creatorID:          creatorID,
-			creatorVersion:     "mismatch_creatorVersion",
+			creatorVersion:     creatorVersion + "_mismatch",
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageURI:         packageURI,
@@ -383,7 +383,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "no input package version",
-			att: &attestation{
+			att: attestation{
 				Header: intoto.Header{
 					Type:          statementType,
 					PredicateType: predicateType,
@@ -401,7 +401,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "no att package version",
-			att: &attestation{
+			att: attestation{
 				Header: intoto.Header{
 					Type:          statementType,
 					PredicateType: predicateType,
@@ -432,7 +432,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "empty att uri",
-			att: &attestation{
+			att: attestation{
 				Header: intoto.Header{
 					Type:          statementType,
 					PredicateType: predicateType,
@@ -470,7 +470,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "empty att subject",
-			att: &attestation{
+			att: attestation{
 				Header: intoto.Header{
 					Type:          statementType,
 					PredicateType: predicateType,
@@ -501,7 +501,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "empty att digest key",
-			att: &attestation{
+			att: attestation{
 				Header: intoto.Header{
 					Type:          statementType,
 					PredicateType: predicateType,
@@ -544,7 +544,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "empty att digest value",
-			att: &attestation{
+			att: attestation{
 				Header: intoto.Header{
 					Type:          statementType,
 					PredicateType: predicateType,
@@ -571,7 +571,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "empty input digest value",
-			att: &attestation{
+			att: attestation{
 				Header: intoto.Header{
 					Type:          statementType,
 					PredicateType: predicateType,
@@ -701,7 +701,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "mismatch no env att",
-			att: &attestation{
+			att: attestation{
 				Header: header,
 				Predicate: predicate{
 					Creator:      creator,
@@ -740,7 +740,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "no env no version no annotations",
-			att: &attestation{
+			att: attestation{
 				Header: header,
 				Predicate: predicate{
 					Creator:      creator,
@@ -844,7 +844,7 @@ func Test_Verify(t *testing.T) {
 			expected: errs.ErrorMismatch,
 		},
 		{
-			name:               "mismatch org sha256",
+			name:               "mismatch org gitCommit",
 			att:                att,
 			creatorID:          creatorID,
 			creatorVersion:     creatorVersion,
@@ -873,7 +873,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "level not present empty properties",
-			att: &attestation{
+			att: attestation{
 				Header: header,
 				Predicate: predicate{
 					Creator:      creator,
@@ -896,7 +896,7 @@ func Test_Verify(t *testing.T) {
 		},
 		{
 			name: "level field not present",
-			att: &attestation{
+			att: attestation{
 				Header: header,
 				Predicate: predicate{
 					Creator:      creator,
@@ -930,22 +930,7 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy: map[string]intoto.Policy{
-				"org": {
-					URI: "org_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "org_256",
-						"gitCommit": "org_commit",
-					},
-				},
-				"project": {
-					URI: "project_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "project_256",
-						"gitCommit": "project_commit",
-					},
-				},
-			},
+			policy:             policy,
 		},
 		{
 			name:               "ignore build level",
@@ -1011,7 +996,7 @@ func Test_Verify(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			// Create the reader for initialization.
-			content, err := json.Marshal(*tt.att)
+			content, err := json.Marshal(tt.att)
 			if err != nil {
 				t.Fatalf("failed to marshal: %v", err)
 			}
