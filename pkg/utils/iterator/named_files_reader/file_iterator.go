@@ -4,16 +4,20 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
 
 // FromPaths creates an iterator for a list of files.
-func FromPaths(paths []string) iterator.NamedReadCloserIterator {
-	return &filesIterator{paths: paths, index: -1}
+// root is the root dirctory stripped of absolute file paths to generate unique file IDs.
+func FromPaths(root string, paths []string) iterator.NamedReadCloserIterator {
+	absRoot, _ := filepath.Abs(root)
+	return &filesIterator{root: absRoot + string(os.PathSeparator), paths: paths, index: -1}
 }
 
 type filesIterator struct {
+	root  string
 	paths []string
 	index int
 	err   error
@@ -29,7 +33,9 @@ func (iter *filesIterator) Next() (string, io.ReadCloser) {
 		iter.err = err
 		return "", nil
 	}
-	return filepath.Base(iter.paths[iter.index]), file
+	absPath, _ := filepath.Abs(iter.paths[iter.index])
+	p := strings.TrimPrefix(absPath, iter.root)
+	return p, file
 }
 
 func (iter *filesIterator) HasNext() bool {

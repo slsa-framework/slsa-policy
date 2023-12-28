@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/deployment"
+	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/release"
 )
 
 func usage(prog string) {
@@ -31,9 +34,9 @@ func main() {
 	default:
 		usage(os.Args[0])
 	case "release":
-		runRelease(os.Args[0], arguments[1:])
+		release.Run(os.Args[0], arguments[1:])
 	case "deployment":
-		runDeployment(os.Args[0], arguments[1:])
+		deployment.Run(os.Args[0], arguments[1:])
 	}
 	os.Exit(0)
 }
