@@ -43,6 +43,9 @@ type internal_verifier struct {
 }
 
 func (i *internal_verifier) VerifyReleaseAttestation(digests intoto.DigestSet, packageURI string, environment []string, releaserID string) (*string, error) {
+	if i.releaseOpts.Verifier == nil {
+		return nil, fmt.Errorf("%w: verifier is nil", errs.ErrorInvalidInput)
+	}
 	return i.releaseOpts.Verifier.VerifyReleaseAttestation(digests, packageURI, environment, releaserID)
 }
 

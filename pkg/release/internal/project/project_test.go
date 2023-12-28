@@ -701,10 +701,12 @@ func Test_Evaluate(t *testing.T) {
 					tt.verifierOpts.builderID, tt.verifierOpts.sourceURI)
 			}
 			opts := options.BuildVerification{
-				Verifier:    verifier,
+				Verifier: verifier,
+			}
+			req := options.Request{
 				Environment: tt.verifierOpts.environment,
 			}
-			level, err := tt.policy.Evaluate(tt.digests, tt.packageURI, tt.org, opts)
+			level, err := tt.policy.Evaluate(tt.digests, tt.packageURI, tt.org, req, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

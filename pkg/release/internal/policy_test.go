@@ -602,10 +602,12 @@ func Test_Evaluate(t *testing.T) {
 			verifier := common.NewAttestationVerifier(tt.verifierOpts.digests, tt.packageURI,
 				tt.verifierOpts.builderID, tt.verifierOpts.sourceURI)
 			opts := options.BuildVerification{
-				Verifier:    verifier,
+				Verifier: verifier,
+			}
+			req := options.Request{
 				Environment: tt.verifierOpts.environment,
 			}
-			level, err := policy.Evaluate(tt.verifierOpts.digests, tt.packageURI, opts)
+			level, err := policy.Evaluate(tt.verifierOpts.digests, tt.packageURI, req, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

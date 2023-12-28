@@ -150,28 +150,28 @@ func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Pol
 
 // Evaluate evaluates the policy.
 func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
-	orgPolicy organization.Policy, buildOpts options.BuildVerification) (int, error) {
+	orgPolicy organization.Policy, reqOpts options.Request, buildOpts options.BuildVerification) (int, error) {
 	if buildOpts.Verifier == nil {
 		return -1, fmt.Errorf("[projects] %w: verifier is empty", errs.ErrorInvalidInput)
 	}
 	// If the policy has environment defined, the request must contain an environment.
-	if len(p.Package.Environment.AnyOf) > 0 && (buildOpts.Environment == nil || *buildOpts.Environment == "") {
+	if len(p.Package.Environment.AnyOf) > 0 && (reqOpts.Environment == nil || *reqOpts.Environment == "") {
 		return -1, fmt.Errorf("[projects] %w: build config's environment is empty but the policy has it defined (%q)",
 			errs.ErrorInvalidInput, p.Package.Environment.AnyOf)
 	}
 	// If the policy has no environment defined, the request must not contain an environment.
-	if len(p.Package.Environment.AnyOf) == 0 && buildOpts.Environment != nil {
+	if len(p.Package.Environment.AnyOf) == 0 && reqOpts.Environment != nil {
 		return -1, fmt.Errorf("[projects] %w: build config's environment is set (%q) but the policy has none defined",
-			errs.ErrorInvalidInput, *buildOpts.Environment)
+			errs.ErrorInvalidInput, *reqOpts.Environment)
 	}
 	// Verify the environment and request match.
-	if buildOpts.Environment != nil {
-		if *buildOpts.Environment == "" {
+	if reqOpts.Environment != nil {
+		if *reqOpts.Environment == "" {
 			return -1, fmt.Errorf("[projects] %w: build config's environment is empty", errs.ErrorInvalidInput)
 		}
-		if !slices.Contains(p.Package.Environment.AnyOf, *buildOpts.Environment) {
+		if !slices.Contains(p.Package.Environment.AnyOf, *reqOpts.Environment) {
 			return -1, fmt.Errorf("[projects] %w: failed to verify artifact (%q) for environment (%q): not defined in policy",
-				errs.ErrorNotFound, packageURI, *buildOpts.Environment)
+				errs.ErrorNotFound, packageURI, *reqOpts.Environment)
 		}
 	}
 	// Validate digests.

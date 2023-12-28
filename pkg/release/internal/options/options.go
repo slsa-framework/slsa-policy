@@ -13,6 +13,10 @@ type AttestationVerifier interface {
 // BuildVerification defines the configuration to verify
 // build attestations.
 type BuildVerification struct {
-	Verifier    AttestationVerifier
+	Verifier AttestationVerifier
+}
+
+// Request is metadata about the caller request.
+type Request struct {
 	Environment *string
 }

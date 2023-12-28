@@ -529,10 +529,12 @@ func Test_e2e(t *testing.T) {
 			}
 			verifier := common.NewAttestationVerifier(tt.digests, tt.packageURI, tt.builderID, tt.sourceURI)
 			opts := BuildVerificationOption{
-				Verifier:    verifier,
+				Verifier: verifier,
+			}
+			req := RequestOption{
 				Environment: tt.packageEnvironment,
 			}
-			result := pol.Evaluate(tt.digests, tt.packageURI, opts)
+			result := pol.Evaluate(tt.digests, tt.packageURI, req, opts)
 			if diff := cmp.Diff(tt.errorEvaluate, result.Error(), cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

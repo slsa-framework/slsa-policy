@@ -20,7 +20,11 @@ type AttestationVerifier interface {
 // BuildVerificationOption defines the configuration to verify
 // build attestations.
 type BuildVerificationOption struct {
-	Verifier    AttestationVerifier
+	Verifier AttestationVerifier
+}
+
+// RequestOption contains options from the caller.
+type RequestOption struct {
 	Environment *string
 }
 
@@ -45,6 +49,9 @@ type internal_verifier struct {
 }
 
 func (i *internal_verifier) VerifyBuildAttestation(digests intoto.DigestSet, packageURI, builderID, sourceURI string) error {
+	if i.buildOpts.Verifier == nil {
+		return fmt.Errorf("%w: verifier is nil", errs.ErrorInvalidInput)
+	}
 	return i.buildOpts.Verifier.VerifyBuildAttestation(digests, packageURI, builderID, sourceURI)
 }
 
@@ -60,13 +67,15 @@ func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy
 }
 
 // Evaluate evalues the release policy.
-func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string, buildOpts BuildVerificationOption) PolicyEvaluationResult {
+func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string, reqOpts RequestOption, buildOpts BuildVerificationOption) PolicyEvaluationResult {
 	level, err := p.policy.Evaluate(digests, packageURI,
+		options.Request{
+			Environment: reqOpts.Environment,
+		},
 		options.BuildVerification{
 			Verifier: &internal_verifier{
 				buildOpts: buildOpts,
 			},
-			Environment: buildOpts.Environment,
 		},
 	)
 	return PolicyEvaluationResult{
@@ -74,7 +83,7 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string, buildOpts
 		err:         err,
 		packageURI:  packageURI,
 		digests:     digests,
-		environment: buildOpts.Environment,
+		environment: reqOpts.Environment,
 	}
 }
 
