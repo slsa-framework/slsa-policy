@@ -1,0 +1,13 @@
+{
+    "format":1,
+    "roots":{
+        "release":[
+            {
+                "id":"https://github.com/laurentsimon/slsa-org/.github/workflows/releaser.yml",
+                "build":{
+                    "max_slsa_level": 3
+                }
+            }
+        ]
+    }
+}

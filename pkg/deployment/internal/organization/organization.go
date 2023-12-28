@@ -41,12 +41,12 @@ func FromReader(reader io.ReadCloser) (*Policy, error) {
 	// NOTE: see https://yourbasic.org/golang/io-reader-interface-explained.
 	content, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read: %w", err)
+		return nil, fmt.Errorf("[organization] failed to read: %w", err)
 	}
 	defer reader.Close()
 	var org Policy
 	if err := json.Unmarshal(content, &org); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal: %w", err)
+		return nil, fmt.Errorf("[organization] failed to unmarshal: %w", err)
 	}
 	if err := org.validate(); err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (p *Policy) validate() error {
 func (p *Policy) validateFormat() error {
 	// Format must be 1.
 	if p.Format != 1 {
-		return fmt.Errorf("%w: invalid format (%q). Must be 1", errs.ErrorInvalidField, p.Format)
+		return fmt.Errorf("[organization] %w: invalid format (%q). Must be 1", errs.ErrorInvalidField, p.Format)
 	}
 	return nil
 }
@@ -76,7 +76,7 @@ func (p *Policy) validateFormat() error {
 func (p *Policy) validateReleaseRoots() error {
 	// There must be at least one release root.
 	if len(p.Roots.Release) == 0 {
-		return fmt.Errorf("%w: release's roots are not defined", errs.ErrorInvalidField)
+		return fmt.Errorf("[organization] %w: release's roots are not defined", errs.ErrorInvalidField)
 	}
 	// Each root must have all its fields defined.
 	// Also validate that
@@ -86,20 +86,20 @@ func (p *Policy) validateReleaseRoots() error {
 		release := &p.Roots.Release[i]
 		// ID must be defined and non-empty.
 		if release.ID == "" {
-			return fmt.Errorf("%w: release's id is empty", errs.ErrorInvalidField)
+			return fmt.Errorf("[organization] %w: release's id is empty", errs.ErrorInvalidField)
 		}
 		// ID must be unique.
 		if _, exists := ids[release.ID]; exists {
-			return fmt.Errorf("%w: release's name (%q) is defined more than once", errs.ErrorInvalidField, release.ID)
+			return fmt.Errorf("[organization] %w: release's name (%q) is defined more than once", errs.ErrorInvalidField, release.ID)
 		}
 		ids[release.ID] = true
 		// Build Level must be defined.
 		if release.Build.MaxSlsaLevel == nil {
-			return fmt.Errorf("%w: release's max_slsa_level is not defined", errs.ErrorInvalidField)
+			return fmt.Errorf("[organization] %w: release's max_slsa_level is not defined", errs.ErrorInvalidField)
 		}
 		// Level must be in the corre range.
 		if *release.Build.MaxSlsaLevel < 0 || *release.Build.MaxSlsaLevel > 4 {
-			return fmt.Errorf("%w: release's max_slsa_level is invalid (%d). Must satisfy 0 <= slsa_level <= 4",
+			return fmt.Errorf("[organization] %w: release's max_slsa_level is invalid (%d). Must satisfy 0 <= slsa_level <= 4",
 				errs.ErrorInvalidField, *release.Build.MaxSlsaLevel)
 		}
 	}

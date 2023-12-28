@@ -37,12 +37,12 @@ func FromReader(reader io.ReadCloser) (*Policy, error) {
 	// NOTE: see https://yourbasic.org/golang/io-reader-interface-explained.
 	content, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read: %w", err)
+		return nil, fmt.Errorf("[organization] failed to read: %w", err)
 	}
 	defer reader.Close()
 	var org Policy
 	if err := json.Unmarshal(content, &org); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal: %w", err)
+		return nil, fmt.Errorf("[organization] failed to unmarshal: %w", err)
 	}
 	if err := org.validate(); err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (p *Policy) validate() error {
 func (p *Policy) validateFormat() error {
 	// Format must be 1.
 	if p.Format != 1 {
-		return fmt.Errorf("%w: invalid format (%q). Must be 1", errs.ErrorInvalidField, p.Format)
+		return fmt.Errorf("[organization] %w: invalid format (%q). Must be 1", errs.ErrorInvalidField, p.Format)
 	}
 	return nil
 }
@@ -72,7 +72,7 @@ func (p *Policy) validateFormat() error {
 func (p *Policy) validateBuildRoots() error {
 	// There must be at least one build root.
 	if len(p.Roots.Build) == 0 {
-		return fmt.Errorf("%w: build's roots are not defined", errs.ErrorInvalidField)
+		return fmt.Errorf("[organization] %w: build's roots are not defined", errs.ErrorInvalidField)
 	}
 	// Each root must have all its fields defined.
 	// Also validate that
@@ -84,29 +84,29 @@ func (p *Policy) validateBuildRoots() error {
 		build := &p.Roots.Build[i]
 		// ID must be defined and non-empty.
 		if build.ID == "" {
-			return fmt.Errorf("%w: build's id is empty", errs.ErrorInvalidField)
+			return fmt.Errorf("[organization] %w: build's id is empty", errs.ErrorInvalidField)
 		}
 		// ID must be unique.
 		if _, exists := ids[build.ID]; exists {
-			return fmt.Errorf("%w: build's name (%q) is defined more than once", errs.ErrorInvalidField, build.ID)
+			return fmt.Errorf("[organization] %w: build's name (%q) is defined more than once", errs.ErrorInvalidField, build.ID)
 		}
 		ids[build.ID] = true
 		// Name must be defined and non-empty.
 		if build.Name == "" {
-			return fmt.Errorf("%w: build's name is empty", errs.ErrorInvalidField)
+			return fmt.Errorf("[organization] %w: build's name is empty", errs.ErrorInvalidField)
 		}
 		// Name must be unique.
 		if _, exists := names[build.Name]; exists {
-			return fmt.Errorf("%w: build's name (%q) is defined more than once", errs.ErrorInvalidField, build.Name)
+			return fmt.Errorf("[organization] %w: build's name (%q) is defined more than once", errs.ErrorInvalidField, build.Name)
 		}
 		names[build.Name] = true
 		// Level must be defined.
 		if build.SlsaLevel == nil {
-			return fmt.Errorf("%w: build's slsa_level is not defined", errs.ErrorInvalidField)
+			return fmt.Errorf("[organization] %w: build's slsa_level is not defined", errs.ErrorInvalidField)
 		}
 		// Level must be in the corre range.
 		if *build.SlsaLevel < 0 || *build.SlsaLevel > 4 {
-			return fmt.Errorf("%w: build's slsa_level is invalid (%d). Must satisfy 0 <= slsa_level <= 4",
+			return fmt.Errorf("[organization] %w: build's slsa_level is invalid (%d). Must satisfy 0 <= slsa_level <= 4",
 				errs.ErrorInvalidField, *build.SlsaLevel)
 		}
 	}
@@ -130,7 +130,7 @@ func (p *Policy) BuilderID(builderName string) (string, error) {
 			return builder.ID, nil
 		}
 	}
-	return "", fmt.Errorf("%w: builder ID (%q) is not defined", errs.ErrorMismatch, builderName)
+	return "", fmt.Errorf("[organization] %w: builder ID (%q) is not defined", errs.ErrorMismatch, builderName)
 }
 
 func (p *Policy) BuilderSlsaLevel(builderName string) int {

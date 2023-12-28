@@ -39,7 +39,7 @@ type Principal struct {
 type Policy struct {
 	Format            int               `json:"format"`
 	Principal         Principal         `json:"principal"`
-	Packages          []Package         `json:"releases"`
+	Packages          []Package         `json:"packages"`
 	BuildRequirements BuildRequirements `json:"build"`
 }
 
@@ -47,12 +47,12 @@ func fromReader(reader io.ReadCloser, maxBuildLevel int) (*Policy, error) {
 	// NOTE: see https://yourbasic.org/golang/io-reader-interface-explained.
 	content, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read: %w", err)
+		return nil, fmt.Errorf("[project] failed to read: %w", err)
 	}
 	defer reader.Close()
 	var project Policy
 	if err := json.Unmarshal(content, &project); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal: %w", err)
+		return nil, fmt.Errorf("[project] failed to unmarshal: %w", err)
 	}
 	if err := project.validate(maxBuildLevel); err != nil {
 		return nil, err
@@ -80,38 +80,38 @@ func (p *Policy) validate(maxBuildLevel int) error {
 func (p *Policy) validateFormat() error {
 	// Format must be 1.
 	if p.Format != 1 {
-		return fmt.Errorf("%w: invalid format (%q). Must be 1", errs.ErrorInvalidField, p.Format)
+		return fmt.Errorf("[project] %w: invalid format (%q). Must be 1", errs.ErrorInvalidField, p.Format)
 	}
 	return nil
 }
 
 func (p *Policy) validatePrincipal() error {
 	if p.Principal.URI == "" {
-		return fmt.Errorf("%w: empty principal uri", errs.ErrorInvalidField)
+		return fmt.Errorf("[project] %w: empty principal uri", errs.ErrorInvalidField)
 	}
 	return nil
 }
 
 func (p *Policy) validatePackages() error {
 	if len(p.Packages) == 0 {
-		return fmt.Errorf("%w: no packages", errs.ErrorInvalidField)
+		return fmt.Errorf("[project] %w: no packages", errs.ErrorInvalidField)
 	}
 	packages := make(map[string]bool, len(p.Packages))
 	for i := range p.Packages {
 		pkg := &p.Packages[i]
 		// Package must have a non-empty URI.
 		if pkg.URI == "" {
-			return fmt.Errorf("%w: package's uri is empty", errs.ErrorInvalidField)
+			return fmt.Errorf("[project] %w: package's uri is empty", errs.ErrorInvalidField)
 		}
 		if _, exists := packages[pkg.URI]; exists {
-			return fmt.Errorf("%w: package's uri (%q) is present multiple times", errs.ErrorInvalidField, pkg.URI)
+			return fmt.Errorf("[project] %w: package's uri (%q) is present multiple times", errs.ErrorInvalidField, pkg.URI)
 		}
 		packages[pkg.URI] = true
 		// Environment field, if set, must contain non-empty values.
 		for i := range pkg.Environment.AnyOf {
 			val := &pkg.Environment.AnyOf[i]
 			if *val == "" {
-				return fmt.Errorf("%w: package's any_of value has an empty field", errs.ErrorInvalidField)
+				return fmt.Errorf("[project] %w: package's any_of value has an empty field", errs.ErrorInvalidField)
 			}
 		}
 		// TODO: validate the packages are defined in a non-overlapping way.
@@ -125,16 +125,16 @@ func (p *Policy) validateBuildRequirements(maxBuildLevel int) error {
 	//	1) must be set
 	//	2) must contain one a level that is satisfiable by the releasers defined in the org-policy.
 	if maxBuildLevel < 0 || maxBuildLevel > 4 {
-		return fmt.Errorf("%w: build's level is invalid (%d). Must satisfy 0 <= slsa_level <= 4",
+		return fmt.Errorf("[project] %w: build's level is invalid (%d). Must satisfy 0 <= slsa_level <= 4",
 			errs.ErrorInvalidField, maxBuildLevel)
 	}
 	if p.BuildRequirements.RequireSlsaLevel == nil ||
 		*p.BuildRequirements.RequireSlsaLevel < 0 ||
 		*p.BuildRequirements.RequireSlsaLevel > 4 {
-		return fmt.Errorf("%w: build's require_slsa_level is invalid. Must satisfy 0 <= slsa_level <= 4", errs.ErrorInvalidField)
+		return fmt.Errorf("[project] %w: build's require_slsa_level is invalid. Must satisfy 0 <= slsa_level <= 4", errs.ErrorInvalidField)
 	}
 	if *p.BuildRequirements.RequireSlsaLevel > maxBuildLevel {
-		return fmt.Errorf("%w: build's level (%d) cannot be satisfied by org policy's max level (%d)",
+		return fmt.Errorf("[project] %w: build's level (%d) cannot be satisfied by org policy's max level (%d)",
 			errs.ErrorInvalidField, *p.BuildRequirements.RequireSlsaLevel, maxBuildLevel)
 	}
 	return nil
@@ -153,20 +153,20 @@ func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organizatio
 		}
 		// The policy ID must be unique across all projects.
 		if _, exists := policies[id]; exists {
-			return nil, fmt.Errorf("%w: policy id (%q) is defined more than once", errs.ErrorInvalidField, id)
+			return nil, fmt.Errorf("[project] %w: policy id (%q) is defined more than once", errs.ErrorInvalidField, id)
 		}
 		policies[id] = *policy
 
 		// The principal must be unique across all projects.
 		uri := policy.Principal.URI
 		if _, exists := principals[uri]; exists {
-			return nil, fmt.Errorf("%w: principal's uri (%q) is defined more than once", errs.ErrorInvalidField, uri)
+			return nil, fmt.Errorf("[project] %w: principal's uri (%q) is defined more than once", errs.ErrorInvalidField, uri)
 		}
 		principals[uri] = true
 	}
 	//TODO: add test for this.
 	if readers.Error() != nil {
-		return nil, fmt.Errorf("failed to read policy: %w", readers.Error())
+		return nil, fmt.Errorf("[project] failed to read policy: %w", readers.Error())
 	}
 	return policies, nil
 }
@@ -175,7 +175,7 @@ func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organizatio
 func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 	orgPolicy organization.Policy, releaseOpts options.ReleaseVerification) (*Principal, error) {
 	if releaseOpts.Verifier == nil {
-		return nil, fmt.Errorf("%w: verifier is empty", errs.ErrorInvalidInput)
+		return nil, fmt.Errorf("[project] %w: verifier is empty", errs.ErrorInvalidInput)
 	}
 
 	// Validate the digest.
@@ -221,24 +221,24 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 		cpy := p.Principal
 		return &cpy, nil
 	}
-	return nil, fmt.Errorf("%w: cannot verify: %v", errs.ErrorVerification, allErrs)
+	return nil, fmt.Errorf("[project] %w: cannot verify: %v", errs.ErrorVerification, allErrs)
 }
 
 func validateEnv(env []string, verifiedEnv *string) error {
 	if len(env) > 0 {
 		if verifiedEnv == nil {
-			return fmt.Errorf("%w: mismatch environment (%q) and verified environment (nil)", errs.ErrorInternal, env)
+			return fmt.Errorf("[project] %w: mismatch environment (%q) and verified environment (nil)", errs.ErrorInternal, env)
 		}
 		if *verifiedEnv == "" {
-			return fmt.Errorf("%w: mismatch environment (%q) and verified environment (%q)", errs.ErrorInternal, env, *verifiedEnv)
+			return fmt.Errorf("[project] %w: mismatch environment (%q) and verified environment (%q)", errs.ErrorInternal, env, *verifiedEnv)
 		}
 		if !slices.Contains(env, *verifiedEnv) {
-			return fmt.Errorf("%w: mismatch value environment (%q) and verified environment (%q)", errs.ErrorInternal, env, *verifiedEnv)
+			return fmt.Errorf("[project] %w: mismatch value environment (%q) and verified environment (%q)", errs.ErrorInternal, env, *verifiedEnv)
 		}
 		return nil
 	}
 	if verifiedEnv != nil {
-		return fmt.Errorf("%w: mismatch environment (%q) and verified environment (%q)", errs.ErrorInternal, env, *verifiedEnv)
+		return fmt.Errorf("[project] %w: mismatch environment (%q) and verified environment (%q)", errs.ErrorInternal, env, *verifiedEnv)
 	}
 	return nil
 }
@@ -250,5 +250,5 @@ func (p *Policy) getPackage(packageURI string) (*Package, error) {
 			return pkg, nil
 		}
 	}
-	return nil, fmt.Errorf("%w: package uri(%q)", errs.ErrorNotFound, packageURI)
+	return nil, fmt.Errorf("[project] %w: package uri(%q)", errs.ErrorNotFound, packageURI)
 }
