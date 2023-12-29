@@ -11,7 +11,6 @@ import (
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/rekor"
 	clisign "github.com/sigstore/cosign/v2/cmd/cosign/cli/sign"
 
-	//"github.com/sigstore/cosign/v2/internal/pkg/cosign/tsa/client"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	cbundle "github.com/sigstore/cosign/v2/pkg/cosign/bundle"
@@ -144,22 +143,3 @@ func attach(predicateType string, bundle *cbundle.RekorBundle, signedPayload []b
 	// Publish the attestations associated with this entity
 	return ociremote.WriteAttestations(digest.Repository, newSE, ociremoteOpts...)
 }
-
-/*
-func predicateReader(attBytes []byte) (io.ReadCloser, error) {
-	type attestation struct {
-		intoto.Header
-		Predicate interface{} `json:"predicate"`
-	}
-	var a attestation
-	if err := json.Unmarshal(attBytes, &a); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal: %v", err)
-	}
-	// Create a predicate reader.
-	predicateBytes, err := json.Marshal(a.Predicate)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal: %v", err)
-	}
-	return io.NopCloser(bytes.NewReader(predicateBytes)), nil
-}
-*/
