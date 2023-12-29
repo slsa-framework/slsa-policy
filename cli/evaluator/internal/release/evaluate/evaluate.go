@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
+	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils/crypto"
 	"github.com/laurentsimon/slsa-policy/pkg/release"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator/files_reader"
@@ -13,17 +14,17 @@ import (
 
 func usage(cli string) {
 	msg := "" +
-		"Usage: %s release evaluate orgPath projectsPath packageURI [optional:environment]\n" +
+		"Usage: %s release evaluate orgPath projectsPath packageURI creatorID [optional:environment]\n" +
 		"\n" +
 		"Example:\n" +
-		"%s release validate ./path/to/policy/org ./path/to/policy/projects laurentsimon/echo-server@sha256:xxxx prod\n" +
+		"%s release validate ./path/to/policy/org ./path/to/policy/projects laurentsimon/echo-server@sha256:xxxx https://github.com/org/.slsa/.github/workflows/releaser.yml prod\n" +
 		"\n"
 	fmt.Fprintf(os.Stderr, msg, cli, cli)
 	os.Exit(1)
 }
 
 func Run(cli string, args []string) error {
-	if len(args) < 3 || len(args) > 4 {
+	if len(args) < 4 || len(args) > 5 {
 		usage(cli)
 	}
 	// Extract inputs.
@@ -36,10 +37,11 @@ func Run(cli string, args []string) error {
 	if err != nil {
 		return err
 	}
+	creatorID := args[3]
 	var env *string
-	if len(args) == 4 {
+	if len(args) == 5 {
 		env = new(string)
-		*env = args[3]
+		*env = args[4]
 	}
 	digestsArr := strings.Split(digest, ":")
 	if len(digestsArr) != 2 {
@@ -50,7 +52,7 @@ func Run(cli string, args []string) error {
 	organizationReader, err := os.Open(orgPath)
 	pol, err := release.PolicyNew(organizationReader, projectsReader)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create policy: %w", err)
 	}
 
 	// Evaluate the policy.
@@ -68,7 +70,18 @@ func Run(cli string, args []string) error {
 		return result.Error()
 	}
 
-	// Create the attestation and sign it.
-	// TODO: do not attach the attestation, so that caller can do it however they want.
-	return nil
+	// Create a release attestation and sign it.
+	// TODO(#3): do not attach the attestation, so that caller can do it however they want.
+	// TODO(#2): add policy.
+	att, err := result.AttestationNew(creatorID)
+	if err != nil {
+		return fmt.Errorf("failed to create attestation: %w", err)
+	}
+	attBytes, err := att.ToBytes()
+	if err != nil {
+		return fmt.Errorf("failed to get attestation bytes: %v\n", err)
+	}
+	fmt.Println(string(attBytes))
+
+	return crypto.Sign(att, utils.ImmutableImage(imageURI, digests))
 }

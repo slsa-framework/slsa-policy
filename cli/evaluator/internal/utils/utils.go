@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
 var errorImageParsing = errors.New("failed to parse image reference")
@@ -60,6 +61,10 @@ func ParseImageReference(image string) (string, string, error) {
 	}
 
 	return registry + "/" + ref.Context().RepositoryStr(), ref.Identifier(), nil
+}
+
+func ImmutableImage(image string, digests intoto.DigestSet) string {
+	return fmt.Sprintf("%v@sha256:%v", image, digests["sha256"])
 }
 
 func Log(format string, a ...any) {

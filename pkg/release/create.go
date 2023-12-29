@@ -131,3 +131,8 @@ func (a *Creation) setSlsaBuildLevel(level int) error {
 	a.attestation.Predicate.Properties[buildLevelProperty] = level
 	return nil
 }
+
+// Utility functions needed by cosign APIs.
+func (a *Creation) PredicateType() string {
+	return predicateType
+}

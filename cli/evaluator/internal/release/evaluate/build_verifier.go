@@ -27,7 +27,7 @@ func (v *buildVerifier) VerifyBuildAttestation(digests intoto.DigestSet, imageUR
 		ExpectedID: &builderID,
 	}
 	// NOTE: the API expects an immutable image.
-	immutableImage := fmt.Sprintf("%v@sha256:%v", imageURI, digests["sha256"])
+	immutableImage := utils.ImmutableImage(imageURI, digests)
 	_, fullBuilderID, err := verifiers.VerifyImage(context.Background(), immutableImage, nil, provenanceOpts, builderOpts)
 	if err != nil {
 		return fmt.Errorf("VerifyBuildAttestation: %w", err)
