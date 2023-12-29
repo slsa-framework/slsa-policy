@@ -1,5 +1,5 @@
 package evaluate
 
-func Run(cli string, args []string) {
-
+func Run(cli string, args []string) error {
+	return nil
 }

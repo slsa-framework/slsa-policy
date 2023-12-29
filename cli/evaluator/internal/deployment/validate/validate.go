@@ -1,7 +1,6 @@
 package validate
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
@@ -16,11 +15,11 @@ func usage(cli string) {
 		"Example:\n" +
 		"%s deployment validate ./path/to/policy/org ./path/to/policy/projects\n" +
 		"\n"
-	fmt.Fprintf(os.Stderr, msg, cli, cli)
+	utils.Log(msg, cli, cli)
 	os.Exit(1)
 }
 
-func Run(cli string, args []string) {
+func Run(cli string, args []string) error {
 	// We need 2 paths:
 	// 1. Path to org policy
 	// 2. Path to project policy.
@@ -30,17 +29,18 @@ func Run(cli string, args []string) {
 	orgPath := args[0]
 	projectsPath, err := utils.ReadFiles(args[1], orgPath)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	// Create a policy. This will validate the files.
 	cwd, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	projectsReader := named_files_reader.FromPaths(cwd, projectsPath)
 	organizationReader, err := os.Open(orgPath)
 	_, err = deployment.PolicyNew(organizationReader, projectsReader)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }

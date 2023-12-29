@@ -185,8 +185,8 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 	}
 	err = buildOpts.Verifier.VerifyBuildAttestation(digests, packageURI, builderID, p.BuildRequirements.Repository.URI)
 	if err != nil {
-		return -1, fmt.Errorf("[projects] %w: failed to verify artifact (%q) with builder ID (%q) source URI (%q) digests (%q): %w",
-			errs.ErrorVerification, packageURI, p.BuildRequirements.RequireSlsaBuilder,
+		return -1, fmt.Errorf("[projects] %w: failed to verify artifact (%q) with builder (%q -> %q) source URI (%q) digests (%q): %w",
+			errs.ErrorVerification, packageURI, p.BuildRequirements.RequireSlsaBuilder, builderID,
 			p.BuildRequirements.Repository.URI, digests, err)
 	}
 

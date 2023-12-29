@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/deployment"
 	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/release"
+	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
 )
 
 func usage(prog string) {
@@ -16,12 +16,12 @@ func usage(prog string) {
 		"release \t\tOperation on release policy\n" +
 		"deployment \t\tOperation on deployment policy\n" +
 		"\n"
-	fmt.Fprintf(os.Stderr, msg, prog)
+	utils.Log(msg, prog)
 	os.Exit(1)
 }
 
 func fatal(e error) {
-	fmt.Fprintf(os.Stderr, "error: %v", e)
+	utils.Log("error: %v", e)
 	os.Exit(2)
 }
 
@@ -34,9 +34,15 @@ func main() {
 	default:
 		usage(os.Args[0])
 	case "release":
-		release.Run(os.Args[0], arguments[1:])
+		if err := release.Run(os.Args[0], arguments[1:]); err != nil {
+			utils.Log(err.Error() + "\n")
+			os.Exit(2)
+		}
 	case "deployment":
-		deployment.Run(os.Args[0], arguments[1:])
+		if err := deployment.Run(os.Args[0], arguments[1:]); err != nil {
+			utils.Log(err.Error() + "\n")
+			os.Exit(3)
+		}
 	}
 	os.Exit(0)
 }

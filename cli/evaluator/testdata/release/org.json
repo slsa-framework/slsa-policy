@@ -3,7 +3,7 @@
     "roots":{
         "build":[
             {
-                "id":"https://github.com/slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml",
+                "id":"https://github.com/slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml",
                 "name":"github_generator_level_3",
                 "slsa_level":3
             },

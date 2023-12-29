@@ -20,7 +20,7 @@ func usage(cli string) {
 	os.Exit(1)
 }
 
-func Run(cli string, args []string) {
+func Run(cli string, args []string) error {
 	// We need 2 paths:
 	// 1. Path to org policy
 	// 2. Path to project policy.
@@ -30,13 +30,14 @@ func Run(cli string, args []string) {
 	orgPath := args[0]
 	projectsPath, err := utils.ReadFiles(args[1], orgPath)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	// Create a policy. This will validate the files.
 	projectsReader := files_reader.FromPaths(projectsPath)
 	organizationReader, err := os.Open(orgPath)
 	_, err = release.PolicyNew(organizationReader, projectsReader)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
