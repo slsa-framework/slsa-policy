@@ -14,7 +14,7 @@ type Subject ResourceDescriptor
 type Header struct {
 	Type          string    `json:"_type"`
 	PredicateType string    `json:"predicateType"`
-	Subjects      []Subject `json:"subjects"`
+	Subjects      []Subject `json:"subject"`
 }
 
 // Creator is the author of the attestation.

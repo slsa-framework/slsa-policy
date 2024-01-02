@@ -27,6 +27,8 @@ import (
 var ko = options.KeyOpts{
 	FulcioURL: "https://fulcio.sigstore.dev",
 	RekorURL:  "https://rekor.sigstore.dev",
+	// Don't ask for confirmation to create a certificate.
+	SkipConfirmation: true,
 }
 
 func uploadToTlog(ctx context.Context, sv *clisign.SignerVerifier, signature []byte, rekorURL string) (*cbundle.RekorBundle, error) {
@@ -76,11 +78,6 @@ func Sign(att Attestation, immutableImage string) error {
 	// if err != nil {
 	// 	return err
 	// }
-	digest, err := name.NewDigest(immutableImage)
-	if err != nil {
-		return fmt.Errorf("failed to create new digest: %w", err)
-	}
-	fmt.Printf("digest: %T: %v", digest, digest)
 
 	// Create the signer.
 	sv, err := clisign.SignerFromKeyOpts(ctx, "", "", ko)
@@ -95,25 +92,29 @@ func Sign(att Attestation, immutableImage string) error {
 	if err != nil {
 		return fmt.Errorf("failed to sign: %w", err)
 	}
-
+	fmt.Println(string(signedPayload))
 	// Upload to TLog.
 	bundle, err := uploadToTlog(ctx, sv, signedPayload, ko.RekorURL)
 	if err != nil {
 		return err
 	}
 
-	return attach(att.PredicateType(), bundle, signedPayload, sv, digest)
+	return attach(immutableImage, att, bundle, signedPayload, sv)
 }
 
-func attach(predicateType string, bundle *cbundle.RekorBundle, signedPayload []byte, sv *clisign.SignerVerifier, digest name.Digest) error {
+func attach(immutableImage string, att Attestation, bundle *cbundle.RekorBundle, signedPayload []byte, sv *clisign.SignerVerifier) error {
 	// TODO: verify this empty option works properly.
 	var ociremoteOpts []ociremote.Option
 	// Add predicateType as manifest annotation.
 	predicateTypeAnnotation := map[string]string{
-		"predicateType": predicateType,
+		"predicateType": att.PredicateType(),
+	}
+	if sv.Cert == nil || sv.Chain == nil {
+		return fmt.Errorf("signer cert and / or chain is nil")
 	}
 	opts := []static.Option{
 		static.WithLayerMediaType(types.DssePayloadType),
+		static.WithCertChain(sv.Cert, sv.Chain),
 		static.WithAnnotations(predicateTypeAnnotation),
 		static.WithBundle(bundle),
 	}
@@ -123,6 +124,11 @@ func attach(predicateType string, bundle *cbundle.RekorBundle, signedPayload []b
 		return err
 	}
 
+	digest, err := name.NewDigest(immutableImage)
+	if err != nil {
+		return fmt.Errorf("failed to create new digest: %w", err)
+	}
+	fmt.Printf("digest: %T: %v", digest, digest)
 	// We don't actually need to access the remote entity to attach things to it
 	// so we use a placeholder here.
 	se := ociremote.SignedUnknown(digest, ociremoteOpts...)
@@ -131,10 +137,9 @@ func attach(predicateType string, bundle *cbundle.RekorBundle, signedPayload []b
 		mutate.WithDupeDetector(dd),
 	}
 
-	// Replace attestation. TODO
-	// ro := cremote.NewReplaceOp(att.PredicateType())
-	// signOpts = append(signOpts, mutate.WithReplaceOp(ro))
-
+	// Replace attestation.
+	ro := cremote.NewReplaceOp(att.PredicateType())
+	signOpts = append(signOpts, mutate.WithReplaceOp(ro))
 	newSE, err := mutate.AttachAttestationToEntity(se, sig, signOpts...)
 	if err != nil {
 		return err
