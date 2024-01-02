@@ -39,7 +39,8 @@ func Run(cli string, args []string) error {
 	}
 	creatorID := args[3]
 	var env *string
-	if len(args) == 5 {
+	if len(args) == 5 && args[4] != "" {
+		// Only set the env if it's not empty.
 		env = new(string)
 		*env = args[4]
 	}
