@@ -7,7 +7,7 @@ import (
 // AttestationVerifier defines an interface to verify attestations.
 type AttestationVerifier interface {
 	// Build attestations.
-	VerifyBuildAttestation(digests intoto.DigestSet, releaseURI, builderID, sourceURI string) error
+	VerifyBuildAttestation(digests intoto.DigestSet, releaseName, builderID, sourceName string) error
 }
 
 // BuildVerification defines the configuration to verify

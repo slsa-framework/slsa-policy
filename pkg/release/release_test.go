@@ -25,7 +25,7 @@ func Test_AttestationNew(t *testing.T) {
 		Digests: digests,
 	}
 	level := 2
-	packageURI := "package_uri"
+	packageName := "package_uri"
 	environment := common.AsPointer("prod")
 	creatorID := "creator_id"
 	creatorVersion := "creato_version"
@@ -61,7 +61,7 @@ func Test_AttestationNew(t *testing.T) {
 			creatorID: creatorID,
 			result: PolicyEvaluationResult{
 				level:       level,
-				packageURI:  packageURI,
+				packageName: packageName,
 				digests:     digests,
 				environment: environment,
 			},
@@ -78,9 +78,9 @@ func Test_AttestationNew(t *testing.T) {
 			name:      "no env",
 			creatorID: creatorID,
 			result: PolicyEvaluationResult{
-				level:      level,
-				packageURI: packageURI,
-				digests:    digests,
+				level:       level,
+				packageName: packageName,
+				digests:     digests,
 			},
 			options: []AttestationCreationOption{
 				SetCreatorVersion(creatorVersion),
@@ -96,7 +96,7 @@ func Test_AttestationNew(t *testing.T) {
 			creatorID: creatorID,
 			result: PolicyEvaluationResult{
 				level:       level,
-				packageURI:  packageURI,
+				packageName: packageName,
 				digests:     digests,
 				environment: environment,
 			},
@@ -112,7 +112,7 @@ func Test_AttestationNew(t *testing.T) {
 			creatorID: creatorID,
 			result: PolicyEvaluationResult{
 				level:       level,
-				packageURI:  packageURI,
+				packageName: packageName,
 				digests:     digests,
 				environment: environment,
 			},
@@ -160,7 +160,7 @@ func Test_AttestationNew(t *testing.T) {
 			if diff := cmp.Diff([]intoto.Subject{tt.subject}, att.attestation.Header.Subjects); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
-			if diff := cmp.Diff(tt.result.packageURI, att.attestation.Predicate.Package.URI); diff != "" {
+			if diff := cmp.Diff(tt.result.packageName, att.attestation.Predicate.Package.URI); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			properties := att.attestation.Predicate.Properties
@@ -203,8 +203,8 @@ func Test_e2e(t *testing.T) {
 		"gitCommit": "another_value",
 	}
 
-	packageURI := "package_uri"
-	packageURI1 := "package_uri1"
+	packageName := "package_uri"
+	packageName1 := "package_uri1"
 	packageEnvironment := common.AsPointer("prod")
 	packageVersion := "v1.2.3"
 	creatorVersion := "v1.2.3"
@@ -252,7 +252,7 @@ func Test_e2e(t *testing.T) {
 		{
 			Format: 1,
 			Package: project.Package{
-				URI: packageURI,
+				Name: packageName,
 				Environment: project.Environment{
 					AnyOf: []string{"dev", "prod"},
 				},
@@ -267,7 +267,7 @@ func Test_e2e(t *testing.T) {
 		{
 			Format: 1,
 			Package: project.Package{
-				URI: packageURI1,
+				Name: packageName1,
 			},
 			BuildRequirements: project.BuildRequirements{
 				RequireSlsaBuilder: "github_actions_level_2",
@@ -286,7 +286,7 @@ func Test_e2e(t *testing.T) {
 		digests            intoto.DigestSet
 		packageEnvironment *string
 		packageVersion     string
-		packageURI         string
+		packageName        string
 		creatorVersion     string
 		policy             map[string]intoto.Policy
 		buildLevel         int
@@ -310,7 +310,7 @@ func Test_e2e(t *testing.T) {
 				SetPolicy(policy),
 				SetPackageVersion(packageVersion),
 			},
-			packageURI: packageURI,
+			packageName: packageName,
 			// Fields to validate the created attestation.
 			digests:        digests,
 			buildLevel:     githubLevel,
@@ -331,7 +331,7 @@ func Test_e2e(t *testing.T) {
 				SetCreatorVersion(creatorVersion),
 				SetPolicy(policy),
 			},
-			packageURI: packageURI,
+			packageName: packageName,
 			// Fields to validate the created attestation.
 			digests:        digests,
 			buildLevel:     githubLevel,
@@ -352,7 +352,7 @@ func Test_e2e(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI,
+						Name: packageName,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaBuilder: "github_actions_level_3",
@@ -368,7 +368,7 @@ func Test_e2e(t *testing.T) {
 				SetCreatorVersion(creatorVersion),
 				SetPolicy(policy),
 			},
-			packageURI: packageURI,
+			packageName: packageName,
 			// Fields to validate the created attestation.
 			digests:        digests,
 			buildLevel:     githubLevel,
@@ -392,7 +392,7 @@ func Test_e2e(t *testing.T) {
 				SetCreatorVersion(creatorVersion),
 				SetPolicy(policy),
 			},
-			packageURI: packageURI,
+			packageName: packageName,
 			// Fields to validate the created attestation.
 			digests:        digests,
 			buildLevel:     githubLevel,
@@ -413,7 +413,7 @@ func Test_e2e(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI,
+						Name: packageName,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaBuilder: "github_actions_level_3",
@@ -428,7 +428,7 @@ func Test_e2e(t *testing.T) {
 				SetCreatorVersion(creatorVersion),
 				SetPolicy(policy),
 			},
-			packageURI: packageURI,
+			packageName: packageName,
 			// Fields to validate the created attestation.
 			digests:        digests,
 			buildLevel:     githubLevel,
@@ -449,7 +449,7 @@ func Test_e2e(t *testing.T) {
 			options: []AttestationCreationOption{
 				SetPolicy(policy),
 			},
-			packageURI: packageURI,
+			packageName: packageName,
 			// Fields to validate the created attestation.
 			digests:    digests,
 			buildLevel: githubLevel,
@@ -469,7 +469,7 @@ func Test_e2e(t *testing.T) {
 			options: []AttestationCreationOption{
 				SetCreatorVersion(creatorVersion),
 			},
-			packageURI: packageURI,
+			packageName: packageName,
 			// Fields to validate the created attestation.
 			digests:        digests,
 			buildLevel:     githubLevel,
@@ -489,7 +489,7 @@ func Test_e2e(t *testing.T) {
 				SetCreatorVersion(creatorVersion),
 				SetPolicy(policy),
 			},
-			packageURI: packageURI,
+			packageName: packageName,
 			// Fields to validate the created attestation.
 			digests:        digests,
 			buildLevel:     githubLevel,
@@ -527,14 +527,14 @@ func Test_e2e(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)
 			}
-			verifier := common.NewAttestationVerifier(tt.digests, tt.packageURI, tt.builderID, tt.sourceURI)
+			verifier := common.NewAttestationVerifier(tt.digests, tt.packageName, tt.builderID, tt.sourceURI)
 			opts := BuildVerificationOption{
 				Verifier: verifier,
 			}
 			req := RequestOption{
 				Environment: tt.packageEnvironment,
 			}
-			result := pol.Evaluate(tt.digests, tt.packageURI, req, opts)
+			result := pol.Evaluate(tt.digests, tt.packageName, req, opts)
 			if diff := cmp.Diff(tt.errorEvaluate, result.Error(), cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -577,7 +577,7 @@ func Test_e2e(t *testing.T) {
 			}
 
 			// Verify.
-			err = verification.Verify(tt.creatorID, tt.digests, tt.packageURI, options...)
+			err = verification.Verify(tt.creatorID, tt.digests, tt.packageName, options...)
 			if diff := cmp.Diff(tt.errorVerify, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

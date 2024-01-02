@@ -15,7 +15,7 @@ import (
 type Root struct {
 	ID    string `json:"id"`
 	Build Build  `json:"build"`
-	// TODO: Have a field to indicate which package URIs the releaser is allowed to
+	// TODO: Have a field to indicate which package Names the releaser is allowed to
 	// attest to. This assumes every organization has a central registry to make their
 	// releases accessible.
 }
@@ -118,7 +118,7 @@ func (p *Policy) MaxBuildSlsaLevel() int {
 }
 
 // Evaluate evaluates the policy.
-func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string, releaseOpts options.ReleaseVerification) error {
+func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string, releaseOpts options.ReleaseVerification) error {
 	// Nothing to do.
 	return nil
 }

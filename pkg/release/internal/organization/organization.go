@@ -145,7 +145,7 @@ func (p *Policy) BuilderSlsaLevel(builderName string) int {
 }
 
 // Evaluate evaluates the policy.
-func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string, reqOpts options.Request, buildOpts options.BuildVerification) error {
+func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string, reqOpts options.Request, buildOpts options.BuildVerification) error {
 	// Nothing to do.
 	return nil
 }

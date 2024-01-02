@@ -25,9 +25,9 @@ type Environment struct {
 }
 
 // Package defines publication metadata, such as
-// the URI and the target environment.
+// the Name and the target environment.
 type Package struct {
-	URI         string      `json:"uri"`
+	Name        string      `json:"name"`
 	Environment Environment `json:"environment"`
 }
 
@@ -87,7 +87,7 @@ func (p *Policy) validateFormat() error {
 
 func (p *Policy) validatePrincipal() error {
 	if p.Principal.URI == "" {
-		return fmt.Errorf("[project] %w: empty principal uri", errs.ErrorInvalidField)
+		return fmt.Errorf("[project] %w: empty principal name", errs.ErrorInvalidField)
 	}
 	return nil
 }
@@ -99,14 +99,14 @@ func (p *Policy) validatePackages() error {
 	packages := make(map[string]bool, len(p.Packages))
 	for i := range p.Packages {
 		pkg := &p.Packages[i]
-		// Package must have a non-empty URI.
-		if pkg.URI == "" {
-			return fmt.Errorf("[project] %w: package's uri is empty", errs.ErrorInvalidField)
+		// Package must have a non-empty Name.
+		if pkg.Name == "" {
+			return fmt.Errorf("[project] %w: package's name is empty", errs.ErrorInvalidField)
 		}
-		if _, exists := packages[pkg.URI]; exists {
-			return fmt.Errorf("[project] %w: package's uri (%q) is present multiple times", errs.ErrorInvalidField, pkg.URI)
+		if _, exists := packages[pkg.Name]; exists {
+			return fmt.Errorf("[project] %w: package's name (%q) is present multiple times", errs.ErrorInvalidField, pkg.Name)
 		}
-		packages[pkg.URI] = true
+		packages[pkg.Name] = true
 		// Environment field, if set, must contain non-empty values.
 		for i := range pkg.Environment.AnyOf {
 			val := &pkg.Environment.AnyOf[i]
@@ -158,11 +158,11 @@ func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organizatio
 		policies[id] = *policy
 
 		// The principal must be unique across all projects.
-		uri := policy.Principal.URI
-		if _, exists := principals[uri]; exists {
-			return nil, fmt.Errorf("[project] %w: principal's uri (%q) is defined more than once", errs.ErrorInvalidField, uri)
+		name := policy.Principal.URI
+		if _, exists := principals[name]; exists {
+			return nil, fmt.Errorf("[project] %w: principal's name (%q) is defined more than once", errs.ErrorInvalidField, name)
 		}
-		principals[uri] = true
+		principals[name] = true
 	}
 	//TODO: add test for this.
 	if readers.Error() != nil {
@@ -172,7 +172,7 @@ func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organizatio
 }
 
 // Evaluate evaluates a policy.
-func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
+func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string,
 	orgPolicy organization.Policy, releaseOpts options.ReleaseVerification) (*Principal, error) {
 	if releaseOpts.Verifier == nil {
 		return nil, fmt.Errorf("[project] %w: verifier is empty", errs.ErrorInvalidInput)
@@ -182,8 +182,8 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 	if err := digests.Validate(); err != nil {
 		return nil, err
 	}
-	// Get the package for principal URI.
-	pkg, err := p.getPackage(packageURI)
+	// Get the package for principal Name.
+	pkg, err := p.getPackage(packageName)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +192,7 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 
 	// Verify with each releaser.
 	// WARNING: the hidden assumption is that the verifier is aware of which
-	// package URIs can be attested to by which releaser.
+	// package Names can be attested to by which releaser.
 	// TODO: Instead of iterating thru all releasers, the org policy may contain
 	// a trusted mapping.
 	var allErrs []error
@@ -204,7 +204,7 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 			continue
 		}
 		// We have a candidate.
-		verifiedEnv, err := releaseOpts.Verifier.VerifyReleaseAttestation(digests, packageURI, env, releaser.ID)
+		verifiedEnv, err := releaseOpts.Verifier.VerifyReleaseAttestation(digests, packageName, env, releaser.ID)
 		if err != nil {
 			// Verification failed, continue.
 			allErrs = append(allErrs, err)
@@ -217,7 +217,7 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 		if err := validateEnv(env, verifiedEnv); err != nil {
 			return nil, err
 		}
-		// The target URI of the policy.
+		// The target Name of the policy.
 		cpy := p.Principal
 		return &cpy, nil
 	}
@@ -243,12 +243,12 @@ func validateEnv(env []string, verifiedEnv *string) error {
 	return nil
 }
 
-func (p *Policy) getPackage(packageURI string) (*Package, error) {
+func (p *Policy) getPackage(packageName string) (*Package, error) {
 	for i := range p.Packages {
 		pkg := &p.Packages[i]
-		if pkg.URI == packageURI {
+		if pkg.Name == packageName {
 			return pkg, nil
 		}
 	}
-	return nil, fmt.Errorf("[project] %w: package uri(%q)", errs.ErrorNotFound, packageURI)
+	return nil, fmt.Errorf("[project] %w: package name(%q)", errs.ErrorNotFound, packageName)
 }

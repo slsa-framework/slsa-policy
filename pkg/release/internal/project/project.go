@@ -31,9 +31,9 @@ type Environment struct {
 }
 
 // Package defines publication metadata, such as
-// the URI and the target environment.
+// the name and the target environment.
 type Package struct {
-	URI         string      `json:"uri"`
+	Name        string      `json:"name"`
 	Environment Environment `json:"environment,omitempty"`
 }
 
@@ -84,9 +84,9 @@ func (p *Policy) validateFormat() error {
 }
 
 func (p *Policy) validatePackage() error {
-	// Package must have a non-empty URI.
-	if p.Package.URI == "" {
-		return fmt.Errorf("[projects] %w: package's uri is empty", errs.ErrorInvalidField)
+	// Package must have a non-empty Name.
+	if p.Package.Name == "" {
+		return fmt.Errorf("[projects] %w: package's name is empty", errs.ErrorInvalidField)
 	}
 	// Environment field, if set, must contain non-empty values.
 	for i := range p.Package.Environment.AnyOf {
@@ -119,7 +119,7 @@ func (p *Policy) validateBuildRequirements(builderNames []string) error {
 	return nil
 }
 
-// FromReaders creates a set of policies keyed by their package URI (and if present, the environment).
+// FromReaders creates a set of policies keyed by their package Name (and if present, the environment).
 func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Policy) (map[string]Policy, error) {
 	policies := make(map[string]Policy)
 	for readers.HasNext() {
@@ -134,11 +134,11 @@ func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Pol
 		// different environments in different files.
 		// If we want to support multiple files, they should all have the environment defined or none
 		// should.
-		uri := policy.Package.URI
-		if _, exists := policies[uri]; exists {
-			return nil, fmt.Errorf("[projects] %w: package's uri (%q) is defined more than once", errs.ErrorInvalidField, uri)
+		name := policy.Package.Name
+		if _, exists := policies[name]; exists {
+			return nil, fmt.Errorf("[projects] %w: package's name (%q) is defined more than once", errs.ErrorInvalidField, name)
 		}
-		policies[uri] = *policy
+		policies[name] = *policy
 
 	}
 	//TODO: add test for this.
@@ -149,7 +149,7 @@ func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Pol
 }
 
 // Evaluate evaluates the policy.
-func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
+func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string,
 	orgPolicy organization.Policy, reqOpts options.Request, buildOpts options.BuildVerification) (int, error) {
 	if buildOpts.Verifier == nil {
 		return -1, fmt.Errorf("[projects] %w: verifier is empty", errs.ErrorInvalidInput)
@@ -171,7 +171,7 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 		}
 		if !slices.Contains(p.Package.Environment.AnyOf, *reqOpts.Environment) {
 			return -1, fmt.Errorf("[projects] %w: failed to verify artifact (%q) for environment (%q): not defined in policy",
-				errs.ErrorNotFound, packageURI, *reqOpts.Environment)
+				errs.ErrorNotFound, packageName, *reqOpts.Environment)
 		}
 	}
 	// Validate digests.
@@ -183,10 +183,10 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string,
 	if err != nil {
 		return -1, err
 	}
-	err = buildOpts.Verifier.VerifyBuildAttestation(digests, packageURI, builderID, p.BuildRequirements.Repository.URI)
+	err = buildOpts.Verifier.VerifyBuildAttestation(digests, packageName, builderID, p.BuildRequirements.Repository.URI)
 	if err != nil {
 		return -1, fmt.Errorf("[projects] %w: failed to verify artifact (%q) with builder (%q -> %q) source URI (%q) digests (%q): %w",
-			errs.ErrorVerification, packageURI, p.BuildRequirements.RequireSlsaBuilder, builderID,
+			errs.ErrorVerification, packageName, p.BuildRequirements.RequireSlsaBuilder, builderID,
 			p.BuildRequirements.Repository.URI, digests, err)
 	}
 

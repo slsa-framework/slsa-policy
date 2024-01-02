@@ -46,25 +46,25 @@ func (iter *bytesIterator) Error() error {
 }
 
 // Attestation verifier.
-func NewAttestationVerifier(digests intoto.DigestSet, packageURI, builderID, sourceURI string) options.AttestationVerifier {
-	return &attesationVerifier{packageURI: packageURI,
-		builderID: builderID, sourceURI: sourceURI,
+func NewAttestationVerifier(digests intoto.DigestSet, packageName, builderID, sourceName string) options.AttestationVerifier {
+	return &attesationVerifier{packageName: packageName,
+		builderID: builderID, sourceName: sourceName,
 		digests: digests}
 }
 
 type attesationVerifier struct {
-	packageURI string
+	packageName string
 	builderID  string
-	sourceURI  string
+	sourceName  string
 	digests    intoto.DigestSet
 }
 
-func (v *attesationVerifier) VerifyBuildAttestation(digests intoto.DigestSet, packageURI, builderID, sourceURI string) error {
-	if packageURI == v.packageURI && builderID == v.builderID && sourceURI == v.sourceURI && mapEq(digests, v.digests) {
+func (v *attesationVerifier) VerifyBuildAttestation(digests intoto.DigestSet, packageName, builderID, sourceName string) error {
+	if packageName == v.packageName && builderID == v.builderID && sourceName == v.sourceName && mapEq(digests, v.digests) {
 		return nil
 	}
-	return fmt.Errorf("%w: cannot verify package URI (%q) builder ID (%q) source URI (%q) digests (%q)",
-		errs.ErrorVerification, packageURI, builderID, sourceURI, digests)
+	return fmt.Errorf("%w: cannot verify package Name (%q) builder ID (%q) source Name (%q) digests (%q)",
+		errs.ErrorVerification, packageName, builderID, sourceName, digests)
 }
 
 func mapEq(m1, m2 map[string]string) bool {

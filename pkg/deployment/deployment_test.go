@@ -176,10 +176,10 @@ func Test_e2e(t *testing.T) {
 	}
 	releaserID1 := "releaser_id1"
 	releaserID2 := "releaser_id2"
-	packageURI1 := "package_uri1"
-	packageURI2 := "package_uri2"
-	packageURI3 := "package_uri3"
-	packageURI4 := "package_uri4"
+	packageName1 := "package_uri1"
+	packageName2 := "package_uri2"
+	packageName3 := "package_uri3"
+	packageName4 := "package_uri4"
 	pricipalURI1 := "principal_uri1"
 	pricipalURI2 := "principal_uri2"
 	// NOTE: the test iterator indexes policies starting at 0.
@@ -214,13 +214,13 @@ func Test_e2e(t *testing.T) {
 			},
 			Packages: []project.Package{
 				{
-					URI: packageURI3,
+					Name: packageName3,
 					Environment: project.Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
 				},
 				{
-					URI: packageURI4,
+					Name: packageName4,
 					Environment: project.Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
@@ -237,13 +237,13 @@ func Test_e2e(t *testing.T) {
 			},
 			Packages: []project.Package{
 				{
-					URI: packageURI1,
+					Name: packageName1,
 					Environment: project.Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
 				},
 				{
-					URI: packageURI2,
+					Name: packageName2,
 					Environment: project.Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
@@ -261,7 +261,7 @@ func Test_e2e(t *testing.T) {
 		name             string
 		org              organization.Policy
 		projects         []project.Policy
-		packageURI       string
+		packageName      string
 		digests          intoto.DigestSet
 		options          []AttestationCreationOption
 		policyID         string
@@ -289,7 +289,7 @@ func Test_e2e(t *testing.T) {
 			env:            "prod",
 			// Fields to validate the created attestation.
 			digests:      digests,
-			packageURI:   packageURI1,
+			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
 			// Releaser that the verifier will use.
@@ -307,7 +307,7 @@ func Test_e2e(t *testing.T) {
 			options:        opts,
 			// Fields to validate the created attestation.
 			digests:      digests,
-			packageURI:   packageURI1,
+			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
 			// Releaser that the verifier will use.
@@ -330,13 +330,13 @@ func Test_e2e(t *testing.T) {
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI3,
+							Name: packageName3,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI4,
+							Name: packageName4,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -353,11 +353,11 @@ func Test_e2e(t *testing.T) {
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI1,
+							Name: packageName1,
 							// NOTE: no env set.
 						},
 						{
-							URI: packageURI2,
+							Name: packageName2,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -373,7 +373,7 @@ func Test_e2e(t *testing.T) {
 			env:            "prod",
 			// Fields to validate the created attestation.
 			digests:      digests,
-			packageURI:   packageURI1,
+			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
 			// Releaser that the verifier will use.
@@ -394,7 +394,7 @@ func Test_e2e(t *testing.T) {
 			env:            "mismatch",
 			// Fields to validate the created attestation.
 			digests:      digests,
-			packageURI:   packageURI1,
+			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
 			// Releaser that the verifier will use.
@@ -417,13 +417,13 @@ func Test_e2e(t *testing.T) {
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI3,
+							Name: packageName3,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI4,
+							Name: packageName4,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -440,11 +440,11 @@ func Test_e2e(t *testing.T) {
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI1,
+							Name: packageName1,
 							// NOTE: no env set.
 						},
 						{
-							URI: packageURI2,
+							Name: packageName2,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -459,7 +459,7 @@ func Test_e2e(t *testing.T) {
 			options:        opts,
 			// Fields to validate the created attestation.
 			digests:      digests,
-			packageURI:   packageURI1,
+			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
 			// Releaser that the verifier will use.
@@ -477,7 +477,7 @@ func Test_e2e(t *testing.T) {
 			env:       "prod",
 			// Fields to validate the created attestation.
 			digests:      digests,
-			packageURI:   packageURI1,
+			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
 			// Releaser that the verifier will use.
@@ -496,7 +496,7 @@ func Test_e2e(t *testing.T) {
 			env:            "prod",
 			// Fields to validate the created attestation.
 			digests:      digests,
-			packageURI:   packageURI1,
+			packageName:  packageName1,
 			principalURI: pricipalURI2,
 			// Releaser that the verifier will use.
 			releaserID: releaserID2,
@@ -514,7 +514,7 @@ func Test_e2e(t *testing.T) {
 			env:            "prod",
 			// Fields to validate the created attestation.
 			digests:      digests,
-			packageURI:   packageURI1,
+			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
 			// Releaser that the verifier will use.
@@ -548,11 +548,11 @@ func Test_e2e(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)
 			}
-			verifier := common.NewAttestationVerifier(tt.digests, tt.packageURI, tt.env, tt.releaserID)
+			verifier := common.NewAttestationVerifier(tt.digests, tt.packageName, tt.env, tt.releaserID)
 			opts := ReleaseVerificationOption{
 				Verifier: verifier,
 			}
-			result := pol.Evaluate(tt.digests, tt.packageURI, tt.policyID, opts)
+			result := pol.Evaluate(tt.digests, tt.packageName, tt.policyID, opts)
 			if diff := cmp.Diff(tt.errorEvaluate, result.Error(), cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

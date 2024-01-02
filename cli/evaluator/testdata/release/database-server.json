@@ -1,7 +1,7 @@
 {
     "format":1,
     "package": {
-        "uri":"docker.io/laurentsimon/database-server"
+        "name":"docker.io/laurentsimon/database-server"
     },
     "build":{
         "require_slsa_builder":"github_generator_level_3",

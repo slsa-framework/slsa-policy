@@ -51,19 +51,19 @@ func (iter *bytesIterator) Error() error {
 }
 
 // Attestation verifier.
-func NewAttestationVerifier(digests intoto.DigestSet, packageURI, env, releaserID string) options.AttestationVerifier {
-	return &attesationVerifier{digests: digests, packageURI: packageURI, releaserID: releaserID, env: env}
+func NewAttestationVerifier(digests intoto.DigestSet, packageName, env, releaserID string) options.AttestationVerifier {
+	return &attesationVerifier{digests: digests, packageName: packageName, releaserID: releaserID, env: env}
 }
 
 type attesationVerifier struct {
-	packageURI string
+	packageName string
 	releaserID string
 	env        string
 	digests    intoto.DigestSet
 }
 
-func (v *attesationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, packageURI string, env []string, releaserID string) (*string, error) {
-	if packageURI == v.packageURI && releaserID == v.releaserID &&
+func (v *attesationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, packageName string, env []string, releaserID string) (*string, error) {
+	if packageName == v.packageName && releaserID == v.releaserID &&
 		mapEq(digests, v.digests) &&
 		((v.env != "" && len(env) > 0 && slices.Contains(env, v.env)) ||
 			(v.env == "" && len(env) == 0)) {
@@ -72,7 +72,7 @@ func (v *attesationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, 
 		}
 		return &v.env, nil
 	}
-	return nil, fmt.Errorf("%w: cannot verify package URI (%q) releaser ID (%q) env (%q)", errs.ErrorVerification, packageURI, releaserID, env)
+	return nil, fmt.Errorf("%w: cannot verify package Name (%q) releaser ID (%q) env (%q)", errs.ErrorVerification, packageName, releaserID, env)
 }
 
 func mapEq(m1, m2 map[string]string) bool {

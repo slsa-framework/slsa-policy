@@ -3,6 +3,7 @@ package release
 import (
 	"fmt"
 	"io"
+	"path"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal"
@@ -14,7 +15,7 @@ import (
 // AttestationVerifier defines an interface to verify attestations.
 type AttestationVerifier interface {
 	// Build attestations.
-	VerifyBuildAttestation(digests intoto.DigestSet, packageURI, builderID, sourceURI string) error
+	VerifyBuildAttestation(digests intoto.DigestSet, packageName, builderID, sourceURI string) error
 }
 
 // BuildVerificationOption defines the configuration to verify
@@ -35,11 +36,12 @@ type Policy struct {
 
 // PolicyEvaluationResult defines the result of policy evaluation.
 type PolicyEvaluationResult struct {
-	level       int
-	err         error
-	packageURI  string
-	digests     intoto.DigestSet
-	environment *string
+	level           int
+	err             error
+	packageName     string
+	packageRegistry string
+	digests         intoto.DigestSet
+	environment     *string
 }
 
 // This is a helpder class to forward calls between the internal
@@ -48,11 +50,11 @@ type internal_verifier struct {
 	buildOpts BuildVerificationOption
 }
 
-func (i *internal_verifier) VerifyBuildAttestation(digests intoto.DigestSet, packageURI, builderID, sourceURI string) error {
+func (i *internal_verifier) VerifyBuildAttestation(digests intoto.DigestSet, packageName, builderID, sourceURI string) error {
 	if i.buildOpts.Verifier == nil {
 		return fmt.Errorf("%w: verifier is nil", errs.ErrorInvalidInput)
 	}
-	return i.buildOpts.Verifier.VerifyBuildAttestation(digests, packageURI, builderID, sourceURI)
+	return i.buildOpts.Verifier.VerifyBuildAttestation(digests, packageName, builderID, sourceURI)
 }
 
 // New creates a release policy.
@@ -67,8 +69,8 @@ func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy
 }
 
 // Evaluate evalues the release policy.
-func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string, reqOpts RequestOption, buildOpts BuildVerificationOption) PolicyEvaluationResult {
-	level, err := p.policy.Evaluate(digests, packageURI,
+func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string, reqOpts RequestOption, buildOpts BuildVerificationOption) PolicyEvaluationResult {
+	level, err := p.policy.Evaluate(digests, packageName,
 		options.Request{
 			Environment: reqOpts.Environment,
 		},
@@ -81,7 +83,7 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string, reqOpts R
 	return PolicyEvaluationResult{
 		level:       level,
 		err:         err,
-		packageURI:  packageURI,
+		packageName: packageName,
 		digests:     digests,
 		environment: reqOpts.Environment,
 	}
@@ -98,8 +100,12 @@ func (r PolicyEvaluationResult) AttestationNew(creatorID string, options ...Atte
 	subject := intoto.Subject{
 		Digests: r.digests,
 	}
+	uri := r.packageName
+	if r.packageRegistry != "" {
+		uri = path.Join(r.packageRegistry, r.packageName)
+	}
 	packageDesc := intoto.ResourceDescriptor{
-		URI: r.packageURI,
+		URI: uri,
 		// Version.
 	}
 	// Set environment if not empty.
@@ -129,7 +135,7 @@ func (r PolicyEvaluationResult) Error() error {
 }
 
 func (r PolicyEvaluationResult) isValid() error {
-	if r.packageURI == "" {
+	if r.packageName == "" {
 		return fmt.Errorf("%w: empty package URI", errs.ErrorInternal)
 	}
 	return nil

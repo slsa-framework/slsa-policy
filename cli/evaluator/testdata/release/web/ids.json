@@ -1,7 +1,7 @@
 {
     "format":1,
     "package": {
-        "uri":"docker.io/laurentsimon/ids",
+        "name":"docker.io/laurentsimon/ids",
         "environment":{
             "any_of": [
                 "dev", "prod"

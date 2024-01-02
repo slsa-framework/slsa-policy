@@ -19,12 +19,12 @@ import (
 
 func Test_PolicyNew(t *testing.T) {
 	t.Parallel()
-	packageURI1 := "package_uri1"
-	packageURI2 := "package_uri2"
+	packageName1 := "package_name1"
+	packageName2 := "package_name2"
 	builderName1 := "builder_name1"
 	builderName2 := "builder_name2"
-	sourceURI1 := "source_uri1"
-	sourceURI2 := "source_uri2"
+	sourceURI1 := "source_name1"
+	sourceURI2 := "source_name2"
 	builderID1 := "builder_id1"
 	builderID2 := "builder_id2"
 	org := organization.Policy{
@@ -48,7 +48,7 @@ func Test_PolicyNew(t *testing.T) {
 		{
 			Format: 1,
 			Package: project.Package{
-				URI: packageURI1,
+				Name: packageName1,
 			},
 			BuildRequirements: project.BuildRequirements{
 				RequireSlsaBuilder: builderName1,
@@ -60,7 +60,7 @@ func Test_PolicyNew(t *testing.T) {
 		{
 			Format: 1,
 			Package: project.Package{
-				URI: packageURI2,
+				Name: packageName2,
 			},
 			BuildRequirements: project.BuildRequirements{
 				RequireSlsaBuilder: builderName2,
@@ -127,13 +127,13 @@ func Test_PolicyNew(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "same package uri",
+			name: "same package name",
 			org:  org,
 			projects: []project.Policy{
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI1,
+						Name: packageName1,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaBuilder: builderName1,
@@ -145,7 +145,7 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI1,
+						Name: packageName1,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaBuilder: builderName2,
@@ -158,13 +158,13 @@ func Test_PolicyNew(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "same package uri env set and not",
+			name: "same package name env set and not",
 			org:  org,
 			projects: []project.Policy{
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI1,
+						Name: packageName1,
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
 						},
@@ -179,7 +179,7 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI1,
+						Name: packageName1,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaBuilder: builderName2,
@@ -192,13 +192,13 @@ func Test_PolicyNew(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "same package uri different env",
+			name: "same package name different env",
 			org:  org,
 			projects: []project.Policy{
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI1,
+						Name: packageName1,
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
 						},
@@ -213,7 +213,7 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI1,
+						Name: packageName1,
 						Environment: project.Environment{
 							AnyOf: []string{"prod"},
 						},
@@ -229,13 +229,13 @@ func Test_PolicyNew(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "same package uri same env",
+			name: "same package name same env",
 			org:  org,
 			projects: []project.Policy{
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI1,
+						Name: packageName1,
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
 						},
@@ -250,7 +250,7 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI1,
+						Name: packageName1,
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
 						},
@@ -272,7 +272,7 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI1,
+						Name: packageName1,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaBuilder: builderName1 + "_mismatch",
@@ -284,7 +284,7 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI2,
+						Name: packageName2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaBuilder: builderName2,
@@ -303,7 +303,7 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI1,
+						Name: packageName1,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaBuilder: builderName1,
@@ -315,7 +315,7 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI2,
+						Name: packageName2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaBuilder: builderName2,
@@ -368,12 +368,12 @@ func Test_Evaluate(t *testing.T) {
 		"sha256": "val256",
 		"sha512": "val512",
 	}
-	packageURI1 := "package_uri1"
-	packageURI2 := "package_uri2"
+	packageName1 := "package_name1"
+	packageName2 := "package_name2"
 	builderName1 := "builder_name1"
 	builderName2 := "builder_name2"
-	sourceURI1 := "source_uri1"
-	sourceURI2 := "source_uri2"
+	sourceURI1 := "source_name1"
+	sourceURI2 := "source_name2"
 	builderID1 := "builder_id1"
 	builderID2 := "builder_id2"
 	org := organization.Policy{
@@ -397,7 +397,7 @@ func Test_Evaluate(t *testing.T) {
 		{
 			Format: 1,
 			Package: project.Package{
-				URI: packageURI1,
+				Name: packageName1,
 			},
 			BuildRequirements: project.BuildRequirements{
 				RequireSlsaBuilder: builderName1,
@@ -409,7 +409,7 @@ func Test_Evaluate(t *testing.T) {
 		{
 			Format: 1,
 			Package: project.Package{
-				URI: packageURI2,
+				Name: packageName2,
 			},
 			BuildRequirements: project.BuildRequirements{
 				RequireSlsaBuilder: builderName2,
@@ -430,20 +430,20 @@ func Test_Evaluate(t *testing.T) {
 		projects     []project.Policy
 		verifierOpts dummyVerifierOpts
 		level        int
-		packageURI   string
+		packageName  string
 		expected     error
 	}{
 		{
 			name:         "builder 1 success",
-			packageURI:   packageURI1,
+			packageName:  packageName1,
 			level:        2,
 			verifierOpts: vopts,
 			org:          org,
 			projects:     projects,
 		},
 		{
-			name:         "mismatch package uri",
-			packageURI:   packageURI1 + "_mismatch",
+			name:         "mismatch package name",
+			packageName:  packageName1 + "_mismatch",
 			level:        2,
 			verifierOpts: vopts,
 			org:          org,
@@ -451,9 +451,9 @@ func Test_Evaluate(t *testing.T) {
 			expected:     errs.ErrorNotFound,
 		},
 		{
-			name:       "mismatch source uri",
-			packageURI: packageURI1,
-			level:      2,
+			name:        "mismatch source name",
+			packageName: packageName1,
+			level:       2,
 			verifierOpts: dummyVerifierOpts{
 				builderID: builderID1,
 				sourceURI: sourceURI1 + "_mismatch",
@@ -464,9 +464,9 @@ func Test_Evaluate(t *testing.T) {
 			expected: errs.ErrorVerification,
 		},
 		{
-			name:       "request with env policy no env",
-			packageURI: packageURI1,
-			level:      2,
+			name:        "request with env policy no env",
+			packageName: packageName1,
+			level:       2,
 			verifierOpts: dummyVerifierOpts{
 				builderID:   builderID1,
 				sourceURI:   sourceURI1,
@@ -479,7 +479,7 @@ func Test_Evaluate(t *testing.T) {
 		},
 		{
 			name:         "request no env policy with env",
-			packageURI:   packageURI1,
+			packageName:  packageName1,
 			level:        2,
 			verifierOpts: vopts,
 			org:          org,
@@ -487,7 +487,7 @@ func Test_Evaluate(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI1,
+						Name: packageName1,
 						Environment: project.Environment{
 							AnyOf: []string{"dev", "prod"},
 						},
@@ -502,7 +502,7 @@ func Test_Evaluate(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI2,
+						Name: packageName2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaBuilder: builderName2,
@@ -515,9 +515,9 @@ func Test_Evaluate(t *testing.T) {
 			expected: errs.ErrorInvalidInput,
 		},
 		{
-			name:       "success builder 2 with dev env",
-			packageURI: packageURI2,
-			level:      3,
+			name:        "success builder 2 with dev env",
+			packageName: packageName2,
+			level:       3,
 			verifierOpts: dummyVerifierOpts{
 				builderID:   builderID2,
 				sourceURI:   sourceURI2,
@@ -529,7 +529,7 @@ func Test_Evaluate(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI1,
+						Name: packageName1,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaBuilder: builderName1,
@@ -541,7 +541,7 @@ func Test_Evaluate(t *testing.T) {
 				{
 					Format: 1,
 					Package: project.Package{
-						URI: packageURI2,
+						Name: packageName2,
 						Environment: project.Environment{
 							AnyOf: []string{"dev"},
 						},
@@ -556,9 +556,9 @@ func Test_Evaluate(t *testing.T) {
 			},
 		},
 		{
-			name:       "mismatch builder id",
-			packageURI: packageURI1,
-			level:      2,
+			name:        "mismatch builder id",
+			packageName: packageName1,
+			level:       2,
 			verifierOpts: dummyVerifierOpts{
 				builderID: builderName1 + "_mismatch",
 				sourceURI: sourceURI1,
@@ -599,7 +599,7 @@ func Test_Evaluate(t *testing.T) {
 				return
 			}
 			// Create the verifier.
-			verifier := common.NewAttestationVerifier(tt.verifierOpts.digests, tt.packageURI,
+			verifier := common.NewAttestationVerifier(tt.verifierOpts.digests, tt.packageName,
 				tt.verifierOpts.builderID, tt.verifierOpts.sourceURI)
 			opts := options.BuildVerification{
 				Verifier: verifier,
@@ -607,7 +607,7 @@ func Test_Evaluate(t *testing.T) {
 			req := options.Request{
 				Environment: tt.verifierOpts.environment,
 			}
-			level, err := policy.Evaluate(tt.verifierOpts.digests, tt.packageURI, req, opts)
+			level, err := policy.Evaluate(tt.verifierOpts.digests, tt.packageName, req, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

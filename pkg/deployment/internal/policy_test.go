@@ -20,12 +20,12 @@ func Test_PolicyNew(t *testing.T) {
 	t.Parallel()
 	releaserID1 := "releaser_id1"
 	releaserID2 := "releaser_id2"
-	packageURI1 := "package_uri1"
-	packageURI2 := "package_uri2"
-	packageURI3 := "package_uri3"
-	packageURI4 := "package_uri4"
-	pricipalURI1 := "principal_uri1"
-	pricipalURI2 := "principal_uri2"
+	packageName1 := "package_name1"
+	packageName2 := "package_name2"
+	packageName3 := "package_name3"
+	packageName4 := "package_name4"
+	principalName1 := "principal_name1"
+	principalName2 := "principal_name2"
 	org := organization.Policy{
 		Format: 1,
 		Roots: organization.Roots{
@@ -52,17 +52,17 @@ func Test_PolicyNew(t *testing.T) {
 				RequireSlsaLevel: common.AsPointer(2),
 			},
 			Principal: project.Principal{
-				URI: pricipalURI1,
+				URI: principalName1,
 			},
 			Packages: []project.Package{
 				{
-					URI: packageURI1,
+					Name: packageName1,
 					Environment: project.Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
 				},
 				{
-					URI: packageURI2,
+					Name: packageName2,
 					Environment: project.Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
@@ -72,20 +72,20 @@ func Test_PolicyNew(t *testing.T) {
 		{
 			Format: 1,
 			Principal: project.Principal{
-				URI: pricipalURI2,
+				URI: principalName2,
 			},
 			BuildRequirements: project.BuildRequirements{
 				RequireSlsaLevel: common.AsPointer(3),
 			},
 			Packages: []project.Package{
 				{
-					URI: packageURI3,
+					Name: packageName3,
 					Environment: project.Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
 				},
 				{
-					URI: packageURI4,
+					Name: packageName4,
 					Environment: project.Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
@@ -141,17 +141,17 @@ func Test_PolicyNew(t *testing.T) {
 						RequireSlsaLevel: common.AsPointer(2),
 					},
 					Principal: project.Principal{
-						URI: pricipalURI1,
+						URI: principalName1,
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI1,
+							Name: packageName1,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI2,
+							Name: packageName2,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -161,20 +161,20 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Principal: project.Principal{
-						URI: pricipalURI2,
+						URI: principalName2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI3,
+							Name: packageName3,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI4,
+							Name: packageName4,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", ""},
 							},
@@ -194,17 +194,17 @@ func Test_PolicyNew(t *testing.T) {
 						RequireSlsaLevel: common.AsPointer(2),
 					},
 					Principal: project.Principal{
-						URI: pricipalURI1,
+						URI: principalName1,
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI1,
+							Name: packageName1,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI2,
+							Name: packageName2,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -214,7 +214,7 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Principal: project.Principal{
-						URI: pricipalURI2,
+						URI: principalName2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
@@ -233,17 +233,17 @@ func Test_PolicyNew(t *testing.T) {
 						RequireSlsaLevel: common.AsPointer(2),
 					},
 					Principal: project.Principal{
-						URI: pricipalURI1,
+						URI: principalName1,
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI1,
+							Name: packageName1,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI2,
+							Name: packageName2,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -253,7 +253,7 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Principal: project.Principal{
-						URI: pricipalURI2,
+						URI: principalName2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
@@ -262,7 +262,7 @@ func Test_PolicyNew(t *testing.T) {
 			},
 		},
 		{
-			name:     "project empty package uri",
+			name:     "project empty package name",
 			expected: errs.ErrorInvalidField,
 			org:      org,
 			projects: []project.Policy{
@@ -272,17 +272,17 @@ func Test_PolicyNew(t *testing.T) {
 						RequireSlsaLevel: common.AsPointer(2),
 					},
 					Principal: project.Principal{
-						URI: pricipalURI1,
+						URI: principalName1,
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI1,
+							Name: packageName1,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI2,
+							Name: packageName2,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -292,23 +292,23 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Principal: project.Principal{
-						URI: pricipalURI2,
+						URI: principalName2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI3,
+							Name: packageName3,
 						},
-						// Empty package URI.
+						// Empty package Name.
 						{},
 					},
 				},
 			},
 		},
 		{
-			name:     "project package uri reuse",
+			name:     "project package name reuse",
 			expected: errs.ErrorInvalidField,
 			org:      org,
 			projects: []project.Policy{
@@ -318,17 +318,17 @@ func Test_PolicyNew(t *testing.T) {
 						RequireSlsaLevel: common.AsPointer(2),
 					},
 					Principal: project.Principal{
-						URI: pricipalURI1,
+						URI: principalName1,
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI1,
+							Name: packageName1,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI2,
+							Name: packageName2,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -338,17 +338,17 @@ func Test_PolicyNew(t *testing.T) {
 				{
 					Format: 1,
 					Principal: project.Principal{
-						URI: pricipalURI2,
+						URI: principalName2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI3,
+							Name: packageName3,
 						},
 						{
-							URI: packageURI3,
+							Name: packageName3,
 						},
 					},
 				},
@@ -365,17 +365,17 @@ func Test_PolicyNew(t *testing.T) {
 						RequireSlsaLevel: common.AsPointer(2),
 					},
 					Principal: project.Principal{
-						URI: pricipalURI1,
+						URI: principalName1,
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI1,
+							Name: packageName1,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI2,
+							Name: packageName2,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -389,10 +389,10 @@ func Test_PolicyNew(t *testing.T) {
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI3,
+							Name: packageName3,
 						},
 						{
-							URI: packageURI3,
+							Name: packageName3,
 						},
 					},
 				},
@@ -524,10 +524,10 @@ func Test_PolicyNew(t *testing.T) {
 func Test_Evaluate(t *testing.T) {
 	t.Parallel()
 	type dummyVerifierOpts struct {
-		digests    intoto.DigestSet
-		packageURI string
-		releaserID string
-		env        string
+		digests     intoto.DigestSet
+		packageName string
+		releaserID  string
+		env         string
 	}
 	digests := intoto.DigestSet{
 		"sha256": "val256",
@@ -535,12 +535,12 @@ func Test_Evaluate(t *testing.T) {
 	}
 	releaserID1 := "releaser_id1"
 	releaserID2 := "releaser_id2"
-	packageURI1 := "package_uri1"
-	packageURI2 := "package_uri2"
-	packageURI3 := "package_uri3"
-	packageURI4 := "package_uri4"
-	pricipalURI1 := "principal_uri1"
-	pricipalURI2 := "principal_uri2"
+	packageName1 := "package_name1"
+	packageName2 := "package_name2"
+	packageName3 := "package_name3"
+	packageName4 := "package_name4"
+	principalName1 := "principal_name1"
+	principalName2 := "principal_name2"
 	// NOTE: the test iterator indexes policies starting at 0.
 	policyID2 := "policy_id1"
 	org := organization.Policy{
@@ -569,17 +569,17 @@ func Test_Evaluate(t *testing.T) {
 				RequireSlsaLevel: common.AsPointer(2),
 			},
 			Principal: project.Principal{
-				URI: pricipalURI1,
+				URI: principalName1,
 			},
 			Packages: []project.Package{
 				{
-					URI: packageURI3,
+					Name: packageName3,
 					Environment: project.Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
 				},
 				{
-					URI: packageURI4,
+					Name: packageName4,
 					Environment: project.Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
@@ -589,20 +589,20 @@ func Test_Evaluate(t *testing.T) {
 		{
 			Format: 1,
 			Principal: project.Principal{
-				URI: pricipalURI2,
+				URI: principalName2,
 			},
 			BuildRequirements: project.BuildRequirements{
 				RequireSlsaLevel: common.AsPointer(3),
 			},
 			Packages: []project.Package{
 				{
-					URI: packageURI1,
+					Name: packageName1,
 					Environment: project.Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
 				},
 				{
-					URI: packageURI2,
+					Name: packageName2,
 					Environment: project.Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
@@ -612,24 +612,24 @@ func Test_Evaluate(t *testing.T) {
 	}
 
 	vopts := dummyVerifierOpts{
-		digests:    digests,
-		releaserID: releaserID2,
-		packageURI: packageURI1,
-		env:        "prod",
+		digests:     digests,
+		releaserID:  releaserID2,
+		packageName: packageName1,
+		env:         "prod",
 	}
 	tests := []struct {
 		name         string
 		org          organization.Policy
 		projects     []project.Policy
 		verifierOpts dummyVerifierOpts
-		packageURI   string
+		packageName  string
 		digests      intoto.DigestSet
 		policyID     string
 		expected     error
 	}{
 		{
 			name:         "passing policy",
-			packageURI:   packageURI2,
+			packageName:  packageName2,
 			digests:      digests,
 			policyID:     policyID2,
 			verifierOpts: vopts,
@@ -639,16 +639,16 @@ func Test_Evaluate(t *testing.T) {
 		{
 			name:         "empty digests",
 			expected:     errs.ErrorInvalidField,
-			packageURI:   packageURI2,
+			packageName:  packageName2,
 			policyID:     policyID2,
 			verifierOpts: vopts,
 			org:          org,
 			projects:     projects,
 		},
 		{
-			name:       "empty digest key",
-			expected:   errs.ErrorInvalidField,
-			packageURI: packageURI2,
+			name:        "empty digest key",
+			expected:    errs.ErrorInvalidField,
+			packageName: packageName2,
 			digests: intoto.DigestSet{
 				"sha256": "val256",
 				"":       "val512",
@@ -659,9 +659,9 @@ func Test_Evaluate(t *testing.T) {
 			projects:     projects,
 		},
 		{
-			name:       "empty digest value",
-			expected:   errs.ErrorInvalidField,
-			packageURI: packageURI2,
+			name:        "empty digest value",
+			expected:    errs.ErrorInvalidField,
+			packageName: packageName2,
 			digests: intoto.DigestSet{
 				"sha256": "val256",
 				"sha512": "",
@@ -672,9 +672,9 @@ func Test_Evaluate(t *testing.T) {
 			projects:     projects,
 		},
 		{
-			name:       "mismatch value",
-			expected:   errs.ErrorVerification,
-			packageURI: packageURI2,
+			name:        "mismatch value",
+			expected:    errs.ErrorVerification,
+			packageName: packageName2,
 			digests: intoto.DigestSet{
 				"sha256": "val256_different",
 				"sha512": "val512",
@@ -685,9 +685,9 @@ func Test_Evaluate(t *testing.T) {
 			projects:     projects,
 		},
 		{
-			name:       "mismatch value single hash",
-			expected:   errs.ErrorVerification,
-			packageURI: packageURI2,
+			name:        "mismatch value single hash",
+			expected:    errs.ErrorVerification,
+			packageName: packageName2,
 			digests: intoto.DigestSet{
 				"sha512": "val512",
 			},
@@ -697,14 +697,14 @@ func Test_Evaluate(t *testing.T) {
 			projects:     projects,
 		},
 		{
-			name:       "no env",
-			packageURI: packageURI2,
-			digests:    digests,
-			policyID:   policyID2,
+			name:        "no env",
+			packageName: packageName2,
+			digests:     digests,
+			policyID:    policyID2,
 			verifierOpts: dummyVerifierOpts{
-				digests:    digests,
-				releaserID: releaserID2,
-				packageURI: packageURI1,
+				digests:     digests,
+				releaserID:  releaserID2,
+				packageName: packageName1,
 			},
 			org: org,
 			projects: []project.Policy{
@@ -714,17 +714,17 @@ func Test_Evaluate(t *testing.T) {
 						RequireSlsaLevel: common.AsPointer(2),
 					},
 					Principal: project.Principal{
-						URI: pricipalURI1,
+						URI: principalName1,
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI3,
+							Name: packageName3,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI4,
+							Name: packageName4,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -734,36 +734,36 @@ func Test_Evaluate(t *testing.T) {
 				{
 					Format: 1,
 					Principal: project.Principal{
-						URI: pricipalURI2,
+						URI: principalName2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI1,
+							Name: packageName1,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
 							// NOTE: This package does not have env set.
-							URI: packageURI2,
+							Name: packageName2,
 						},
 					},
 				},
 			},
 		},
 		{
-			name:       "env in attestation not in policy",
-			expected:   errs.ErrorVerification,
-			packageURI: packageURI2,
-			digests:    digests,
-			policyID:   policyID2,
+			name:        "env in attestation not in policy",
+			expected:    errs.ErrorVerification,
+			packageName: packageName2,
+			digests:     digests,
+			policyID:    policyID2,
 			verifierOpts: dummyVerifierOpts{
-				digests:    digests,
-				releaserID: releaserID2,
-				packageURI: packageURI1,
+				digests:     digests,
+				releaserID:  releaserID2,
+				packageName: packageName1,
 			},
 			org:      org,
 			projects: projects,
@@ -771,7 +771,7 @@ func Test_Evaluate(t *testing.T) {
 		{
 			name:         "env not in attestation set in policy",
 			expected:     errs.ErrorVerification,
-			packageURI:   packageURI2,
+			packageName:  packageName2,
 			digests:      digests,
 			policyID:     policyID2,
 			verifierOpts: vopts,
@@ -783,17 +783,17 @@ func Test_Evaluate(t *testing.T) {
 						RequireSlsaLevel: common.AsPointer(2),
 					},
 					Principal: project.Principal{
-						URI: pricipalURI1,
+						URI: principalName1,
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI3,
+							Name: packageName3,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI4,
+							Name: packageName4,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -803,21 +803,21 @@ func Test_Evaluate(t *testing.T) {
 				{
 					Format: 1,
 					Principal: project.Principal{
-						URI: pricipalURI2,
+						URI: principalName2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI1,
+							Name: packageName1,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
 							// NOTE: This package does not have env set.
-							URI: packageURI2,
+							Name: packageName2,
 						},
 					},
 				},
@@ -826,7 +826,7 @@ func Test_Evaluate(t *testing.T) {
 		{
 			name:         "policy not present",
 			expected:     errs.ErrorNotFound,
-			packageURI:   packageURI2,
+			packageName:  packageName2,
 			digests:      digests,
 			policyID:     policyID2 + "_different",
 			verifierOpts: vopts,
@@ -834,9 +834,9 @@ func Test_Evaluate(t *testing.T) {
 			projects:     projects,
 		},
 		{
-			name:         "package uri not present",
+			name:         "package name not present",
 			expected:     errs.ErrorNotFound,
-			packageURI:   packageURI3,
+			packageName:  packageName3,
 			digests:      digests,
 			policyID:     policyID2,
 			verifierOpts: vopts,
@@ -845,7 +845,7 @@ func Test_Evaluate(t *testing.T) {
 		},
 		{
 			name:         "low build level",
-			packageURI:   packageURI2,
+			packageName:  packageName2,
 			digests:      digests,
 			policyID:     policyID2,
 			verifierOpts: vopts,
@@ -857,17 +857,17 @@ func Test_Evaluate(t *testing.T) {
 						RequireSlsaLevel: common.AsPointer(2),
 					},
 					Principal: project.Principal{
-						URI: pricipalURI1,
+						URI: principalName1,
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI3,
+							Name: packageName3,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI4,
+							Name: packageName4,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -877,20 +877,20 @@ func Test_Evaluate(t *testing.T) {
 				{
 					Format: 1,
 					Principal: project.Principal{
-						URI: pricipalURI2,
+						URI: principalName2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(1),
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI1,
+							Name: packageName1,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI2,
+							Name: packageName2,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -902,7 +902,7 @@ func Test_Evaluate(t *testing.T) {
 		{
 			name:         "high build level",
 			expected:     errs.ErrorVerification,
-			packageURI:   packageURI2,
+			packageName:  packageName2,
 			digests:      digests,
 			policyID:     policyID2,
 			verifierOpts: vopts,
@@ -932,17 +932,17 @@ func Test_Evaluate(t *testing.T) {
 						RequireSlsaLevel: common.AsPointer(2),
 					},
 					Principal: project.Principal{
-						URI: pricipalURI1,
+						URI: principalName1,
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI3,
+							Name: packageName3,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI4,
+							Name: packageName4,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -952,20 +952,20 @@ func Test_Evaluate(t *testing.T) {
 				{
 					Format: 1,
 					Principal: project.Principal{
-						URI: pricipalURI2,
+						URI: principalName2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
 					},
 					Packages: []project.Package{
 						{
-							URI: packageURI1,
+							Name: packageName1,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
 						},
 						{
-							URI: packageURI2,
+							Name: packageName2,
 							Environment: project.Environment{
 								AnyOf: []string{"dev", "prod"},
 							},
@@ -1005,12 +1005,12 @@ func Test_Evaluate(t *testing.T) {
 				return
 			}
 			// Create the verifier.
-			verifier := common.NewAttestationVerifier(tt.verifierOpts.digests, tt.packageURI,
+			verifier := common.NewAttestationVerifier(tt.verifierOpts.digests, tt.packageName,
 				tt.verifierOpts.env, tt.verifierOpts.releaserID)
 			opts := options.ReleaseVerification{
 				Verifier: verifier,
 			}
-			principal, err := policy.Evaluate(tt.digests, tt.packageURI, tt.policyID, opts)
+			principal, err := policy.Evaluate(tt.digests, tt.packageName, tt.policyID, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

@@ -8,7 +8,7 @@
     },
     "packages":[
         {
-            "uri": "laurentsimon/echo-server",
+            "name": "laurentsimon/echo-server",
             "environment": {
                 "any_of": [
                     "prod"
@@ -16,7 +16,7 @@
             }
         },
         {
-            "uri": "laurentsimon/database-server",
+            "name": "laurentsimon/database-server",
             "environment": {
                 "any_of": [
                     "prod"
@@ -24,7 +24,7 @@
             }
         },
         {
-            "uri": "laurentsimon/logger",
+            "name": "laurentsimon/logger",
             "environment": {
                 "any_of": [
                     "prod"
@@ -32,7 +32,7 @@
             }
         },
         {
-            "uri": "laurentsimon/ids",
+            "name": "laurentsimon/ids",
             "environment": {
                 "any_of": [
                     "prod"

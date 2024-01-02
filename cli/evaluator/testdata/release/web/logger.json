@@ -1,7 +1,7 @@
 {
     "format":1,
     "package": {
-        "uri":"docker.io/laurentsimon/logger",
+        "name":"docker.io/laurentsimon/logger",
         "environment":{
             "any_of": [
                 "dev", "prod"

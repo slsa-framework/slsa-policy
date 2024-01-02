@@ -297,7 +297,7 @@ func Test_Evaluate(t *testing.T) {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			err := tt.policy.Evaluate(intoto.DigestSet{}, "any_package_uri", options.ReleaseVerification{})
+			err := tt.policy.Evaluate(intoto.DigestSet{}, "any_package_name", options.ReleaseVerification{})
 			if diff := cmp.Diff(tt.expected, err); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

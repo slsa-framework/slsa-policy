@@ -1,7 +1,7 @@
 {
     "format":1,
     "package": {
-        "uri":"docker.io/laurentsimon/slsa-project-echo-server",
+        "name":"docker.io/laurentsimon/slsa-project-echo-server",
         "environment":{
             "any_of": [
                 "dev", "prod"

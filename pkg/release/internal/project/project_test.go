@@ -63,23 +63,23 @@ func Test_validatePackage(t *testing.T) {
 		expected error
 	}{
 		{
-			name:     "empty uri",
+			name:     "empty name",
 			policy:   Policy{},
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "set uri",
+			name: "set name",
 			policy: Policy{
 				Package: Package{
-					URI: "non_empty_uri",
+					Name: "non_empty_name",
 				},
 			},
 		},
 		{
-			name: "set uri and environment",
+			name: "set name and environment",
 			policy: Policy{
 				Package: Package{
-					URI: "non_empty_uri",
+					Name: "non_empty_name",
 					Environment: Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
@@ -90,7 +90,7 @@ func Test_validatePackage(t *testing.T) {
 			name: "empty environment field",
 			policy: Policy{
 				Package: Package{
-					URI: "non_empty_uri",
+					Name: "non_empty_name",
 					Environment: Environment{
 						AnyOf: []string{"", "dev", "prod"},
 					},
@@ -158,7 +158,7 @@ func Test_validateBuildRequirements(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "empty repository uri",
+			name: "empty repository name",
 			policy: Policy{
 				BuildRequirements: BuildRequirements{
 					RequireSlsaBuilder: "builder_name",
@@ -209,7 +209,7 @@ func Test_FromReaders(t *testing.T) {
 				Policy{
 					Format: 1,
 					Package: Package{
-						URI: "uri_set",
+						Name: "name_set",
 					},
 					BuildRequirements: BuildRequirements{
 						RequireSlsaBuilder: "builder_name",
@@ -227,7 +227,7 @@ func Test_FromReaders(t *testing.T) {
 				Policy{
 					Format: 1,
 					Package: Package{
-						URI: "uri_set",
+						Name: "name_set",
 					},
 					BuildRequirements: BuildRequirements{
 						RequireSlsaBuilder: "other_builder_name",
@@ -241,12 +241,12 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "package uri re-use",
+			name: "package name re-use",
 			policies: []Policy{
 				Policy{
 					Format: 1,
 					Package: Package{
-						URI: "uri_set",
+						Name: "name_set",
 					},
 					BuildRequirements: BuildRequirements{
 						RequireSlsaBuilder: "builder_name",
@@ -258,7 +258,7 @@ func Test_FromReaders(t *testing.T) {
 				Policy{
 					Format: 1,
 					Package: Package{
-						URI: "uri_set",
+						Name: "name_set",
 					},
 					BuildRequirements: BuildRequirements{
 						RequireSlsaBuilder: "builder_name",
@@ -272,12 +272,12 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "package uri re-use same env",
+			name: "package name re-use same env",
 			policies: []Policy{
 				Policy{
 					Format: 1,
 					Package: Package{
-						URI: "uri_set",
+						Name: "name_set",
 						Environment: Environment{
 							AnyOf: []string{"dev"},
 						},
@@ -292,7 +292,7 @@ func Test_FromReaders(t *testing.T) {
 				Policy{
 					Format: 1,
 					Package: Package{
-						URI: "uri_set",
+						Name: "name_set",
 						Environment: Environment{
 							AnyOf: []string{"dev"},
 						},
@@ -309,12 +309,12 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "package uri re-use different env",
+			name: "package name re-use different env",
 			policies: []Policy{
 				Policy{
 					Format: 1,
 					Package: Package{
-						URI: "uri_set",
+						Name: "name_set",
 						Environment: Environment{
 							AnyOf: []string{"prod"},
 						},
@@ -329,7 +329,7 @@ func Test_FromReaders(t *testing.T) {
 				Policy{
 					Format: 1,
 					Package: Package{
-						URI: "uri_set",
+						Name: "name_set",
 						Environment: Environment{
 							AnyOf: []string{"dev"},
 						},
@@ -346,12 +346,12 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "package uri re-use env set and not",
+			name: "package name re-use env set and not",
 			policies: []Policy{
 				Policy{
 					Format: 1,
 					Package: Package{
-						URI: "uri_set",
+						Name: "name_set",
 						Environment: Environment{
 							AnyOf: []string{"prod"},
 						},
@@ -366,7 +366,7 @@ func Test_FromReaders(t *testing.T) {
 				Policy{
 					Format: 1,
 					Package: Package{
-						URI: "uri_set",
+						Name: "name_set",
 					},
 					BuildRequirements: BuildRequirements{
 						RequireSlsaBuilder: "builder_name",
@@ -385,7 +385,7 @@ func Test_FromReaders(t *testing.T) {
 				Policy{
 					Format: 1,
 					Package: Package{
-						URI: "uri_set",
+						Name: "name_set",
 					},
 					BuildRequirements: BuildRequirements{
 						RequireSlsaBuilder: "builder_name",
@@ -403,7 +403,7 @@ func Test_FromReaders(t *testing.T) {
 				Policy{
 					Format: 1,
 					Package: Package{
-						URI: "uri_set",
+						Name: "name_set",
 					},
 					BuildRequirements: BuildRequirements{
 						Repository: Repository{
@@ -416,7 +416,7 @@ func Test_FromReaders(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name: "empty repository uri",
+			name: "empty repository name",
 			policies: []Policy{
 				Policy{
 					Format: 1,
@@ -475,12 +475,12 @@ func Test_Evaluate(t *testing.T) {
 		"sha256": "val256",
 		"sha512": "val512",
 	}
-	packageURI := "package_uri"
-	sourceURI := "source_uri"
+	packageName := "package_name"
+	sourceURI := "source_name"
 	projectBuilder1 := Policy{
 		Format: 1,
 		Package: Package{
-			URI: packageURI,
+			Name: packageName,
 		},
 		BuildRequirements: BuildRequirements{
 			RequireSlsaBuilder: "builder1",
@@ -492,7 +492,7 @@ func Test_Evaluate(t *testing.T) {
 	projectBuilder2 := Policy{
 		Format: 1,
 		Package: Package{
-			URI: packageURI,
+			Name: packageName,
 		},
 		BuildRequirements: BuildRequirements{
 			RequireSlsaBuilder: "builder2",
@@ -527,24 +527,24 @@ func Test_Evaluate(t *testing.T) {
 		policy       Policy
 		org          organization.Policy
 		noVerifier   bool
-		packageURI   string
+		packageName  string
 		digests      intoto.DigestSet
 		verifierOpts dummyVerifierOpts
 		level        int
 		expected     error
 	}{
 		{
-			name:       "no verifier defined",
-			packageURI: packageURI,
-			digests:    digests,
-			org:        org,
-			policy:     projectBuilder1,
-			noVerifier: true,
-			expected:   errs.ErrorInvalidInput,
+			name:        "no verifier defined",
+			packageName: packageName,
+			digests:     digests,
+			org:         org,
+			policy:      projectBuilder1,
+			noVerifier:  true,
+			expected:    errs.ErrorInvalidInput,
 		},
 		{
-			name:       "digest mismatch",
-			packageURI: packageURI,
+			name:        "digest mismatch",
+			packageName: packageName,
 			digests: intoto.DigestSet{
 				"sha256": "val256_different",
 				"sha512": "val512",
@@ -554,8 +554,8 @@ func Test_Evaluate(t *testing.T) {
 			expected: errs.ErrorVerification,
 		},
 		{
-			name:       "digest mismatch single",
-			packageURI: packageURI,
+			name:        "digest mismatch single",
+			packageName: packageName,
 			digests: intoto.DigestSet{
 				"sha512": "val512_different",
 			},
@@ -564,8 +564,8 @@ func Test_Evaluate(t *testing.T) {
 			expected: errs.ErrorVerification,
 		},
 		{
-			name:       "digest mismatch one correct match",
-			packageURI: packageURI,
+			name:        "digest mismatch one correct match",
+			packageName: packageName,
 			digests: intoto.DigestSet{
 				"sha512": "val512",
 			},
@@ -574,17 +574,17 @@ func Test_Evaluate(t *testing.T) {
 			expected: errs.ErrorVerification,
 		},
 		{
-			name:       "empty digests",
-			packageURI: packageURI,
-			org:        org,
-			policy:     projectBuilder1,
-			expected:   errs.ErrorInvalidField,
+			name:        "empty digests",
+			packageName: packageName,
+			org:         org,
+			policy:      projectBuilder1,
+			expected:    errs.ErrorInvalidField,
 		},
 		{
-			name:       "empty digest value",
-			packageURI: packageURI,
-			org:        org,
-			policy:     projectBuilder1,
+			name:        "empty digest value",
+			packageName: packageName,
+			org:         org,
+			policy:      projectBuilder1,
 			digests: intoto.DigestSet{
 				"sha256": "val256",
 				"sha512": "",
@@ -592,10 +592,10 @@ func Test_Evaluate(t *testing.T) {
 			expected: errs.ErrorInvalidField,
 		},
 		{
-			name:       "empty digest key",
-			packageURI: packageURI,
-			org:        org,
-			policy:     projectBuilder1,
+			name:        "empty digest key",
+			packageName: packageName,
+			org:         org,
+			policy:      projectBuilder1,
 			digests: intoto.DigestSet{
 				"sha256": "val256",
 				"":       "val512",
@@ -604,7 +604,7 @@ func Test_Evaluate(t *testing.T) {
 		},
 		{
 			name:         "builder 1 success",
-			packageURI:   packageURI,
+			packageName:  packageName,
 			digests:      digests,
 			org:          org,
 			policy:       projectBuilder1,
@@ -612,11 +612,11 @@ func Test_Evaluate(t *testing.T) {
 			verifierOpts: vopts,
 		},
 		{
-			name:       "builder 2 success",
-			packageURI: packageURI,
-			digests:    digests,
-			org:        org,
-			policy:     projectBuilder2,
+			name:        "builder 2 success",
+			packageName: packageName,
+			digests:     digests,
+			org:         org,
+			policy:      projectBuilder2,
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder2_id",
 				sourceURI: sourceURI,
@@ -625,11 +625,11 @@ func Test_Evaluate(t *testing.T) {
 			level: 2,
 		},
 		{
-			name:       "no builder is supported",
-			packageURI: packageURI,
-			digests:    digests,
-			org:        org,
-			policy:     projectBuilder2,
+			name:        "no builder is supported",
+			packageName: packageName,
+			digests:     digests,
+			org:         org,
+			policy:      projectBuilder2,
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder3_id",
 				sourceURI: sourceURI,
@@ -638,11 +638,11 @@ func Test_Evaluate(t *testing.T) {
 			expected: errs.ErrorVerification,
 		},
 		{
-			name:       "builder 2 different source",
-			packageURI: packageURI,
-			digests:    digests,
-			org:        org,
-			policy:     projectBuilder2,
+			name:        "builder 2 different source",
+			packageName: packageName,
+			digests:     digests,
+			org:         org,
+			policy:      projectBuilder2,
 			verifierOpts: dummyVerifierOpts{
 				builderID: "builder2_id",
 				sourceURI: sourceURI + "_different",
@@ -651,12 +651,12 @@ func Test_Evaluate(t *testing.T) {
 			expected: errs.ErrorVerification,
 		},
 		{
-			name:       "request with env policy no env",
-			packageURI: packageURI,
-			digests:    digests,
-			org:        org,
-			policy:     projectBuilder1,
-			level:      1,
+			name:        "request with env policy no env",
+			packageName: packageName,
+			digests:     digests,
+			org:         org,
+			policy:      projectBuilder1,
+			level:       1,
 			verifierOpts: dummyVerifierOpts{
 				builderID:   "builder1_id",
 				sourceURI:   sourceURI,
@@ -666,14 +666,14 @@ func Test_Evaluate(t *testing.T) {
 			expected: errs.ErrorInvalidInput,
 		},
 		{
-			name:       "request no env policy with env",
-			packageURI: packageURI,
-			digests:    digests,
-			org:        org,
+			name:        "request no env policy with env",
+			packageName: packageName,
+			digests:     digests,
+			org:         org,
 			policy: Policy{
 				Format: 1,
 				Package: Package{
-					URI: packageURI,
+					Name: packageName,
 					Environment: Environment{
 						AnyOf: []string{"dev", "prod"},
 					},
@@ -697,7 +697,7 @@ func Test_Evaluate(t *testing.T) {
 			// Create the verifier that succeeds for the right parameters.
 			var verifier options.AttestationVerifier
 			if !tt.noVerifier {
-				verifier = common.NewAttestationVerifier(tt.verifierOpts.digests, tt.packageURI,
+				verifier = common.NewAttestationVerifier(tt.verifierOpts.digests, tt.packageName,
 					tt.verifierOpts.builderID, tt.verifierOpts.sourceURI)
 			}
 			opts := options.BuildVerification{
@@ -706,7 +706,7 @@ func Test_Evaluate(t *testing.T) {
 			req := options.Request{
 				Environment: tt.verifierOpts.environment,
 			}
-			level, err := tt.policy.Evaluate(tt.digests, tt.packageURI, tt.org, req, opts)
+			level, err := tt.policy.Evaluate(tt.digests, tt.packageName, tt.org, req, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
