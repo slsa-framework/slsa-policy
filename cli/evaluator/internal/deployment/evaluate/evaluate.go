@@ -14,17 +14,17 @@ import (
 
 func usage(cli string) {
 	msg := "" +
-		"Usage: %s deployment evaluate orgPath projectsPath packageURI policyID creatorID [optional:environment]\n" +
+		"Usage: %s deployment evaluate orgPath projectsPath packageURI policyID creatorID\n" +
 		"\n" +
 		"Example:\n" +
-		"%s deployment evaluate ./path/to/policy/org ./path/to/policy/projects laurentsimon/echo-server@sha256:xxxx https://github.com/org/.slsa/.github/workflows/releaser.yml prod\n" +
+		"%s deployment evaluate ./path/to/policy/org ./path/to/policy/projects laurentsimon/echo-server@sha256:xxxx https://github.com/org/.slsa/.github/workflows/releaser.yml\n" +
 		"\n"
 	fmt.Fprintf(os.Stderr, msg, cli, cli)
 	os.Exit(1)
 }
 
 func Run(cli string, args []string) error {
-	if len(args) < 5 || len(args) > 6 {
+	if len(args) != 5 {
 		usage(cli)
 	}
 	// Extract inputs.

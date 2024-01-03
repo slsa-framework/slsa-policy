@@ -33,21 +33,25 @@ func (v *releaseVerifier) validate() error {
 	return nil
 }
 
-func (v *releaseVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, imageName string, environment []string, opts deployment.AttestationVerifierReleaseOptions) (*string, error) {
+func (v *releaseVerifier) setOptions(opts deployment.AttestationVerifierReleaseOptions) error {
 	// Set the options.
 	v.AttestationVerifierReleaseOptions = opts
 	// Validate the options.
 	if err := v.validate(); err != nil {
-		return nil, err
+		return err
 	}
+	return nil
+}
+
+func (v *releaseVerifier) verifySignature(imageName string, digests intoto.DigestSet) (string, []byte, error) {
 	// Validate the image.
 	if strings.Contains(imageName, "@") || strings.Contains(imageName, ":") {
-		return nil, fmt.Errorf("invalid image name (%q)", imageName)
+		return "", nil, fmt.Errorf("invalid image name (%q)", imageName)
 	}
 	// Validate the digests.
 	digest, ok := digests["sha256"]
 	if !ok {
-		return nil, fmt.Errorf("invalid digest (%q)", digests)
+		return "", nil, fmt.Errorf("invalid digest (%q)", digests)
 	}
 	imageURI := fmt.Sprintf("%s@sha256:%s", imageName, digest)
 	fmt.Println("imageURI:", imageURI)
@@ -55,12 +59,13 @@ func (v *releaseVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, ima
 	// Verify the signature.
 	fullReleaserID, attBytes, err := crypto.VerifySignature(imageURI, v.ReleaserID, v.ReleaserIDRegex)
 	if err != nil {
-		return nil, fmt.Errorf("failed to verify image (%q) with releaser ID (%q) releaser ID regex (%q): %v",
+		return "", nil, fmt.Errorf("failed to verify image (%q) with releaser ID (%q) releaser ID regex (%q): %v",
 			imageURI, v.ReleaserID, v.ReleaserIDRegex, err)
 	}
-	fmt.Println(string(attBytes))
+	return fullReleaserID, attBytes, nil
+}
 
-	// Verify the attestation itself.
+func (v *releaseVerifier) verifyAttestationContent(attBytes []byte, imageName, fullReleaserID string, digests intoto.DigestSet, environment []string) (*string, error) {
 	attReader := io.NopCloser(bytes.NewReader(attBytes))
 	verification, err := release.VerificationNew(attReader)
 	if err != nil {
@@ -95,8 +100,24 @@ func (v *releaseVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, ima
 	if err := verification.Verify(fullReleaserID, digests, imageName, levelOpts...); err != nil {
 		return nil, fmt.Errorf("failed to verify image (%q) and env (%q): %w", imageName, environment, err)
 	}
-
 	utils.Log("Image (%q) verified with releaser ID (%q) and releaser ID regex (%q) and nil env\n",
 		imageName, v.ReleaserID, v.ReleaserIDRegex)
 	return nil, nil
+}
+
+func (v *releaseVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, imageName string, environment []string, opts deployment.AttestationVerifierReleaseOptions) (*string, error) {
+	if err := v.setOptions(opts); err != nil {
+		return nil, err
+	}
+
+	// Verify the signature.
+	fullReleaserID, attBytes, err := v.verifySignature(imageName, digests)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(string(attBytes))
+
+	// Verify the attestation content.
+	return v.verifyAttestationContent(attBytes, imageName, fullReleaserID, digests, environment)
 }
