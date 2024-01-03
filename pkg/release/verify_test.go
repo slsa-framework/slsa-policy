@@ -1013,6 +1013,11 @@ func Test_Verify(t *testing.T) {
 			}
 			if tt.buildLevel != nil {
 				options = append(options, IsSlsaBuildLevel(*tt.buildLevel))
+				i := 1
+				for i <= *tt.buildLevel {
+					options = append(options, IsSlsaBuildLevelOrAbove(i))
+					i++
+				}
 			}
 			for name, policy := range tt.policy {
 				options = append(options, HasPolicy(name, policy.URI, policy.Digests))
@@ -1026,6 +1031,21 @@ func Test_Verify(t *testing.T) {
 			err = verification.Verify(tt.creatorID, tt.digests, tt.packageURI, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			if err != nil {
+				return
+			}
+			// Ensure verification fails for IsSlsaBuildLevelOrAbove(level+).
+			if tt.buildLevel != nil {
+				i := *tt.buildLevel + 1
+				for i <= 4 {
+					options = append(options, IsSlsaBuildLevelOrAbove(i))
+					i++
+				}
+				err = verification.Verify(tt.creatorID, tt.digests, tt.packageURI, options...)
+				if diff := cmp.Diff(errs.ErrorMismatch, err, cmpopts.EquateErrors()); diff != "" {
+					t.Fatalf("unexpected err (-want +got): \n%s", diff)
+				}
 			}
 		})
 	}

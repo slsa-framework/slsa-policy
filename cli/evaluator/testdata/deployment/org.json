@@ -3,7 +3,7 @@
     "roots":{
         "release":[
             {
-                "id":"https://github.com/laurentsimon/slsa-org/.github/workflows/image-releaser.yml",
+                "id":"https://github.com/laurentsimon/slsa-org/.github/workflows/image-releaser.yml@refs/heads/main",
                 "build":{
                     "max_slsa_level": 3
                 }

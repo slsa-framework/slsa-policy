@@ -213,27 +213,63 @@ func IsSlsaBuildLevel(level int) AttestationVerificationOption {
 }
 
 func (v *Verification) isSlsaBuildLevel(level int) error {
+	if err := validateLevel(level); err != nil {
+		return err
+	}
+	attLevel, err := v.attestationLevel()
+	if err != nil {
+		return err
+	}
+	if attLevel != level {
+		return fmt.Errorf("%w: level (%v) != attestation (%v)", errs.ErrorMismatch,
+			level, attLevel)
+	}
+	return nil
+}
+
+func IsSlsaBuildLevelOrAbove(level int) AttestationVerificationOption {
+	return func(v *Verification) error {
+		return v.isSlsaBuildLevelOrAbove(level)
+	}
+}
+
+func (v *Verification) isSlsaBuildLevelOrAbove(level int) error {
+	if err := validateLevel(level); err != nil {
+		return err
+	}
+	attLevel, err := v.attestationLevel()
+	if err != nil {
+		return err
+	}
+	if attLevel < level {
+		return fmt.Errorf("%w: level (%v) > attestation (%v)", errs.ErrorMismatch,
+			level, attLevel)
+	}
+	return nil
+}
+
+func validateLevel(level int) error {
 	if level < 0 {
 		return fmt.Errorf("%w: level (%v) is negative", errs.ErrorInvalidInput, level)
 	}
 	if level > 4 {
 		return fmt.Errorf("%w: level (%v) is too large", errs.ErrorInvalidInput, level)
 	}
+	return nil
+}
+
+func (v *Verification) attestationLevel() (int, error) {
 	if v.attestation.Predicate.Properties == nil {
-		return fmt.Errorf("%w: release properties are empty", errs.ErrorMismatch)
+		return 0, fmt.Errorf("%w: release properties are empty", errs.ErrorMismatch)
 	}
 	value, exists := v.attestation.Predicate.Properties[buildLevelProperty]
 	if !exists {
-		return fmt.Errorf("%w: (%q) field not present in properties", errs.ErrorMismatch,
+		return 0, fmt.Errorf("%w: (%q) field not present in properties", errs.ErrorMismatch,
 			buildLevelProperty)
 	}
 	vv, ok := value.(float64)
 	if !ok {
-		return fmt.Errorf("%w: attestation level (%T:%v) is not an int", errs.ErrorMismatch, value, value)
+		return 0, fmt.Errorf("%w: attestation level (%T:%v) is not an int", errs.ErrorMismatch, value, value)
 	}
-	if int(vv) != level {
-		return fmt.Errorf("%w: level (%v) != attestation (%v)", errs.ErrorMismatch,
-			level, int(vv))
-	}
-	return nil
+	return int(vv), nil
 }

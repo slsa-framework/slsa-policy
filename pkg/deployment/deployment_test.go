@@ -3,7 +3,9 @@ package deployment
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
+	"slices"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -152,6 +154,32 @@ func Test_AttestationNew(t *testing.T) {
 	}
 }
 
+// Attestation verifier.
+func NewE2eAttestationVerifier(digests intoto.DigestSet, packageName, env, releaserID string, buildLevel int) AttestationVerifier {
+	return &attestationVerifier{digests: digests, packageName: packageName, env: env, releaserID: releaserID, buildLevel: buildLevel}
+}
+
+type attestationVerifier struct {
+	packageName string
+	releaserID  string
+	buildLevel  int
+	env         string
+	digests     intoto.DigestSet
+}
+
+func (v *attestationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, packageName string, env []string, opts AttestationVerifierReleaseOptions) (*string, error) {
+	if opts.BuildLevel == v.buildLevel && packageName == v.packageName && opts.ReleaserID == v.releaserID &&
+		common.MapEq(digests, v.digests) &&
+		((v.env != "" && len(env) > 0 && slices.Contains(env, v.env)) ||
+			(v.env == "" && len(env) == 0)) {
+		if v.env == "" {
+			return nil, nil
+		}
+		return &v.env, nil
+	}
+	return nil, fmt.Errorf("%w: cannot verify package Name (%q) releaser ID (%q) env (%q) buildLevel (%d)", errs.ErrorVerification, packageName, opts.ReleaserID, env, opts.BuildLevel)
+}
+
 func Test_e2e(t *testing.T) {
 	t.Parallel()
 	digests := intoto.DigestSet{
@@ -257,6 +285,7 @@ func Test_e2e(t *testing.T) {
 		SetCreatorVersion(creatorVersion),
 		SetPolicy(policy),
 	}
+	buildLevel3 := 3
 	tests := []struct {
 		name             string
 		org              organization.Policy
@@ -267,6 +296,7 @@ func Test_e2e(t *testing.T) {
 		policyID         string
 		policy           map[string]intoto.Policy
 		env              string
+		buildLevel       int
 		releaserID       string
 		creatorID        string
 		creatorVersion   string
@@ -292,8 +322,9 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
-			// Releaser that the verifier will use.
+			// Data that the verifier will use.
 			releaserID: releaserID2,
+			buildLevel: buildLevel3,
 		},
 		{
 			name: "env not provided",
@@ -310,8 +341,9 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
-			// Releaser that the verifier will use.
+			// Data that the verifier will use.
 			releaserID:       releaserID2,
+			buildLevel:       buildLevel3,
 			errorEvaluate:    errs.ErrorVerification,
 			errorAttestation: errs.ErrorInternal,
 		},
@@ -376,8 +408,9 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
-			// Releaser that the verifier will use.
+			// Data that the verifier will use.
 			releaserID:       releaserID2,
+			buildLevel:       buildLevel3,
 			errorEvaluate:    errs.ErrorVerification,
 			errorAttestation: errs.ErrorInternal,
 		},
@@ -397,8 +430,9 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
-			// Releaser that the verifier will use.
+			// Data that the verifier will use.
 			releaserID:       releaserID2,
+			buildLevel:       buildLevel3,
 			errorEvaluate:    errs.ErrorVerification,
 			errorAttestation: errs.ErrorInternal,
 		},
@@ -462,8 +496,9 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
-			// Releaser that the verifier will use.
+			// Data that the verifier will use.
 			releaserID: releaserID2,
+			buildLevel: buildLevel3,
 		},
 		{
 			name: "no author version",
@@ -480,8 +515,9 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
-			// Releaser that the verifier will use.
+			// Data that the verifier will use.
 			releaserID: releaserID2,
+			buildLevel: buildLevel3,
 		},
 		{
 			name: "no policy",
@@ -498,8 +534,9 @@ func Test_e2e(t *testing.T) {
 			digests:      digests,
 			packageName:  packageName1,
 			principalURI: pricipalURI2,
-			// Releaser that the verifier will use.
+			// Data that the verifier will use.
 			releaserID: releaserID2,
+			buildLevel: buildLevel3,
 		},
 		{
 			name: "evaluation error",
@@ -517,8 +554,9 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			policy:       policy,
 			principalURI: pricipalURI2,
-			// Releaser that the verifier will use.
+			// Data that the verifier will use.
 			releaserID:       releaserID1, // NOTE: mismatch releaser ID.
+			buildLevel:       buildLevel3,
 			errorEvaluate:    errs.ErrorVerification,
 			errorAttestation: errs.ErrorInternal,
 		},
@@ -548,7 +586,7 @@ func Test_e2e(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)
 			}
-			verifier := common.NewAttestationVerifier(tt.digests, tt.packageName, tt.env, tt.releaserID)
+			verifier := NewE2eAttestationVerifier(tt.digests, tt.packageName, tt.env, tt.releaserID, tt.buildLevel)
 			opts := ReleaseVerificationOption{
 				Verifier: verifier,
 			}

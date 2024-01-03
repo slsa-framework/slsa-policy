@@ -413,6 +413,7 @@ func Test_Evaluate(t *testing.T) {
 	t.Parallel()
 	type dummyVerifierOpts struct {
 		digests     intoto.DigestSet
+		buildLevel  int
 		packageName string
 		releaserID  string
 		env         string
@@ -465,10 +466,12 @@ func Test_Evaluate(t *testing.T) {
 			},
 		},
 	}
+	buildLevel := 3
 	vopts := dummyVerifierOpts{
 		digests:     digests,
 		releaserID:  releaserID2,
 		packageName: packageName1,
+		buildLevel:  buildLevel,
 		env:         "prod",
 	}
 	tests := []struct {
@@ -611,7 +614,7 @@ func Test_Evaluate(t *testing.T) {
 			var verifier options.AttestationVerifier
 			if !tt.noVerifier {
 				verifier = common.NewAttestationVerifier(tt.verifierOpts.digests, tt.packageName,
-					tt.verifierOpts.env, tt.verifierOpts.releaserID)
+					tt.verifierOpts.env, tt.verifierOpts.releaserID, tt.verifierOpts.buildLevel)
 			}
 			opts := options.ReleaseVerification{
 				Verifier: verifier,

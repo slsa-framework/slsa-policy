@@ -12,10 +12,18 @@ import (
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
 )
 
+// AttestationVerifierReleaseOptions defines options for
+// verifying a release attestation.
+type AttestationVerifierReleaseOptions struct {
+	// One of ReleaserID or ReleaserIDRegex must be set.
+	ReleaserID, ReleaserIDRegex string
+	BuildLevel                  int
+}
+
 // AttestationVerifier defines an interface to verify attestations.
 type AttestationVerifier interface {
 	// Release attestations. The string returned contains the value of the environment, if present.
-	VerifyReleaseAttestation(digests intoto.DigestSet, packageURI string, environment []string, releaserID string) (*string, error)
+	VerifyReleaseAttestation(digests intoto.DigestSet, packageURI string, environment []string, opts AttestationVerifierReleaseOptions) (*string, error)
 }
 
 // ReleaseVerificationOption defines the configuration to verify
@@ -42,11 +50,16 @@ type internal_verifier struct {
 	releaseOpts ReleaseVerificationOption
 }
 
-func (i *internal_verifier) VerifyReleaseAttestation(digests intoto.DigestSet, packageURI string, environment []string, releaserID string) (*string, error) {
+func (i *internal_verifier) VerifyReleaseAttestation(digests intoto.DigestSet, packageURI string,
+	environment []string, releaserID string, buildLevel int) (*string, error) {
 	if i.releaseOpts.Verifier == nil {
 		return nil, fmt.Errorf("%w: verifier is nil", errs.ErrorInvalidInput)
 	}
-	return i.releaseOpts.Verifier.VerifyReleaseAttestation(digests, packageURI, environment, releaserID)
+	opts := AttestationVerifierReleaseOptions{
+		ReleaserID: releaserID,
+		BuildLevel: buildLevel,
+	}
+	return i.releaseOpts.Verifier.VerifyReleaseAttestation(digests, packageURI, environment, opts)
 }
 
 // New creates a deployment policy.

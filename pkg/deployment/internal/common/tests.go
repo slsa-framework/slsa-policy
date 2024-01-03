@@ -51,20 +51,21 @@ func (iter *bytesIterator) Error() error {
 }
 
 // Attestation verifier.
-func NewAttestationVerifier(digests intoto.DigestSet, packageName, env, releaserID string) options.AttestationVerifier {
-	return &attesationVerifier{digests: digests, packageName: packageName, releaserID: releaserID, env: env}
+func NewAttestationVerifier(digests intoto.DigestSet, packageName, env, releaserID string, buildLevel int) options.AttestationVerifier {
+	return &attestationVerifier{digests: digests, packageName: packageName, releaserID: releaserID, env: env, buildLevel: buildLevel}
 }
 
-type attesationVerifier struct {
+type attestationVerifier struct {
 	packageName string
-	releaserID string
-	env        string
-	digests    intoto.DigestSet
+	releaserID  string
+	buildLevel  int
+	env         string
+	digests     intoto.DigestSet
 }
 
-func (v *attesationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, packageName string, env []string, releaserID string) (*string, error) {
-	if packageName == v.packageName && releaserID == v.releaserID &&
-		mapEq(digests, v.digests) &&
+func (v *attestationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, packageName string, env []string, releaserID string, buildLevel int) (*string, error) {
+	if buildLevel <= v.buildLevel && packageName == v.packageName && releaserID == v.releaserID &&
+		MapEq(digests, v.digests) &&
 		((v.env != "" && len(env) > 0 && slices.Contains(env, v.env)) ||
 			(v.env == "" && len(env) == 0)) {
 		if v.env == "" {
@@ -72,10 +73,10 @@ func (v *attesationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, 
 		}
 		return &v.env, nil
 	}
-	return nil, fmt.Errorf("%w: cannot verify package Name (%q) releaser ID (%q) env (%q)", errs.ErrorVerification, packageName, releaserID, env)
+	return nil, fmt.Errorf("%w: cannot verify package Name (%q) releaser ID (%q) env (%q) buildLevel (%d)", errs.ErrorVerification, packageName, releaserID, env, buildLevel)
 }
 
-func mapEq(m1, m2 map[string]string) bool {
+func MapEq(m1, m2 map[string]string) bool {
 	if len(m1) != len(m2) {
 		return false
 	}

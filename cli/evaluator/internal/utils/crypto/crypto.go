@@ -35,6 +35,8 @@ var ko = options.KeyOpts{
 	SkipConfirmation: true,
 }
 
+var githubIssuer = "https://token.actions.githubusercontent.com"
+
 func uploadToTlog(ctx context.Context, sv *clisign.SignerVerifier, signature []byte, rekorURL string) (*cbundle.RekorBundle, error) {
 	rekorBytes, err := sv.Bytes(ctx)
 	if err != nil {
@@ -152,24 +154,48 @@ func attach(immutableImage string, att Attestation, bundle *cbundle.RekorBundle,
 	return ociremote.WriteAttestations(digest.Repository, newSE, ociremoteOpts...)
 }
 
-func Verify(immutableImage string, identity string) (string, []byte, error) {
+func ValidateIdentity(releaserID, releaserIDRegex string) error {
+	if (releaserID != "" && releaserIDRegex != "") ||
+		(releaserID == "" && releaserIDRegex == "") {
+		return fmt.Errorf("only one of releaserID (%q) and releaserIDRegex (%q) must be set", releaserID, releaserIDRegex)
+	}
+	return nil
+}
+
+func getIdentity(releaserID, releaserIDRegex string) (*cosign.Identity, error) {
+	if err := ValidateIdentity(releaserID, releaserIDRegex); err != nil {
+		return nil, err
+	}
+	if releaserID != "" {
+		return &cosign.Identity{
+			Issuer:  githubIssuer,
+			Subject: releaserID,
+		}, nil
+	}
+	return &cosign.Identity{
+		Issuer:        githubIssuer,
+		SubjectRegExp: releaserIDRegex,
+	}, nil
+}
+
+// VerifySignature verifies the signature of an attestation.
+func VerifySignature(immutableImage string, releaserID, releaserIDRegex string) (string, []byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(30*time.Second))
 	defer cancel()
 
 	var err error
-	releaserID := identity + "@refs/heads/main"
+	identity, err := getIdentity(releaserID, releaserIDRegex)
+	if err != nil {
+		return "", nil, err
+	}
 	co := &cosign.CheckOpts{
 		// TODO: verify this empty option works properly.
 		RegistryClientOpts: []ociremote.Option{},
 		Offline:            false,
-		Identities: []cosign.Identity{
-			{
-				Issuer: "https://token.actions.githubusercontent.com",
-				// TODO(#9): make the ref customizable.
-				Subject: releaserID,
-			},
-		},
-		// WARNING: This must be set to vrify the subject!
+		Identities:         []cosign.Identity{*identity},
+		// WARNING: This must be set to vrify the subject.
+		// However, it's not necessary for this part of the code, because
+		// the content of the attestation is verified by the caller.
 		ClaimVerifier: cosign.IntotoSubjectClaimVerifier,
 	}
 	// Set CT log keys.

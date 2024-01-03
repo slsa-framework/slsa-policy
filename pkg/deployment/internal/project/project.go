@@ -204,7 +204,7 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string,
 			continue
 		}
 		// We have a candidate.
-		verifiedEnv, err := releaseOpts.Verifier.VerifyReleaseAttestation(digests, packageName, env, releaser.ID)
+		verifiedEnv, err := releaseOpts.Verifier.VerifyReleaseAttestation(digests, packageName, env, releaser.ID, *p.BuildRequirements.RequireSlsaLevel)
 		if err != nil {
 			// Verification failed, continue.
 			allErrs = append(allErrs, err)
