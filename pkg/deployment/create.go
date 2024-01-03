@@ -91,3 +91,8 @@ func (a *Creation) enterSafeMode() error {
 func (a *Creation) isSafeMode() bool {
 	return a.safeMode
 }
+
+// Utility functions needed by cosign APIs.
+func (a *Creation) PredicateType() string {
+	return predicateType
+}

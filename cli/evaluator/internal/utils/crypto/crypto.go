@@ -7,23 +7,27 @@ import (
 	"time"
 
 	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
+	"github.com/laurentsimon/slsa-policy/pkg/release"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/options"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/rekor"
 	clisign "github.com/sigstore/cosign/v2/cmd/cosign/cli/sign"
 
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/sigstore/cosign/v2/cmd/cosign/cli/fulcio"
 	"github.com/sigstore/cosign/v2/pkg/cosign"
 	cbundle "github.com/sigstore/cosign/v2/pkg/cosign/bundle"
 	cremote "github.com/sigstore/cosign/v2/pkg/cosign/remote"
 	"github.com/sigstore/cosign/v2/pkg/oci/mutate"
 	ociremote "github.com/sigstore/cosign/v2/pkg/oci/remote"
 	"github.com/sigstore/cosign/v2/pkg/oci/static"
+	cpolicy "github.com/sigstore/cosign/v2/pkg/policy"
 	"github.com/sigstore/cosign/v2/pkg/types"
 	"github.com/sigstore/sigstore/pkg/signature/dsse"
 	signatureoptions "github.com/sigstore/sigstore/pkg/signature/options"
 )
 
-// This file is copied from https://github.com/sigstore/cosign/blob/main/cmd/cosign/cli/attest/attest.go.
+// This file is copied from https://github.com/sigstore/cosign/blob/main/cmd/cosign/cli/attest/attest.go and
+// https://github.com/sigstore/cosign/blob/main/cmd/cosign/cli/verify/verify_attestation.go
 var ko = options.KeyOpts{
 	FulcioURL: "https://fulcio.sigstore.dev",
 	RekorURL:  "https://rekor.sigstore.dev",
@@ -92,7 +96,6 @@ func Sign(att Attestation, immutableImage string) error {
 	if err != nil {
 		return fmt.Errorf("failed to sign: %w", err)
 	}
-	fmt.Println(string(signedPayload))
 	// Upload to TLog.
 	bundle, err := uploadToTlog(ctx, sv, signedPayload, ko.RekorURL)
 	if err != nil {
@@ -147,4 +150,83 @@ func attach(immutableImage string, att Attestation, bundle *cbundle.RekorBundle,
 
 	// Publish the attestations associated with this entity
 	return ociremote.WriteAttestations(digest.Repository, newSE, ociremoteOpts...)
+}
+
+func Verify(immutableImage string, identity string) (string, []byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(30*time.Second))
+	defer cancel()
+
+	var err error
+	releaserID := identity + "@refs/heads/main"
+	co := &cosign.CheckOpts{
+		// TODO: verify this empty option works properly.
+		RegistryClientOpts: []ociremote.Option{},
+		Offline:            false,
+		Identities: []cosign.Identity{
+			{
+				Issuer: "https://token.actions.githubusercontent.com",
+				// TODO(#9): make the ref customizable.
+				Subject: releaserID,
+			},
+		},
+		// WARNING: This must be set to vrify the subject!
+		ClaimVerifier: cosign.IntotoSubjectClaimVerifier,
+	}
+	// Set CT log keys.
+	co.CTLogPubKeys, err = cosign.GetCTLogPubs(ctx)
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to get ctlog public keys: %w", err)
+	}
+	// Set up rekor client.
+	co.RekorClient, err = rekor.NewClient(ko.RekorURL)
+	if err != nil {
+		return "", nil, fmt.Errorf("failted to create Rekor client: %w", err)
+	}
+	// This performs an online fetch of the Rekor public keys, but this is needed
+	// for verifying tlog entries (both online and offline).
+	co.RekorPubKeys, err = cosign.GetRekorPubs(ctx)
+	if err != nil {
+		return "", nil, fmt.Errorf("getting Rekor public keys: %w", err)
+	}
+	// Set up fulcio.
+	// This performs an online fetch of the Fulcio roots. This is needed
+	// for verifying keyless certificates (both online and offline).
+	co.RootCerts, err = fulcio.GetRoots()
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to get Fulcio roots: %w", err)
+	}
+	co.IntermediateCerts, err = fulcio.GetIntermediates()
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to get Fulcio intermediates: %w", err)
+	}
+	digest, err := name.NewDigest(immutableImage)
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to create new digest: %w", err)
+	}
+	verified, bundleVerified, err := cosign.VerifyImageAttestations(ctx, digest, co)
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to verify: %w", err)
+	}
+	if !bundleVerified {
+		return "", nil, fmt.Errorf("failed to verify bundle")
+	}
+	var errList []error
+	for _, vp := range verified {
+		payload, predicateType, err := cpolicy.AttestationToPayloadJSON(ctx, release.PredicateType(), vp)
+		if err != nil {
+			errList = append(errList, fmt.Errorf("failed to convert to consumable policy validation: %w", err))
+			continue
+		}
+		if len(payload) == 0 {
+			// This is not the predicate type we're looking for.
+			continue
+		}
+		if release.PredicateType() != predicateType {
+			errList = append(errList, fmt.Errorf("internal error. predicate ype (%q) != attestation type (%q)",
+				predicateType, release.PredicateType()))
+			continue
+		}
+		return releaserID, payload, nil
+	}
+	return "", nil, fmt.Errorf("failed to verify: %v", errList)
 }

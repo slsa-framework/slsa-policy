@@ -14,10 +14,10 @@ import (
 
 func usage(cli string) {
 	msg := "" +
-		"Usage: %s release evaluate orgPath projectsPath packageURI creatorID [optional:environment]\n" +
+		"Usage: %s release evaluate orgPath projectsPath packageName creatorID [optional:environment]\n" +
 		"\n" +
 		"Example:\n" +
-		"%s release validate ./path/to/policy/org ./path/to/policy/projects laurentsimon/echo-server@sha256:xxxx https://github.com/org/.slsa/.github/workflows/releaser.yml prod\n" +
+		"%s release evaluate ./path/to/policy/org ./path/to/policy/projects laurentsimon/echo-server@sha256:xxxx https://github.com/org/.slsa/.github/workflows/releaser.yml prod\n" +
 		"\n"
 	fmt.Fprintf(os.Stderr, msg, cli, cli)
 	os.Exit(1)

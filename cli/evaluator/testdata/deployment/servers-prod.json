@@ -1,14 +1,14 @@
 {
     "format":1,
     "principal": {
-        "uri":"k8_sa://name@project-id.iam.gserviceaccount.com"
+        "uri":"k8_sa://name@prod-project-id.iam.gserviceaccount.com"
     },
     "build": {
         "require_slsa_level": 3
     },
     "packages":[
         {
-            "name": "laurentsimon/echo-server",
+            "name": "docker.io/laurentsimon/slsa-project-echo-server",
             "environment": {
                 "any_of": [
                     "prod"
@@ -16,7 +16,7 @@
             }
         },
         {
-            "name": "laurentsimon/database-server",
+            "name": "docker.io/laurentsimon/laurentsimon/database-server",
             "environment": {
                 "any_of": [
                     "prod"
@@ -24,7 +24,7 @@
             }
         },
         {
-            "name": "laurentsimon/logger",
+            "name": "docker.io/laurentsimon/laurentsimon/logger",
             "environment": {
                 "any_of": [
                     "prod"
@@ -32,7 +32,7 @@
             }
         },
         {
-            "name": "laurentsimon/ids",
+            "name": "docker.io/laurentsimon/laurentsimon/ids",
             "environment": {
                 "any_of": [
                     "prod"

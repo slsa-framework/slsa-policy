@@ -9,37 +9,33 @@ tags are ignore.
 
 ### Org setup
 
-#### Root setup
+#### Org-wide policy setup and ACLs
 
 See https://github.com/laurentsimon/slsa-org/tree/main/policies/release/org.json
 
-### Projects setup
+TODO: write access to repo + admin. CODEOWNER contains admins
+
+#### Project policy setup and ACLs
 
 See https://github.com/laurentsimon/slsa-org/tree/main/policies/release/projects
 
-### ACLs for admins
-
-TODO: write access to repo + admin. CODEOWNER contains admins
-
-### ACLs for project owners
-
 TODO: write access to repo - admin. CODEONWERS contains the owner of the file.
 
-### Pre-submit validation
+#### Pre-submit validation
 
 TODO: example workflow to validate policy.
 
-### Releaser workflow
+#### Releaser workflow
 
 https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml
 
 Via CLI:
 
 ```bash
-go run . release evaluate testdata/release/org.json testdata/release/ "$image" dev
+go run . release evaluate policiesrelease/org.json policiesrelease/ "$image" dev
 ```
 
-### Project setup
+### Team setup
 
 #### Policy definition
 
@@ -49,38 +45,34 @@ See https://github.com/laurentsimon/slsa-org/tree/main/policies/release/projects
 
 See https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/build-echo-server.yml
 
-### Deployment policy
+## Deployment policy
 
 ### Org setup
 
-#### Root setup
+#### Org-wide policy setup and ACLs
 
 See https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/org.json
 
-### Projects setup
+TODO: write access to repo + admin. CODEOWNER contains admins
+
+#### Project policy setup and ACLs
 
 See https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/projects
 
-### ACLs for admins
-
-TODO: write access to repo + admin. CODEOWNER contains admins
-
-### ACLs for project owners
-
 TODO: write access to repo - admin. CODEONWERS contains the owner of the file.
 
-### Pre-submit validation
+#### Pre-submit validation
 
 TODO: example workflow to validate policy.
 
-### Releaser workflow
+#### Deployment workflow
 
 https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/prod-deployer.yml
 
 Via CLI:
 
 ```bash
-go run . deployment evaluate testdata/release/org.json testdata/release/ "$image" dev
+go run . deployment evaluate policiesdeployment/org.json policiesdeployment/ "$image" dev
 ```
 
 ### Project setup

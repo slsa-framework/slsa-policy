@@ -17,7 +17,7 @@ func newBuildVerifier() *buildVerifier {
 	return &buildVerifier{}
 }
 
-func (v *buildVerifier) VerifyBuildAttestation(digests intoto.DigestSet, imageURI, builderID, sourceURI string) error {
+func (v *buildVerifier) VerifyBuildAttestation(digests intoto.DigestSet, imageName, builderID, sourceURI string) error {
 	provenanceOpts := &options.ProvenanceOpts{
 		ExpectedSourceURI: sourceURI,
 		ExpectedDigest:    digests["sha256"],
@@ -27,11 +27,11 @@ func (v *buildVerifier) VerifyBuildAttestation(digests intoto.DigestSet, imageUR
 		ExpectedID: &builderID,
 	}
 	// NOTE: the API expects an immutable image.
-	immutableImage := utils.ImmutableImage(imageURI, digests)
+	immutableImage := utils.ImmutableImage(imageName, digests)
 	_, fullBuilderID, err := verifiers.VerifyImage(context.Background(), immutableImage, nil, provenanceOpts, builderOpts)
 	if err != nil {
 		return fmt.Errorf("VerifyBuildAttestation: %w", err)
 	}
-	utils.Log("Image (%q) verified with builder ID (%q) and sourceURI (%q)\n", imageURI, fullBuilderID.String(), sourceURI)
+	utils.Log("Image (%q) verified with builder ID (%q) and sourceURI (%q)\n", imageName, fullBuilderID.String(), sourceURI)
 	return nil
 }

@@ -140,3 +140,8 @@ func (r PolicyEvaluationResult) isValid() error {
 	}
 	return nil
 }
+
+// API required by cosign.
+func PredicateType() string {
+	return predicateType
+}
