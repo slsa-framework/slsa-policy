@@ -12,6 +12,7 @@ import (
 )
 
 var errorImageParsing = errors.New("failed to parse image reference")
+var errorPackageName = errors.New("invalid package name")
 
 func ReadFiles(dir string, ignore string) ([]string, error) {
 	var projectsPath []string
@@ -40,6 +41,27 @@ func ReadFiles(dir string, ignore string) ([]string, error) {
 			return nil
 		})
 	return projectsPath, err
+}
+
+// ValidatePolicyPackage validates the package name in the policy.
+func ValidatePolicyPackage(packageName string, environment []string) error {
+	// Environment is allowed to be set, so nothing to validate.
+	// Package name needs to contain both a registry and a name.
+	// It must not container an identifier (tag, digest).
+	ref, err := name.ParseReference(packageName, name.WithDefaultTag(""), name.WithDefaultRegistry(""))
+	if err != nil {
+		return fmt.Errorf("%w: failed to parse image (%q): %w", errorImageParsing, packageName, err)
+	}
+	// Verify the registry is set.
+	registry := ref.Context().RegistryStr()
+	if registry == "" {
+		return fmt.Errorf("%w: registry is empty for image (%q)", errorPackageName, packageName)
+	}
+	// Verify the identifier is not set.
+	if ref.Identifier() != "" {
+		return fmt.Errorf("%w: identifier is set for image (%q)", errorPackageName, packageName)
+	}
+	return nil
 }
 
 // ParseImageReference parses the image reference.

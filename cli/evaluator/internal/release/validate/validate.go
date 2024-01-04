@@ -20,6 +20,12 @@ func usage(cli string) {
 	os.Exit(1)
 }
 
+type PolicyValidator struct{}
+
+func (v *PolicyValidator) ValidatePackage(pkg release.ValidationPackage) error {
+	return utils.ValidatePolicyPackage(pkg.Name, pkg.Environment.AnyOf)
+}
+
 func Run(cli string, args []string) error {
 	// We need 2 paths:
 	// 1. Path to org policy
@@ -35,7 +41,7 @@ func Run(cli string, args []string) error {
 	// Create a policy. This will validate the files.
 	projectsReader := files_reader.FromPaths(projectsPath)
 	organizationReader, err := os.Open(orgPath)
-	_, err = release.PolicyNew(organizationReader, projectsReader)
+	_, err = release.PolicyNew(organizationReader, projectsReader, release.SetValidator(&PolicyValidator{}))
 	if err != nil {
 		return err
 	}

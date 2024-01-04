@@ -54,9 +54,9 @@ func NewAttestationVerifier(digests intoto.DigestSet, packageName, builderID, so
 
 type attesationVerifier struct {
 	packageName string
-	builderID  string
+	builderID   string
 	sourceName  string
-	digests    intoto.DigestSet
+	digests     intoto.DigestSet
 }
 
 func (v *attesationVerifier) VerifyBuildAttestation(digests intoto.DigestSet, packageName, builderID, sourceName string) error {
@@ -81,4 +81,19 @@ func mapEq(m1, m2 map[string]string) bool {
 		}
 	}
 	return true
+}
+
+func NewPolicyValidator(pass bool) options.PolicyValidator {
+	return &policyValidator{pass: pass}
+}
+
+type policyValidator struct {
+	pass bool
+}
+
+func (v *policyValidator) ValidatePackage(pkg options.ValidationPackage) error {
+	if v.pass {
+		return nil
+	}
+	return fmt.Errorf("failed to validate package: pass (%v)", v.pass)
 }

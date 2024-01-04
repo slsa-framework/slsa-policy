@@ -31,8 +31,31 @@ type RequestOption struct {
 
 // Policy defines the release policy.
 type Policy struct {
-	policy *internal.Policy
+	policy    *internal.Policy
+	validator options.PolicyValidator
 }
+
+// ValidationPackage defines the structure holding
+// package information to be validated.
+type ValidationPackage struct {
+	Name        string
+	Environment ValidationEnvironment
+}
+
+// ValidationEnvironment defines the structure containing
+// the policy environment to validate.
+type ValidationEnvironment struct {
+	AnyOf []string
+}
+
+// PolicyValidator defines an interface to validate
+// certain fields in the policy.
+type PolicyValidator interface {
+	ValidatePackage(pkg ValidationPackage) error
+}
+
+// PolicyOption defines a policy option.
+type PolicyOption func(*Policy) error
 
 // PolicyEvaluationResult defines the result of policy evaluation.
 type PolicyEvaluationResult struct {
@@ -57,19 +80,62 @@ func (i *internal_verifier) VerifyBuildAttestation(digests intoto.DigestSet, pac
 	return i.buildOpts.Verifier.VerifyBuildAttestation(digests, packageName, builderID, sourceURI)
 }
 
+// This is a helper class to forward calls between internal
+// classes and the caller for the PolicyValidator interface.
+type internal_validator struct {
+	validator PolicyValidator
+}
+
+func (i *internal_validator) ValidatePackage(pkg options.ValidationPackage) error {
+	if i.validator == nil {
+		return nil
+	}
+	return i.validator.ValidatePackage(ValidationPackage{
+		Name: pkg.Name,
+		Environment: ValidationEnvironment{
+			// NOTE: make a copy of the array.
+			AnyOf: append([]string{}, pkg.Environment.AnyOf...),
+		},
+	})
+}
+
 // New creates a release policy.
-func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy, error) {
-	policy, err := internal.PolicyNew(org, projects)
+func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator, opts ...PolicyOption) (*Policy, error) {
+	// Initialize a policy with caller options.
+	p := new(Policy)
+	for _, option := range opts {
+		err := option(p)
+		if err != nil {
+			return nil, err
+		}
+	}
+	policy, err := internal.PolicyNew(org, projects, p.validator)
 	if err != nil {
 		return nil, err
 	}
-	return &Policy{
-		policy: policy,
-	}, nil
+	p.policy = policy
+	return p, nil
+}
+
+// SetValidator sets a custom validator.
+func SetValidator(validator PolicyValidator) PolicyOption {
+	return func(p *Policy) error {
+		return p.setValidator(validator)
+	}
+}
+
+func (p *Policy) setValidator(validator PolicyValidator) error {
+	// Construct an internal validator
+	// using the caller's public validator interface.
+	p.validator = &internal_validator{
+		validator: validator,
+	}
+	return nil
 }
 
 // Evaluate evalues the release policy.
-func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string, reqOpts RequestOption, buildOpts BuildVerificationOption) PolicyEvaluationResult {
+func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string, reqOpts RequestOption,
+	buildOpts BuildVerificationOption) PolicyEvaluationResult {
 	level, err := p.policy.Evaluate(digests, packageName,
 		options.Request{
 			Environment: reqOpts.Environment,

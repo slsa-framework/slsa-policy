@@ -17,12 +17,12 @@ type Policy struct {
 	projectPolicies map[string]project.Policy
 }
 
-func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator) (*Policy, error) {
+func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator, validator options.PolicyValidator) (*Policy, error) {
 	orgPolicy, err := organization.FromReader(org)
 	if err != nil {
 		return nil, err
 	}
-	projectPolicies, err := project.FromReaders(projects, *orgPolicy)
+	projectPolicies, err := project.FromReaders(projects, *orgPolicy, validator)
 	if err != nil {
 		return nil, err
 	}

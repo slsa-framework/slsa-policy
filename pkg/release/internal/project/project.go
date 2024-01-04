@@ -39,12 +39,13 @@ type Package struct {
 
 // Policy defines the policy.
 type Policy struct {
-	Format            int               `json:"format"`
-	Package           Package           `json:"package"`
-	BuildRequirements BuildRequirements `json:"build"`
+	Format            int                     `json:"format"`
+	Package           Package                 `json:"package"`
+	BuildRequirements BuildRequirements       `json:"build"`
+	validator         options.PolicyValidator `json:"-"`
 }
 
-func fromReader(reader io.ReadCloser, builderNames []string) (*Policy, error) {
+func fromReader(reader io.ReadCloser, builderNames []string, validator options.PolicyValidator) (*Policy, error) {
 	// NOTE: see https://yourbasic.org/golang/io-reader-interface-explained.
 	content, err := ioutil.ReadAll(reader)
 	if err != nil {
@@ -55,6 +56,7 @@ func fromReader(reader io.ReadCloser, builderNames []string) (*Policy, error) {
 	if err := json.Unmarshal(content, &project); err != nil {
 		return nil, fmt.Errorf("[projects] failed to unmarshal: %w", err)
 	}
+	project.validator = validator
 	if err := project.validate(builderNames); err != nil {
 		return nil, err
 	}
@@ -95,6 +97,18 @@ func (p *Policy) validatePackage() error {
 			return fmt.Errorf("[projects] %w: package's any_of value has an empty field", errs.ErrorInvalidField)
 		}
 	}
+	// Validate the package using the custom validator.
+	if p.validator != nil {
+		pkg := options.ValidationPackage{
+			Name: p.Package.Name,
+			Environment: options.ValidationEnvironment{
+				AnyOf: append([]string{}, p.Package.Environment.AnyOf...), // NOTE: Make a copy of the array.
+			},
+		}
+		if err := p.validator.ValidatePackage(pkg); err != nil {
+			return fmt.Errorf("%w: failed to validate package: %w", errs.ErrorInvalidField, err)
+		}
+	}
 	return nil
 }
 
@@ -120,13 +134,13 @@ func (p *Policy) validateBuildRequirements(builderNames []string) error {
 }
 
 // FromReaders creates a set of policies keyed by their package Name (and if present, the environment).
-func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Policy) (map[string]Policy, error) {
+func FromReaders(readers iterator.ReadCloserIterator, orgPolicy organization.Policy, validator options.PolicyValidator) (map[string]Policy, error) {
 	policies := make(map[string]Policy)
 	for readers.HasNext() {
 		reader := readers.Next()
 		// NOTE: fromReader() calls validates that the builder used are consistent
 		// with the org policy.
-		policy, err := fromReader(reader, orgPolicy.RootBuilderNames())
+		policy, err := fromReader(reader, orgPolicy.RootBuilderNames(), validator)
 		if err != nil {
 			return nil, err
 		}

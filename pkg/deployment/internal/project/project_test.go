@@ -315,6 +315,22 @@ func Test_validatePackages(t *testing.T) {
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
+			// Same policy with a passing validator.
+			tt.policy.validator = common.NewPolicyValidator(true)
+			err = tt.policy.validatePackages()
+			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			if err != nil {
+				return
+			}
+			// Same policy with a failing validator.
+			tt.policy.validator = common.NewPolicyValidator(false)
+			err = tt.policy.validatePackages()
+			if diff := cmp.Diff(errs.ErrorInvalidField, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+
 		})
 	}
 }
@@ -831,8 +847,23 @@ func Test_FromReaders(t *testing.T) {
 			iter := common.NewNamedBytesIterator(policies, !tt.buggyIterator)
 
 			// Call the constructor.
-			_, err := FromReaders(iter, orgPolicy)
+			_, err := FromReaders(iter, orgPolicy, nil)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			// Same policy with a passing validator.
+			iter = common.NewNamedBytesIterator(policies, !tt.buggyIterator)
+			_, err = FromReaders(iter, orgPolicy, common.NewPolicyValidator(true))
+			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			if err != nil {
+				return
+			}
+			// Same policy with a failing validator.
+			iter = common.NewNamedBytesIterator(policies, !tt.buggyIterator)
+			_, err = FromReaders(iter, orgPolicy, common.NewPolicyValidator(false))
+			if diff := cmp.Diff(errs.ErrorInvalidField, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})

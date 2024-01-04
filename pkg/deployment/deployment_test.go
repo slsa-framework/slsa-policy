@@ -180,6 +180,21 @@ func (v *attestationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet,
 	return nil, fmt.Errorf("%w: cannot verify package Name (%q) releaser ID (%q) env (%q) buildLevel (%d)", errs.ErrorVerification, packageName, opts.ReleaserID, env, opts.BuildLevel)
 }
 
+func newPolicyValidator(pass bool) PolicyValidator {
+	return &policyValidator{pass: pass}
+}
+
+type policyValidator struct {
+	pass bool
+}
+
+func (v *policyValidator) ValidatePackage(pkg ValidationPackage) error {
+	if v.pass {
+		return nil
+	}
+	return fmt.Errorf("failed to validate package: pass (%v)", v.pass)
+}
+
 func Test_e2e(t *testing.T) {
 	t.Parallel()
 	digests := intoto.DigestSet{
@@ -582,7 +597,22 @@ func Test_e2e(t *testing.T) {
 				policies[i] = content
 			}
 			projectsReader := common.NewNamedBytesIterator(policies, true)
-			pol, err := PolicyNew(orgReader, projectsReader)
+			// Passing validator.
+			pol, err := PolicyNew(orgReader, projectsReader, SetValidator(newPolicyValidator(true)))
+			if err != nil {
+				t.Fatalf("failed to create policy: %v", err)
+			}
+			// Failing validator.
+			orgReader = io.NopCloser(bytes.NewReader(orgContent))
+			projectsReader = common.NewNamedBytesIterator(policies, true)
+			pol, err = PolicyNew(orgReader, projectsReader, SetValidator(newPolicyValidator(false)))
+			if diff := cmp.Diff(errs.ErrorInvalidField, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			// No validator.
+			orgReader = io.NopCloser(bytes.NewReader(orgContent))
+			projectsReader = common.NewNamedBytesIterator(policies, true)
+			pol, err = PolicyNew(orgReader, projectsReader)
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)
 			}

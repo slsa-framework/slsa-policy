@@ -3,6 +3,7 @@ package release
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"testing"
 
@@ -194,6 +195,21 @@ func Test_AttestationNew(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newPolicyValidator(pass bool) PolicyValidator {
+	return &policyValidator{pass: pass}
+}
+
+type policyValidator struct {
+	pass bool
+}
+
+func (v *policyValidator) ValidatePackage(pkg ValidationPackage) error {
+	if v.pass {
+		return nil
+	}
+	return fmt.Errorf("failed to validate package: pass (%v)", v.pass)
 }
 
 func Test_e2e(t *testing.T) {
@@ -523,7 +539,22 @@ func Test_e2e(t *testing.T) {
 				policies[i] = content
 			}
 			projectsReader := common.NewBytesIterator(policies)
-			pol, err := PolicyNew(orgReader, projectsReader)
+			// Passing validator.
+			pol, err := PolicyNew(orgReader, projectsReader, SetValidator(newPolicyValidator(true)))
+			if err != nil {
+				t.Fatalf("failed to create policy: %v", err)
+			}
+			// Failing validator.
+			orgReader = io.NopCloser(bytes.NewReader(orgContent))
+			projectsReader = common.NewBytesIterator(policies)
+			pol, err = PolicyNew(orgReader, projectsReader, SetValidator(newPolicyValidator(false)))
+			if diff := cmp.Diff(errs.ErrorInvalidField, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			// No validator.
+			orgReader = io.NopCloser(bytes.NewReader(orgContent))
+			projectsReader = common.NewBytesIterator(policies)
+			pol, err = PolicyNew(orgReader, projectsReader)
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)
 			}

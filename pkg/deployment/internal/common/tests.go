@@ -91,3 +91,18 @@ func MapEq(m1, m2 map[string]string) bool {
 	}
 	return true
 }
+
+func NewPolicyValidator(pass bool) options.PolicyValidator {
+	return &policyValidator{pass: pass}
+}
+
+type policyValidator struct {
+	pass bool
+}
+
+func (v *policyValidator) ValidatePackage(pkg options.ValidationPackage) error {
+	if v.pass {
+		return nil
+	}
+	return fmt.Errorf("failed to validate package: pass (%v)", v.pass)
+}

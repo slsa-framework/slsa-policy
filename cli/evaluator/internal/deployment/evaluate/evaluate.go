@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/deployment/validate"
 	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
 	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils/crypto"
 	"github.com/laurentsimon/slsa-policy/pkg/deployment"
@@ -56,7 +57,7 @@ func Run(cli string, args []string) error {
 	// Create a policy.
 	projectsReader := named_files_reader.FromPaths(wd, projectsPath)
 	organizationReader, err := os.Open(orgPath)
-	pol, err := deployment.PolicyNew(organizationReader, projectsReader)
+	pol, err := deployment.PolicyNew(organizationReader, projectsReader, deployment.SetValidator(&validate.PolicyValidator{}))
 	if err != nil {
 		return fmt.Errorf("failed to create policy: %w", err)
 	}

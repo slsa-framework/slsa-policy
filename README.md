@@ -1,5 +1,3 @@
-# slsa-policy
-
 # SLSA policies
 
 <!-- markdown-toc --bullets="-" -i README.md -->
@@ -62,11 +60,11 @@ metadata.
 
 ### What is slsa-policy?
 
-slsa-policy is a Go library and an end-to-end demo showcasing how to enforce SLSA policies
-across an organization. The policy focuses on:
+slsa-policy is a Go library, a CLI and a set of GitHub Actions to implement source-to-deployment policies across an organization. The policy provides the fllowing guarantees:
 
-1. Ensuring that builds are protected against tanpering across the SDLC
-2. Ensuring all builds are bounds to a set of privileges, the same way that OS processes are restricted to a set of running privilages. In OS, users have permissions. In cloud environment, permissions (IAM) are associated with Service Accounts (SAs). So builds will be restricted to run on specific SAs defined by the policies. For more details on the design, see [Technical design](#technical-design).
+1. Containers (builds) are protected against tampering across the SDLC
+2. Containers (builds) are bounds to a set of privileges, the same way that OS processes are restricted to a set of running privilages.In cloud environments,
+  permissions are defined via IAM and are associated with Service Accounts (SAs) by the policy. For more details on the design, see [Technical design](#technical-design).
 
 ## Installation
 
@@ -115,14 +113,14 @@ See https://github.com/laurentsimon/slsa-org/tree/main/policies/release/projects
 
 See https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/build-echo-server.yml
 
-After the workflow successfully run, you can verify the release attestation via:
+After the workflow successfully run, you can manually verify the release attestation via:
 
 ```bash
 # NOTE: change image to your image.
-image=docker.io/laurentsimon/slsa-project-echo-server@sha256:4378b3d11e11ede0f64946e588c590e460e44f90c8a7921ad2cb7b04aaf298d4
-creator_id=https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml@refs/heads/main
-type=https://slsa.dev/release/v0.1
-cosign verify-attestation "{$image}" \
+$ image=docker.io/laurentsimon/slsa-project-echo-server@sha256:4378b3d11e11ede0f64946e588c590e460e44f90c8a7921ad2cb7b04aaf298d4
+$ creator_id=https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml@refs/heads/main
+$ type=https://slsa.dev/release/v0.1
+$ cosign verify-attestation "{$image}" \
     --certificate-oidc-issuer https://token.actions.githubusercontent.com \
     --certificate-identity "${creator_id}" 
     --type "${type}" | jq -r '.payload' | base64 -d | jq
@@ -173,20 +171,20 @@ See https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/proje
 
 See https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-echo-server.yml
 
-After the workflow successfully run, you can verify the release attestation via:
+After the workflow successfully run, you can manually verify the release attestation via:
 
 ```bash
 # NOTE: change image to your image.
-image=docker.io/laurentsimon/slsa-project-echo-server@sha256:4378b3d11e11ede0f64946e588c590e460e44f90c8a7921ad2cb7b04aaf298d4
-creator_id=https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml@refs/heads/main
-type=https://slsa.dev/deployment/v0.1
-cosign verify-attestation "{$image}" \
+$ image=docker.io/laurentsimon/slsa-project-echo-server@sha256:4378b3d11e11ede0f64946e588c590e460e44f90c8a7921ad2cb7b04aaf298d4
+$ creator_id=https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml@refs/heads/main
+$ type=https://slsa.dev/deployment/v0.1
+$ cosign verify-attestation "{$image}" \
     --certificate-oidc-issuer https://token.actions.githubusercontent.com \
     --certificate-identity "${creator_id}" 
     --type "${type}" | jq -r '.payload' | base64 -d | jq
 ```
 
-This verification will be made by the admission controller. It should further verify that:
+This verification will be performed by the admission controller. It will further verify that:
 1. "contextType" == "https://slsa.dev/deployment/contextType/PrincipalID"
 2. "context": {
       "https://slsa.dev/deployment/context/principalID": "k8_sa://name@dev-project-id.iam.gserviceaccount.com"

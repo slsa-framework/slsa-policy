@@ -37,13 +37,17 @@ type Principal struct {
 
 // Policy defines the policy.
 type Policy struct {
-	Format            int               `json:"format"`
-	Principal         Principal         `json:"principal"`
-	Packages          []Package         `json:"packages"`
-	BuildRequirements BuildRequirements `json:"build"`
+	Format            int                     `json:"format"`
+	Principal         Principal               `json:"principal"`
+	Packages          []Package               `json:"packages"`
+	BuildRequirements BuildRequirements       `json:"build"`
+	validator         options.PolicyValidator `json:"-"`
 }
 
-func fromReader(reader io.ReadCloser, maxBuildLevel int) (*Policy, error) {
+// PolicyOption defines a policy option.
+type PolicyOption func(*Policy) error
+
+func fromReader(reader io.ReadCloser, maxBuildLevel int, validator options.PolicyValidator) (*Policy, error) {
 	// NOTE: see https://yourbasic.org/golang/io-reader-interface-explained.
 	content, err := ioutil.ReadAll(reader)
 	if err != nil {
@@ -54,6 +58,7 @@ func fromReader(reader io.ReadCloser, maxBuildLevel int) (*Policy, error) {
 	if err := json.Unmarshal(content, &project); err != nil {
 		return nil, fmt.Errorf("[project] failed to unmarshal: %w", err)
 	}
+	project.validator = validator
 	if err := project.validate(maxBuildLevel); err != nil {
 		return nil, err
 	}
@@ -115,6 +120,19 @@ func (p *Policy) validatePackages() error {
 			}
 		}
 		// TODO: validate the packages are defined in a non-overlapping way.
+
+		// Validate the package using the custom validator.
+		if p.validator != nil {
+			pkg := options.ValidationPackage{
+				Name: pkg.Name,
+				Environment: options.ValidationEnvironment{
+					AnyOf: append([]string{}, pkg.Environment.AnyOf...), // NOTE: Make a copy of the array.
+				},
+			}
+			if err := p.validator.ValidatePackage(pkg); err != nil {
+				return fmt.Errorf("%w: failed to validate package: %w", errs.ErrorInvalidField, err)
+			}
+		}
 	}
 
 	return nil
@@ -141,13 +159,13 @@ func (p *Policy) validateBuildRequirements(maxBuildLevel int) error {
 }
 
 // FromReaders creates a set of policies indexed by their unique id.
-func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organization.Policy) (map[string]Policy, error) {
+func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organization.Policy, validator options.PolicyValidator) (map[string]Policy, error) {
 	policies := make(map[string]Policy)
 	principals := make(map[string]bool)
 	for readers.HasNext() {
 		id, reader := readers.Next()
 		// NOTE: fromReader()validates that the required levels is achievable.
-		policy, err := fromReader(reader, orgPolicy.MaxBuildSlsaLevel())
+		policy, err := fromReader(reader, orgPolicy.MaxBuildSlsaLevel(), validator)
 		if err != nil {
 			return nil, err
 		}

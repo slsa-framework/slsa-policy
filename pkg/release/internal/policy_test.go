@@ -349,8 +349,25 @@ func Test_PolicyNew(t *testing.T) {
 			}
 			// Create the project iterator.
 			projectsReader := common.NewBytesIterator(projects)
-			_, err = PolicyNew(orgReader, projectsReader)
+			_, err = PolicyNew(orgReader, projectsReader, nil)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			// Same policy with a passing validator.
+			orgReader = io.NopCloser(bytes.NewReader(content))
+			projectsReader = common.NewBytesIterator(projects)
+			_, err = PolicyNew(orgReader, projectsReader, common.NewPolicyValidator(true))
+			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatalf("unexpected err (-want +got): \n%s", diff)
+			}
+			if err != nil {
+				return
+			}
+			// Same policy with a failing validator.
+			orgReader = io.NopCloser(bytes.NewReader(content))
+			projectsReader = common.NewBytesIterator(projects)
+			_, err = PolicyNew(orgReader, projectsReader, common.NewPolicyValidator(false))
+			if diff := cmp.Diff(errs.ErrorInvalidField, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})
@@ -591,7 +608,7 @@ func Test_Evaluate(t *testing.T) {
 			}
 			// Create the project iterator.
 			projectsReader := common.NewBytesIterator(projects)
-			policy, err := PolicyNew(orgReader, projectsReader)
+			policy, err := PolicyNew(orgReader, projectsReader, nil)
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)
 			}
