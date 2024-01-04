@@ -8,11 +8,10 @@
   - [What is SLSA?](#what-is-slsa)
   - [What is provenance?](#what-is-provenance)
   - [What is slsa-policy?](#what-is-slsa-repo)
-- [Installation](#installation)
+- [Setup](#setup)
   - [Release policy](#release-policy)
     - [Org setup](#org-setup)
-      - [Org-wide policy setup](#org-wide-policy-setup)
-      - [Project policy setup](#project-wide-policy-setup)
+      - [Policy setup](#org-wide-policy-setup)
       - [Pre-submit validation](#pre-submit-validation)
       - [Releaser workflow](#releaser-workflow)
     - [Team setup](#team-setup)
@@ -20,13 +19,15 @@
       - [Call the release evaluator](#call-the-release-evaluator)
   - [Deployment policy](#deployment-policy)
     - [Org setup](#org-setup-1)
-      - [Org-wide policy setup](#org-wide-policy-setup-1)
-      - [Project policy setup](#project-wide-policy-setup-1)
+      - [Policy setup](#org-wide-policy-setup-1)
       - [Pre-submit validation](#pre-submit-validation-1)
       - [Releaser workflow](#releaser-workflow-1)
     - [Team setup](#team-setup-1)
       - [Policy definition](#policy-definition-1)
-      - [Call the release evaluator](#call-the-release-evaluator-1)
+      - [Call the deployment evaluator](#call-the-deployment-evaluator)
+  - [Admission controller](#admission-contoller)
+    - [Kyverno](#kyverno)
+    - [OPA](#opa)
 - [Technical design](#technical-design)
   - [Specifications](#specifications)
 
@@ -66,31 +67,40 @@ slsa-policy is a Go library, a CLI and a set of GitHub Actions to implement sour
 2. Containers (builds) are bounds to a set of privileges, the same way that OS processes are restricted to a set of running privilages.In cloud environments,
   permissions are defined via IAM and are associated with Service Accounts (SAs) by the policy. For more details on the design, see [Technical design](#technical-design).
 
-## Installation
+## Setup
 
 ### Release policy
 
 #### Org setup
 
-##### Org-wide policy setup
+##### Policy setup
 
-See https://github.com/laurentsimon/slsa-org/tree/main/policies/release/org.json
-
-TODO: write access to repo + admin. CODEOWNER contains admins
-
-##### Project policy setup
-
-See https://github.com/laurentsimon/slsa-org/tree/main/policies/release/projects
-
-TODO: write access to repo - admin. CODEONWERS contains the owner of the file.
+1. Create a folder to store the release policies. See an example [here](https://github.com/laurentsimon/slsa-org/tree/main/policies/release/).
+1. Create a file with your trusted roots. See example [org.json](https://github.com/laurentsimon/slsa-org/tree/main/policies/release/org.json).
+1. Set up ACLs on `org.json` and on the folder:
+  1. Assign ownership via GitHub [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) for this folder. Set the ownership to the administrators of the policy repository.
+  1. Enable [Repository Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository) (formerly Branch Protection) for the branch that stores the policies. The following settings can be written as one rule, or [split into multiple rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets#about-rule-layering). They can be specified at the repository level, or the [organization level](https://docs.github.com/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization).
+    1. Require a pull request before merging. Under additional settings: Require approvals (select at least 1-2 as the required number of approvals before merging).
+    1. Require status checks to pass before merging. Under additional settings: Require branches to be up to date before merging (may be problematic for busy repos).
+    1. Block force pushes
+    1. Restrict deletions
+    1. Limit any bypass actors to those that are strictly necessary (i.e. break glass).
+    1. Require review from [CODEOWNERS](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#additional-settings).
 
 ##### Pre-submit validation
 
-TODO: example workflow to validate policy.
+To validate the policy files, run the binary as:
+
+```bash
+cd policies/release
+$ go run . release validate org.json .
+```
+
+TODO: we need pre-submits when new files are created, to ensure the appropriate owners are added to CODEOWNERS.
 
 ##### Releaser workflow
 
-https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml
+You need to define a workflow that your teams will call when they want to release their container images. See an example [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml)
 
 In the workflow above, the CLI is called as follows:
 
@@ -107,13 +117,15 @@ go run . release evaluate org.json . "${image}" "${creator_id}" "${env}"
 
 ##### Policy definition
 
-See https://github.com/laurentsimon/slsa-org/tree/main/policies/release/projects
+Teams create their policy files under the folder defined by their organization in [Org-wide policy setup](#org-wide-policy-setup). See an example of a policy in [echo-server.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/release/echo-server.json).
+
+When a team creates a new file, the CODEOWNERS file should be udpated to give permissions to the team members who own the package. This allows teams to edit their policies without requiring reviews by the organization admnistrators.
 
 ##### Call the release evaluator
 
-See https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/build-echo-server.yml
+When publishing containers, teams must call the release policy evaluator service [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml) from [Releaser workflow](#release-workflow). See an example [build-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/build-echo-server.yml).
 
-After the workflow successfully run, you can manually verify the release attestation via:
+After the workflow has successfully run, you may manually verify the release attestation via:
 
 ```bash
 # NOTE: change image to your image.
@@ -130,25 +142,34 @@ $ cosign verify-attestation "{$image}" \
 
 #### Org setup
 
-##### Org-wide policy setup
+##### Policy setup
 
-See https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/org.json
-
-TODO: write access to repo + admin. CODEOWNER contains admins
-
-##### Project policy setup
-
-See https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/projects
-
-TODO: write access to repo - admin. CODEONWERS contains the owner of the file.
+1. Create a folder to store the release policies. See an example [here](https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/).
+1. Create a file with your trusted roots. See example [org.json](https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/org.json).
+1. Set up ACLs on the folder and the `org.json` file:
+  1. Assign ownership via GitHub [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) for this folder. Set the ownership to the administrators of the policy repository.
+  1. Enable [Repository Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository) (formerly Branch Protection) for the branch that stores the policies. The following settings can be written as one rule, or [split into multiple rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets#about-rule-layering). They can be specified at the repository level, or the [organization level](https://docs.github.com/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization).
+    1. Require a pull request before merging. Under additional settings: Require approvals (select at least 1-2 as the required number of approvals before merging).
+    1. Require status checks to pass before merging. Under additional settings: Require branches to be up to date before merging (may be problematic for busy repos).
+    1. Block force pushes
+    1. Restrict deletions
+    1. Limit any bypass actors to those that are strictly necessary (i.e. break glass).
+    1. Require review from [CODEOWNERS](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#additional-settings).
 
 ##### Pre-submit validation
 
-TODO: example workflow to validate policy.
+To validate the policy files, run the binary as:
+
+```bash
+cd policies/deployment
+$ go run . deployment validate org.json .
+```
+
+TODO: we need pre-submits when new files are created, to ensure the appropriate owners are added to CODEOWNERS.
 
 ##### Deployment workflow
 
-https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml
+You need to define a workflow that your teams will call when they want to release their container images. See an example [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml)
 
 In the workflow above, the CLI is called as follows:
 
@@ -165,13 +186,15 @@ go run . deployment evaluate org.json . "${image}" "${policy_id}" "${creator_id}
 
 ##### Policy definition
 
-See https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/projects
+Teams create their policy files under the folder defined by their organization in [Org-wide policy setup](#org-wide-policy-setup-1). See an example of a policy in [servers-prod.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/deployment/servers-prod.json).
+
+When a team creates a new file, the CODEOWNERS file should be udpated to give permissions to the team members who own the package. This allows teams to edit their policies without requiring reviews by the organization admnistrators.
 
 ##### Call the deployment evaluator
 
-See https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-echo-server.yml
+Before submitting a request to deploy containers, teams must call the deployment policy evaluator service [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml) from [Deployment workflow](#deployment-workflow). See an example [deploy-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-echo-server.yml).
 
-After the workflow successfully run, you can manually verify the release attestation via:
+After the workflow has successfully run, you may manually verify the release attestation via:
 
 ```bash
 # NOTE: change image to your image.
@@ -184,12 +207,24 @@ $ cosign verify-attestation "{$image}" \
     --type "${type}" | jq -r '.payload' | base64 -d | jq
 ```
 
-This verification will be performed by the admission controller. It will further verify that:
-1. "contextType" == "https://slsa.dev/deployment/contextType/PrincipalID"
-2. "context": {
+This verification will be performed by the admission controller. See [next section](#admission-controller).
+
+### Admission controller
+
+The admisson controller is responsible for verifying the deployment attestation:
+1. Verify the signature
+1. Verify "contextType" == "https://slsa.dev/deployment/contextType/PrincipalID"
+2. Verify "context": {
       "https://slsa.dev/deployment/context/principalID": "k8_sa://name@dev-project-id.iam.gserviceaccount.com"
     } == Kubernetes service account on the pod.
 
+#### Kyverno
+
+TODO
+
+#### OPA
+
+TODO
 
 ## Technical design
 
