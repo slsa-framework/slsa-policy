@@ -25,7 +25,7 @@
     - [Team setup](#team-setup-1)
       - [Policy definition](#policy-definition-1)
       - [Call the deployment evaluator](#call-the-deployment-evaluator)
-  - [Admission controller](#admission-contoller)
+  - [Admission controller](#admission-controller)
     - [Kyverno](#kyverno)
     - [OPA](#opa)
 - [Technical design](#technical-design)
@@ -207,7 +207,7 @@ $ cosign verify-attestation "{$image}" \
     --type "${type}" | jq -r '.payload' | base64 -d | jq
 ```
 
-This verification will be performed by the admission controller. See [next section](#admission-controller).
+This verification will be performed by the admission controller. See [Admission controller](#admission-controller).
 
 ### Admission controller
 
