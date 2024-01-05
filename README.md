@@ -78,14 +78,14 @@ slsa-policy is a Go library, a CLI and a set of GitHub Actions to implement sour
 1. Create a folder to store the release policies. See an example [here](https://github.com/laurentsimon/slsa-org/tree/main/policies/release/).
 1. Create a file with your trusted roots. See example [org.json](https://github.com/laurentsimon/slsa-org/tree/main/policies/release/org.json).
 1. Set up ACLs on `org.json` and on the folder:
-  1. Assign ownership via GitHub [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) for this folder. Set the ownership to the administrators of the policy repository.
-  1. Enable [Repository Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository) (formerly Branch Protection) for the branch that stores the policies. The following settings can be written as one rule, or [split into multiple rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets#about-rule-layering). They can be specified at the repository level, or the [organization level](https://docs.github.com/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization).
-    1. Require a pull request before merging. Under additional settings: Require approvals (select at least 1-2 as the required number of approvals before merging).
-    1. Require status checks to pass before merging. Under additional settings: Require branches to be up to date before merging (may be problematic for busy repos).
-    1. Block force pushes
-    1. Restrict deletions
-    1. Limit any bypass actors to those that are strictly necessary (i.e. break glass).
-    1. Require review from [CODEOWNERS](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#additional-settings).
+    1. Assign ownership via GitHub [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) for this folder. Set the ownership to the administrators of the policy repository.
+    1. Enable [Repository Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository) (formerly Branch Protection) for the branch that stores the policies. The following settings can be written as one rule, or [split into multiple rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets#about-rule-layering). They can be specified at the repository level, or the [organization level](https://docs.github.com/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization).
+        1. Require a pull request before merging. Under additional settings: Require approvals (select at least 1-2 as the required number of approvals before merging).
+        1. Require status checks to pass before merging. Under additional settings: Require branches to be up to date before merging (may be problematic for busy repos).
+        1. Block force pushes
+        1. Restrict deletions
+        1. Limit any bypass actors to those that are strictly necessary (i.e. break glass).
+        1. Require review from [CODEOWNERS](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#additional-settings).
 
 ##### Pre-submit validation
 
@@ -147,14 +147,14 @@ $ cosign verify-attestation "{$image}" \
 1. Create a folder to store the release policies. See an example [here](https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/).
 1. Create a file with your trusted roots. See example [org.json](https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/org.json).
 1. Set up ACLs on the folder and the `org.json` file:
-  1. Assign ownership via GitHub [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) for this folder. Set the ownership to the administrators of the policy repository.
-  1. Enable [Repository Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository) (formerly Branch Protection) for the branch that stores the policies. The following settings can be written as one rule, or [split into multiple rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets#about-rule-layering). They can be specified at the repository level, or the [organization level](https://docs.github.com/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization).
-    1. Require a pull request before merging. Under additional settings: Require approvals (select at least 1-2 as the required number of approvals before merging).
-    1. Require status checks to pass before merging. Under additional settings: Require branches to be up to date before merging (may be problematic for busy repos).
-    1. Block force pushes
-    1. Restrict deletions
-    1. Limit any bypass actors to those that are strictly necessary (i.e. break glass).
-    1. Require review from [CODEOWNERS](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#additional-settings).
+    1. Assign ownership via GitHub [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) for this folder. Set the ownership to the administrators of the policy repository.
+    1. Enable [Repository Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository) (formerly Branch Protection) for the branch that stores the policies. The following settings can be written as one rule, or [split into multiple rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets#about-rule-layering). They can be specified at the repository level, or the [organization level](https://docs.github.com/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization).
+        1. Require a pull request before merging. Under additional settings: Require approvals (select at least 1-2 as the required number of approvals before merging).
+        1. Require status checks to pass before merging. Under additional settings: Require branches to be up to date before merging (may be problematic for busy repos).
+        1. Block force pushes
+        1. Restrict deletions
+        1. Limit any bypass actors to those that are strictly necessary (i.e. break glass).
+        1. Require review from [CODEOWNERS](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#additional-settings).
 
 ##### Pre-submit validation
 
