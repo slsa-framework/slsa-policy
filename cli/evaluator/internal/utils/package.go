@@ -9,7 +9,8 @@ import (
 
 type PackageHelper struct{}
 
-// PolicyPackageName extract the policy name from the descriptor.
+// PolicyPackageName constructs the policy name from the descriptor.
+// In our case, it's registry/image.
 func (h *PackageHelper) PolicyPackageName(packageDesc intoto.PackageDescriptor) (string, error) {
 	return packageDesc.Registry + "/" + packageDesc.Name, nil
 }

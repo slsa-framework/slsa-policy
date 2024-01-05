@@ -67,6 +67,7 @@ func Run(cli string, args []string) error {
 	digests := intoto.DigestSet{
 		digestsArr[0]: digestsArr[1],
 	}
+	// NOTE: imageURI must be the same as set in the policy's package name.
 	result := pol.Evaluate(digests, imageURI, reqOpts, buildOpts)
 	if result.Error() != nil {
 		return result.Error()
