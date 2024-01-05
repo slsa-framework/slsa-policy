@@ -21,7 +21,7 @@
     - [Org setup](#org-setup-1)
       - [Policy setup](#policy-setup-1)
       - [Pre-submit validation](#pre-submit-validation-1)
-      - [Deployement service](#deployment-service)
+      - [Deployment service](#deployment-service)
     - [Team setup](#team-setup-1)
       - [Policy definition](#policy-definition-1)
       - [Call the deployment service](#call-the-deployment-service)
