@@ -13,7 +13,7 @@
     - [Org setup](#org-setup)
       - [Policy setup](#policy-setup)
       - [Pre-submit validation](#pre-submit-validation)
-      - [Releaser workflow](#releaser-workflow)
+      - [Release service](#release-service)
     - [Team setup](#team-setup)
       - [Policy definition](#policy-definition)
       - [Call the release evaluator](#call-the-release-evaluator)
@@ -21,7 +21,7 @@
     - [Org setup](#org-setup-1)
       - [Policy setup](#policy-setup-1)
       - [Pre-submit validation](#pre-submit-validation-1)
-      - [Releaser workflow](#releaser-workflow-1)
+      - [Deployement service](#deployment-service)
     - [Team setup](#team-setup-1)
       - [Policy definition](#policy-definition-1)
       - [Call the deployment evaluator](#call-the-deployment-evaluator)
@@ -75,7 +75,7 @@ slsa-policy is a Go library, a CLI and a set of GitHub Actions to implement sour
 
 ##### Policy setup
 
-1. Set up ACLs on for your entire repository:
+1. Set up ACLs for your entire repository:
     1. Assign ownership via GitHub [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) for entire repository. Set the ownership to the administrators of the policy repository. It's important the workflows are also protected by CODEOWNERS.
     1. Enable [Repository Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository) (formerly Branch Protection) for all branches. The following settings can be written as one rule, or [split into multiple rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets#about-rule-layering). They can be specified at the repository level, or the [organization level](https://docs.github.com/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization).
         1. Require a pull request before merging. Under additional settings: Require approvals (select at least 1-2 as the required number of approvals before merging).
@@ -101,7 +101,7 @@ TODO: we need pre-submits when new files are created, to ensure the appropriate 
 
 ##### Releaser workflow
 
-You need to define a workflow that your teams will call when they want to release their container images. See an example [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml)
+You need to define a workflow that your teams will call when they want to release their container images. This workflow is responsible for evaluating the release policy. See an example [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml)
 
 In the workflow above, the CLI is called as follows:
 
@@ -127,7 +127,7 @@ When a team creates a new file or folder:
 
 ##### Call the release evaluator
 
-When publishing containers, teams must call the release policy evaluator service [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml) from [Release workflow](#release-workflow). See an example [build-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/build-echo-server.yml).
+When publishing containers, teams must call the release policy evaluator service [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml) from the org's [Release service](#release-service). See an example [build-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/build-echo-server.yml).
 
 After the workflow has successfully run, you may manually verify the release attestation via:
 
@@ -148,7 +148,7 @@ $ cosign verify-attestation "{$image}" \
 
 ##### Policy setup
 
-1. Set up ACLs on for your entire repository:
+1. Set up ACLs for your entire repository:
     1. Assign ownership via GitHub [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) for entire repository. Set the ownership to the administrators of the policy repository. It's important the workflows are also protected by CODEOWNERS.
     1. Enable [Repository Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository) (formerly Branch Protection) for all branches. The following settings can be written as one rule, or [split into multiple rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets#about-rule-layering). They can be specified at the repository level, or the [organization level](https://docs.github.com/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization).
         1. Require a pull request before merging. Under additional settings: Require approvals (select at least 1-2 as the required number of approvals before merging).
@@ -172,9 +172,9 @@ $ go run . deployment validate org.json .
 
 TODO: we need pre-submits when new files are created, to ensure the appropriate owners are added to CODEOWNERS.
 
-##### Deployment workflow
+##### Deployer workflow
 
-You need to define a workflow that your teams will call when they want to release their container images. See an example [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml)
+You need to define a workflow that your teams will call when they want to deploy their container images. This workflow is responsible for evaluating the deployment policy. See an example [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml)
 
 In the workflow above, the CLI is called as follows:
 
@@ -200,7 +200,7 @@ When a team creates a new file or folder:
 
 ##### Call the deployment evaluator
 
-Before submitting a request to deploy containers, teams must call the deployment policy evaluator service [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml) from [Deployment workflow](#deployment-workflow). See an example [deploy-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-echo-server.yml).
+Before submitting a request to deploy containers, teams must call the deployment policy evaluator service [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml) from [Deployment service](#deployment-service). See an example [deploy-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-echo-server.yml).
 
 After the workflow has successfully run, you may manually verify the release attestation via:
 
