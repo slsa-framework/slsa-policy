@@ -11,7 +11,7 @@
 - [Setup](#setup)
   - [Release policy](#release-policy)
     - [Org setup](#org-setup)
-      - [Policy setup](policy-setup)
+      - [Policy setup](#policy-setup)
       - [Pre-submit validation](#pre-submit-validation)
       - [Releaser workflow](#releaser-workflow)
     - [Team setup](#team-setup)
