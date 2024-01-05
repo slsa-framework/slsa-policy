@@ -16,7 +16,7 @@
       - [Release service](#release-service)
     - [Team setup](#team-setup)
       - [Policy definition](#policy-definition)
-      - [Call the release evaluator](#call-the-release-evaluator)
+      - [Call the release service](#call-the-release-service)
   - [Deployment policy](#deployment-policy)
     - [Org setup](#org-setup-1)
       - [Policy setup](#policy-setup-1)
@@ -24,7 +24,7 @@
       - [Deployement service](#deployment-service)
     - [Team setup](#team-setup-1)
       - [Policy definition](#policy-definition-1)
-      - [Call the deployment evaluator](#call-the-deployment-evaluator)
+      - [Call the deployment service](#call-the-deployment-service)
   - [Admission controller](#admission-controller)
     - [Kyverno](#kyverno)
     - [OPA](#opa)
@@ -125,9 +125,9 @@ When a team creates a new file or folder:
 1. If not already done in [Org setup](#org-setup), add users as contributors and give them `write` access. Do *NOT* gives them admiin access.
 1. Update the CODEOWNERS file to give permissions to the team members who own the package. This allows teams to edit their policies without requiring reviews by the organization admnistrators.
 
-##### Call the release evaluator
+##### Call the release service
 
-When publishing containers, teams must call the release policy evaluator service [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml) from the org's [Release service](#release-service). See an example [build-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/build-echo-server.yml).
+When publishing containers, teams must call the release policy service service [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml) from the org's [Release service](#release-service). See an example [build-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/build-echo-server.yml).
 
 After the workflow has successfully run, you may manually verify the release attestation via:
 
@@ -198,9 +198,9 @@ When a team creates a new file or folder:
 1. If not already done in [Org setup](#org-setup-1), add users as contributors and give them `write` access. Do *NOT* gives them admiin access.
 1. Update the CODEOWNERS file to give permissions to the team members who own the package. This allows teams to edit their policies without requiring reviews by the organization admnistrators.
 
-##### Call the deployment evaluator
+##### Call the deployment service
 
-Before submitting a request to deploy containers, teams must call the deployment policy evaluator service [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml) from [Deployment service](#deployment-service). See an example [deploy-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-echo-server.yml).
+Before submitting a request to deploy containers, teams must call the deployment policy service service [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml) from [Deployment service](#deployment-service). See an example [deploy-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-echo-server.yml).
 
 After the workflow has successfully run, you may manually verify the release attestation via:
 
