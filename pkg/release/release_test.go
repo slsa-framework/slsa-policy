@@ -557,7 +557,7 @@ func Test_e2e(t *testing.T) {
 				t.Fatalf("failed to create policy: %v", err)
 			}
 			verifier := common.NewAttestationVerifier(tt.digests, tt.packageName, tt.builderID, tt.sourceURI)
-			opts := BuildVerificationOption{
+			opts := AttestationVerificationOption{
 				Verifier: verifier,
 			}
 			req := RequestOption{
@@ -588,7 +588,7 @@ func Test_e2e(t *testing.T) {
 			}
 
 			// Create verification options.
-			options := []AttestationVerificationOption{
+			options := []VerificationOption{
 				IsSlsaBuildLevel(tt.buildLevel),
 			}
 			if tt.creatorVersion != "" {

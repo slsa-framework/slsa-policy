@@ -15,7 +15,7 @@ type Verification struct {
 	packageHelper PackageHelper
 }
 
-type AttestationVerificationOption func(*Verification) error
+type VerificationOption func(*Verification) error
 
 func VerificationNew(reader io.ReadCloser, packageHelper PackageHelper) (*Verification, error) {
 	content, err := ioutil.ReadAll(reader)
@@ -36,7 +36,7 @@ func VerificationNew(reader io.ReadCloser, packageHelper PackageHelper) (*Verifi
 	}, nil
 }
 
-func (v *Verification) Verify(creatorID string, digests intoto.DigestSet, policyPackageName string, options ...AttestationVerificationOption) error {
+func (v *Verification) Verify(creatorID string, digests intoto.DigestSet, policyPackageName string, options ...VerificationOption) error {
 	// Statement type.
 	if v.attestation.Header.Type != statementType {
 		return fmt.Errorf("%w: attestation type (%q) != intoto type (%q)", errs.ErrorMismatch,
@@ -128,7 +128,7 @@ func verifyDigests(ds intoto.DigestSet, digests intoto.DigestSet) error {
 	return nil
 }
 
-func IsPackageEnvironment(env string) AttestationVerificationOption {
+func IsPackageEnvironment(env string) VerificationOption {
 	return func(v *Verification) error {
 		return v.isPackageEnvironment(env)
 	}
@@ -142,7 +142,7 @@ func (v *Verification) isPackageEnvironment(env string) error {
 	return nil
 }
 
-func IsPackageVersion(version string) AttestationVerificationOption {
+func IsPackageVersion(version string) VerificationOption {
 	return func(v *Verification) error {
 		return v.isPackageVersion(version)
 	}
@@ -156,7 +156,7 @@ func (v *Verification) isPackageVersion(version string) error {
 	return nil
 }
 
-func IsCreatorVersion(version string) AttestationVerificationOption {
+func IsCreatorVersion(version string) VerificationOption {
 	return func(v *Verification) error {
 		return v.isCreatorVersion(version)
 	}
@@ -170,7 +170,7 @@ func (v *Verification) isCreatorVersion(version string) error {
 	return nil
 }
 
-func HasPolicy(name, uri string, digests intoto.DigestSet) AttestationVerificationOption {
+func HasPolicy(name, uri string, digests intoto.DigestSet) VerificationOption {
 	return func(v *Verification) error {
 		return v.hasPolicy(name, uri, digests)
 	}
@@ -192,7 +192,7 @@ func (v *Verification) hasPolicy(name, uri string, digests intoto.DigestSet) err
 	return nil
 }
 
-func IsSlsaBuildLevel(level int) AttestationVerificationOption {
+func IsSlsaBuildLevel(level int) VerificationOption {
 	return func(v *Verification) error {
 		return v.isSlsaBuildLevel(level)
 	}
@@ -213,7 +213,7 @@ func (v *Verification) isSlsaBuildLevel(level int) error {
 	return nil
 }
 
-func IsSlsaBuildLevelOrAbove(level int) AttestationVerificationOption {
+func IsSlsaBuildLevelOrAbove(level int) VerificationOption {
 	return func(v *Verification) error {
 		return v.isSlsaBuildLevelOrAbove(level)
 	}

@@ -58,7 +58,7 @@ func Run(cli string, args []string) error {
 	}
 
 	// Evaluate the policy.
-	buildOpts := release.BuildVerificationOption{
+	opts := release.AttestationVerificationOption{
 		Verifier: newBuildVerifier(),
 	}
 	reqOpts := release.RequestOption{
@@ -68,7 +68,7 @@ func Run(cli string, args []string) error {
 		digestsArr[0]: digestsArr[1],
 	}
 	// NOTE: imageURI must be the same as set in the policy's package name.
-	result := pol.Evaluate(digests, imageURI, reqOpts, buildOpts)
+	result := pol.Evaluate(digests, imageURI, reqOpts, opts)
 	if result.Error() != nil {
 		return result.Error()
 	}

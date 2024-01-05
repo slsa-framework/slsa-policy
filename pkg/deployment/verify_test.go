@@ -891,7 +891,7 @@ func Test_Verify(t *testing.T) {
 			}
 
 			// Create verification options.
-			var options []AttestationVerificationOption
+			var options []VerificationOption
 			if tt.creatorVersion != "" {
 				options = append(options, IsCreatorVersion(tt.creatorVersion))
 			}

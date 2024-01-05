@@ -15,7 +15,7 @@ type Verification struct {
 	attestation
 }
 
-type AttestationVerificationOption func(*Verification) error
+type VerificationOption func(*Verification) error
 
 func VerificationNew(reader io.ReadCloser) (*Verification, error) {
 	content, err := ioutil.ReadAll(reader)
@@ -32,7 +32,7 @@ func VerificationNew(reader io.ReadCloser) (*Verification, error) {
 	}, nil
 }
 
-func (v *Verification) Verify(creatorID string, digests intoto.DigestSet, contextType string, context interface{}, options ...AttestationVerificationOption) error {
+func (v *Verification) Verify(creatorID string, digests intoto.DigestSet, contextType string, context interface{}, options ...VerificationOption) error {
 	// Statement type.
 	if v.attestation.Header.Type != statementType {
 		return fmt.Errorf("%w: attestation type (%q) != intoto type (%q)", errs.ErrorMismatch,
@@ -140,7 +140,7 @@ func verifyDigests(ds intoto.DigestSet, digests intoto.DigestSet) error {
 	return nil
 }
 
-func IsCreatorVersion(version string) AttestationVerificationOption {
+func IsCreatorVersion(version string) VerificationOption {
 	return func(v *Verification) error {
 		return v.isCreatorVersion(version)
 	}
@@ -154,7 +154,7 @@ func (v *Verification) isCreatorVersion(version string) error {
 	return nil
 }
 
-func HasPolicy(name, uri string, digests intoto.DigestSet) AttestationVerificationOption {
+func HasPolicy(name, uri string, digests intoto.DigestSet) VerificationOption {
 	return func(v *Verification) error {
 		return v.hasPolicy(name, uri, digests)
 	}

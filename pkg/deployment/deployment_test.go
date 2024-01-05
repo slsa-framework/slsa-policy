@@ -617,7 +617,7 @@ func Test_e2e(t *testing.T) {
 				t.Fatalf("failed to create policy: %v", err)
 			}
 			verifier := NewE2eAttestationVerifier(tt.digests, tt.packageName, tt.env, tt.releaserID, tt.buildLevel)
-			opts := ReleaseVerificationOption{
+			opts := AttestationVerificationOption{
 				Verifier: verifier,
 			}
 			result := pol.Evaluate(tt.digests, tt.packageName, tt.policyID, opts)
@@ -645,7 +645,7 @@ func Test_e2e(t *testing.T) {
 			}
 
 			// Create verification options.
-			options := []AttestationVerificationOption{}
+			options := []VerificationOption{}
 			if tt.creatorVersion != "" {
 				options = append(options, IsCreatorVersion(tt.creatorVersion))
 			}

@@ -73,7 +73,7 @@ func (v *releaseVerifier) verifyAttestationContent(attBytes []byte, imageName, f
 	}
 
 	// Build level verification.
-	levelOpts := []release.AttestationVerificationOption{
+	levelOpts := []release.VerificationOption{
 		release.IsSlsaBuildLevelOrAbove(v.BuildLevel),
 	}
 	// If environment is present, we must verify it.

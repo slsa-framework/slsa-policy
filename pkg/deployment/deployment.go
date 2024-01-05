@@ -26,9 +26,9 @@ type AttestationVerifier interface {
 	VerifyReleaseAttestation(digests intoto.DigestSet, packageURI string, environment []string, opts AttestationVerifierReleaseOptions) (*string, error)
 }
 
-// ReleaseVerificationOption defines the configuration to verify
+// AttestationVerificationOption defines the configuration to verify
 // release attestations.
-type ReleaseVerificationOption struct {
+type AttestationVerificationOption struct {
 	Verifier AttestationVerifier
 }
 
@@ -70,19 +70,19 @@ type PolicyValidator interface {
 // This is a helpder class to forward calls between the internal
 // classes and the caller.
 type internal_verifier struct {
-	releaseOpts ReleaseVerificationOption
+	opts AttestationVerificationOption
 }
 
 func (i *internal_verifier) VerifyReleaseAttestation(digests intoto.DigestSet, packageURI string,
 	environment []string, releaserID string, buildLevel int) (*string, error) {
-	if i.releaseOpts.Verifier == nil {
+	if i.opts.Verifier == nil {
 		return nil, fmt.Errorf("%w: verifier is nil", errs.ErrorInvalidInput)
 	}
 	opts := AttestationVerifierReleaseOptions{
 		ReleaserID: releaserID,
 		BuildLevel: buildLevel,
 	}
-	return i.releaseOpts.Verifier.VerifyReleaseAttestation(digests, packageURI, environment, opts)
+	return i.opts.Verifier.VerifyReleaseAttestation(digests, packageURI, environment, opts)
 }
 
 // This is a class to forward calls between internal
@@ -139,11 +139,11 @@ func (p *Policy) setValidator(validator PolicyValidator) error {
 }
 
 // Evaluate evalues the deployment policy.
-func (p *Policy) Evaluate(digests intoto.DigestSet, policyPackageName string, policyID string, releaseOpts ReleaseVerificationOption) PolicyEvaluationResult {
+func (p *Policy) Evaluate(digests intoto.DigestSet, policyPackageName string, policyID string, opts AttestationVerificationOption) PolicyEvaluationResult {
 	principal, err := p.policy.Evaluate(digests, policyPackageName, policyID,
 		options.ReleaseVerification{
 			Verifier: &internal_verifier{
-				releaseOpts: releaseOpts,
+				opts: opts,
 			},
 		},
 	)

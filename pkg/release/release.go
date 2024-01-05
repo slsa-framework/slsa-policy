@@ -17,10 +17,11 @@ type AttestationVerifier interface {
 	VerifyBuildAttestation(digests intoto.DigestSet, policyPackageName, builderID, sourceURI string) error
 }
 
-// BuildVerificationOption defines the configuration to verify
+// AttestationVerificationOption defines the configuration to verify
 // build attestations.
-type BuildVerificationOption struct {
+type AttestationVerificationOption struct {
 	Verifier AttestationVerifier
+	// We can add attestation-specific options here.
 }
 
 // RequestOption contains options from the caller.
@@ -51,14 +52,14 @@ type PolicyEvaluationResult struct {
 // This is a helpder class to forward calls between the internal
 // classes and the caller.
 type internal_verifier struct {
-	buildOpts BuildVerificationOption
+	opts AttestationVerificationOption
 }
 
 func (i *internal_verifier) VerifyBuildAttestation(digests intoto.DigestSet, policyPackageName, builderID, sourceURI string) error {
-	if i.buildOpts.Verifier == nil {
+	if i.opts.Verifier == nil {
 		return fmt.Errorf("%w: verifier is nil", errs.ErrorInvalidInput)
 	}
-	return i.buildOpts.Verifier.VerifyBuildAttestation(digests, policyPackageName, builderID, sourceURI)
+	return i.opts.Verifier.VerifyBuildAttestation(digests, policyPackageName, builderID, sourceURI)
 }
 
 // This is a class to forward calls between internal
@@ -120,14 +121,14 @@ func (p *Policy) setValidator(validator PolicyValidator) error {
 
 // Evaluate evalues the release policy.
 func (p *Policy) Evaluate(digests intoto.DigestSet, policyPackageName string, reqOpts RequestOption,
-	buildOpts BuildVerificationOption) PolicyEvaluationResult {
+	opts AttestationVerificationOption) PolicyEvaluationResult {
 	level, err := p.policy.Evaluate(digests, policyPackageName,
 		options.Request{
 			Environment: reqOpts.Environment,
 		},
 		options.BuildVerification{
 			Verifier: &internal_verifier{
-				buildOpts: buildOpts,
+				opts: opts,
 			},
 		},
 	)
