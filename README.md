@@ -127,7 +127,7 @@ When a team creates a new file or folder:
 
 ##### Call the release service
 
-When publishing containers, teams must call the release policy service service [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml) from the org's [Release service](#release-service). See an example [build-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/build-echo-server.yml).
+When publishing containers, teams must call the release policy service service [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml) from the org's [Release service](#release-service). See an example [deploy-image.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-image.yml). This workflows would be called with environment set as "staging"itul staging tests have passed. 
 
 After the workflow has successfully run, you may manually verify the release attestation via:
 
@@ -200,7 +200,7 @@ When a team creates a new file or folder:
 
 ##### Call the deployment service
 
-Before submitting a request to deploy containers, teams must call the deployment policy service service [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml) from [Deployment service](#deployment-service). See an example [deploy-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-echo-server.yml).
+Before submitting a request to deploy containers, teams must call the deployment policy service [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml) from [Deployment service](#deployment-service). See an example [deploy-image.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-image.yml). This could be called with "staging" environmentfirst to allow the container to run on the staging service account defined in [servers-staging.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/deployment/servers-staging.json). Once all staging tests have passed, it may be called with "prod" environment.
 
 After the workflow has successfully run, you may manually verify the release attestation via:
 
