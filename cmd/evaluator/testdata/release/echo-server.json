@@ -4,7 +4,7 @@
         "name":"docker.io/laurentsimon/slsa-project-echo-server",
         "environment":{
             "any_of": [
-                "dev", "prod"
+                "staging", "prod"
             ]
         }
     },

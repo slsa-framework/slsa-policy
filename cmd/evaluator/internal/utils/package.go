@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
@@ -25,10 +26,7 @@ func (h *PackageHelper) PackageDescriptor(policyPackageName string) (intoto.Pack
 	if err != nil {
 		return des, fmt.Errorf("%w: failed to parse image (%q): %w", errorImageParsing, policyPackageName, err)
 	}
-	des.Registry = ref.Context().RegistryStr()
-	if des.Registry == name.DefaultRegistry {
-		des.Registry = "docker.io"
-	}
+	des.Registry = canonicalizeRegistry(ref.Context().RegistryStr())
 	des.Name = ref.Context().RepositoryStr()
 	return des, nil
 }
@@ -47,6 +45,8 @@ func ValidatePolicyPackage(policyPackageName string, environment []string) error
 	if registry == "" {
 		return fmt.Errorf("%w: registry is empty for image (%q)", errorPackageName, policyPackageName)
 	}
+	registry = canonicalizeRegistry(registry)
+
 	// Verify the registry value is one of the allowed values.
 	// TODO(#14): Provide a configuration option in policy for allowed list.
 	// NOTE: It's really important to ensure that the registries are validated. If not,
@@ -55,12 +55,40 @@ func ValidatePolicyPackage(policyPackageName string, environment []string) error
 	// Recall that the package (name,registry) must be unique across all the team policy files.
 	allowed := []string{"docker.io", "gcr.io", "ghcr.io"}
 	if !slices.Contains(allowed, registry) {
-		return fmt.Errorf("%w: registry (%q) not in the allow list (%q)", errorPackageName,
-			policyPackageName, registry, allowed)
+		return fmt.Errorf("%w: registry (%q) not in the allow list (%q) for package (%q)",
+			errorPackageName, registry, allowed, policyPackageName)
 	}
 	// Verify the identifier is not set.
 	if ref.Identifier() != "" {
 		return fmt.Errorf("%w: identifier is set for image (%q)", errorPackageName, policyPackageName)
 	}
 	return nil
+}
+
+func canonicalizeRegistry(registry string) string {
+	if registry == name.DefaultRegistry {
+		return "docker.io"
+	}
+	return registry
+}
+
+// ParseImageReference parses the image reference.
+func ParseImageReference(image string) (string, string, error) {
+	// NOTE: disable "latest" default tag.
+	ref, err := name.ParseReference(image, name.WithDefaultTag(""))
+	if err != nil {
+		return "", "", fmt.Errorf("%w: failed to parse image (%q): %w", errorImageParsing, image, err)
+	}
+	// NOTE: WithDefaultRegistry("docker.io") does not seem to work, it
+	// resets the value to index.docker.io
+	registry := canonicalizeRegistry(ref.Context().RegistryStr())
+	if !strings.HasPrefix(ref.Identifier(), "sha256:") {
+		return "", "", fmt.Errorf("%w: no digest in image (%q)", errorImageParsing, image)
+	}
+
+	return registry + "/" + ref.Context().RepositoryStr(), ref.Identifier(), nil
+}
+
+func ImmutableImage(image string, digests intoto.DigestSet) string {
+	return fmt.Sprintf("%v@sha256:%v", image, digests["sha256"])
 }
