@@ -99,7 +99,7 @@ $ go run . release validate org.json .
 
 TODO: we need pre-submits when new files are created, to ensure the appropriate owners are added to CODEOWNERS.
 
-##### Releaser workflow
+##### Release service
 
 You need to define a workflow that your teams will call when they want to release their container images. This workflow is responsible for evaluating the release policy. See an example [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml)
 
