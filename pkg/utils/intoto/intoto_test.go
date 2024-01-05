@@ -19,7 +19,6 @@ func Test_ValidateSubject(t *testing.T) {
 		{
 			name: "valid subject",
 			subject: Subject{
-				URI: "the_uri",
 				Digests: DigestSet{
 					"sha256":    "some_value",
 					"gitCommit": "another_value",
@@ -27,16 +26,13 @@ func Test_ValidateSubject(t *testing.T) {
 			},
 		},
 		{
-			name: "not digests",
-			subject: Subject{
-				URI: "the_uri",
-			},
+			name:     "not digests",
+			subject:  Subject{},
 			expected: errs.ErrorInvalidField,
 		},
 		{
 			name: "empty digest key",
 			subject: Subject{
-				URI: "the_uri",
 				Digests: DigestSet{
 					"sha256": "some_value",
 					"":       "another_value",
@@ -47,7 +43,6 @@ func Test_ValidateSubject(t *testing.T) {
 		{
 			name: "empty digest value",
 			subject: Subject{
-				URI: "the_uri",
 				Digests: DigestSet{
 					"sha256":    "some_value",
 					"gitCommit": "",
@@ -121,25 +116,36 @@ func Test_ValidateResource(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		resource ResourceDescriptor
+		pkg      PackageDescriptor
 		expected error
 	}{
 		{
 			name: "valid descriptor",
-			resource: ResourceDescriptor{
-				URI: "the_uri",
+			pkg: PackageDescriptor{
+				Name:     "name",
+				Registry: "registry",
 			},
 		},
 		{
-			name:     "empty uri",
+			name:     "empty name",
 			expected: errs.ErrorInvalidField,
+			pkg: PackageDescriptor{
+				Registry: "registry",
+			},
+		},
+		{
+			name:     "empty registry",
+			expected: errs.ErrorInvalidField,
+			pkg: PackageDescriptor{
+				Name: "name",
+			},
 		},
 	}
 	for _, tt := range tests {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			err := tt.resource.Validate()
+			err := tt.pkg.Validate()
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

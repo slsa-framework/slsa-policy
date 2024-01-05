@@ -95,123 +95,6 @@ func Test_verifyDigests(t *testing.T) {
 	}
 }
 
-func Test_verifyAnnotation(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name            string
-		attAnnotation   map[string]interface{}
-		inputAnnotation map[string]interface{}
-		expected        error
-	}{
-		{
-			name: "same nil annotations",
-		},
-		{
-			name:            "same empty annotations",
-			attAnnotation:   map[string]interface{}{},
-			inputAnnotation: map[string]interface{}{},
-		},
-		{
-			name:          "att empty input nil",
-			attAnnotation: map[string]interface{}{},
-		},
-		{
-			name:            "att nil input empty",
-			inputAnnotation: map[string]interface{}{},
-		},
-		{
-			name: "att empty key value, input nil",
-			attAnnotation: map[string]interface{}{
-				"key": "",
-			},
-		},
-		{
-			name: "att nil, input empty key value",
-			inputAnnotation: map[string]interface{}{
-				"key": "",
-			},
-		},
-		{
-			name: "att empty key value, input empty key value",
-			attAnnotation: map[string]interface{}{
-				"key": "",
-			},
-			inputAnnotation: map[string]interface{}{
-				"key": "",
-			},
-		},
-		{
-			name: "att and input same key value",
-			attAnnotation: map[string]interface{}{
-				"key": "val",
-			},
-			inputAnnotation: map[string]interface{}{
-				"key": "val",
-			},
-		},
-		{
-			name: "att and input mismatch key value",
-			attAnnotation: map[string]interface{}{
-				"key": "val1",
-			},
-			inputAnnotation: map[string]interface{}{
-				"key": "val",
-			},
-			expected: errs.ErrorMismatch,
-		},
-		{
-			name: "att nil",
-			inputAnnotation: map[string]interface{}{
-				"key": "val",
-			},
-			expected: errs.ErrorMismatch,
-		},
-		{
-			name: "input nil",
-			attAnnotation: map[string]interface{}{
-				"key": "val",
-			},
-			expected: errs.ErrorMismatch,
-		},
-		{
-			name: "input empty",
-			attAnnotation: map[string]interface{}{
-				"key": "val",
-			},
-			inputAnnotation: map[string]interface{}{},
-			expected:        errs.ErrorMismatch,
-		},
-		{
-			name: "att empty",
-			inputAnnotation: map[string]interface{}{
-				"key": "val",
-			},
-			attAnnotation: map[string]interface{}{},
-			expected:      errs.ErrorMismatch,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt // Re-initializing variable so it is not changed while executing the closure below
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			v := Verification{
-				attestation: attestation{
-					Predicate: predicate{
-						Package: intoto.ResourceDescriptor{
-							Annotations: tt.attAnnotation,
-						},
-					},
-				},
-			}
-			err := v.verifyAnnotation(tt.inputAnnotation, "key")
-			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-		})
-	}
-}
-
 // TODO: split up the function?
 // TODO: support time verification.
 func Test_Verify(t *testing.T) {
@@ -241,7 +124,6 @@ func Test_Verify(t *testing.T) {
 			},
 		},
 	}
-	packageVersion := "1.2.3"
 	creatorID := "creatorID"
 	creatorVersion := "creatorVersion"
 	creator := intoto.Creator{
@@ -257,13 +139,15 @@ func Test_Verify(t *testing.T) {
 	releaseProperties := map[string]interface{}{
 		buildLevelProperty: 3,
 	}
-	packageURI := "package_uri"
-	packageDesc := intoto.ResourceDescriptor{
-		URI: packageURI,
-		Annotations: map[string]interface{}{
-			environmentAnnotation: "prod",
-			versionAnnotation:     "1.2.3",
-		},
+	packageName := "package_name"
+	packageRegistry := "package_registry"
+	packageVersion := "1.2.3"
+	packageEnv := "prod"
+	packageDesc := intoto.PackageDescriptor{
+		Name:        packageName,
+		Registry:    packageRegistry,
+		Version:     packageVersion,
+		Environment: packageEnv,
 	}
 	pred := predicate{
 		Creator:      creator,
@@ -284,7 +168,7 @@ func Test_Verify(t *testing.T) {
 		creatorID          string
 		creatorVersion     string
 		packageVersion     string
-		packageURI         string
+		packageName        string
 		packageEnvironment string
 		buildLevel         *int
 		policy             map[string]intoto.Policy
@@ -295,7 +179,7 @@ func Test_Verify(t *testing.T) {
 			att:                att,
 			creatorID:          creatorID,
 			packageVersion:     packageVersion,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
@@ -316,7 +200,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
 			policy:             policy,
@@ -336,7 +220,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
 			policy:             policy,
@@ -349,7 +233,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
 			policy:             policy,
@@ -362,7 +246,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion + "_mismatch",
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
 			policy:             policy,
@@ -375,7 +259,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     "1.2.4",
 			digests:            digests,
 			policy:             policy,
@@ -395,7 +279,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			digests:            digests,
 			policy:             policy,
 		},
@@ -411,11 +295,10 @@ func Test_Verify(t *testing.T) {
 					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
-					Package: intoto.ResourceDescriptor{
-						URI: "the_uri",
-						Annotations: map[string]interface{}{
-							environmentAnnotation: "prod",
-						},
+					Package: intoto.PackageDescriptor{
+						Name:        packageName,
+						Registry:    packageRegistry,
+						Environment: packageEnv,
 					},
 					Properties: releaseProperties,
 				},
@@ -424,7 +307,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
 			policy:             policy,
@@ -450,7 +333,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
 			policy:             policy,
@@ -481,7 +364,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
 			policy:             policy,
@@ -494,7 +377,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			policy:             policy,
 			expected:           errs.ErrorInvalidField,
@@ -520,7 +403,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
 			policy:             policy,
@@ -533,7 +416,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests: intoto.DigestSet{
 				"sha256": "another",
@@ -563,7 +446,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
 			policy:             policy,
@@ -590,7 +473,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests: intoto.DigestSet{
 				"sha256":    "another",
@@ -604,7 +487,7 @@ func Test_Verify(t *testing.T) {
 			att:                att,
 			creatorID:          creatorID,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
@@ -622,7 +505,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests: intoto.DigestSet{
 				"sha256":    "another",
@@ -638,7 +521,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests: intoto.DigestSet{
 				"other":  "another",
@@ -654,7 +537,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests: intoto.DigestSet{
 				"gitCommit": "another_com",
@@ -668,7 +551,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			policy:             policy,
 			expected:           errs.ErrorInvalidField,
@@ -680,7 +563,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         common.AsPointer(1),
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
 			policy:             policy,
@@ -693,7 +576,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: "dev",
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
 			policy:             policy,
@@ -707,11 +590,10 @@ func Test_Verify(t *testing.T) {
 					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
-					Package: intoto.ResourceDescriptor{
-						URI: packageURI,
-						Annotations: map[string]interface{}{
-							versionAnnotation: "1.2.3",
-						},
+					Package: intoto.PackageDescriptor{
+						Name:     packageName,
+						Registry: packageRegistry,
+						Version:  packageVersion,
 					},
 					Properties: releaseProperties,
 				},
@@ -720,7 +602,7 @@ func Test_Verify(t *testing.T) {
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
 			policy:             policy,
@@ -730,7 +612,7 @@ func Test_Verify(t *testing.T) {
 			name:           "mismatch no env input",
 			att:            att,
 			creatorID:      creatorID,
-			packageURI:     packageURI,
+			packageName:    packageName,
 			packageVersion: packageVersion,
 			creatorVersion: creatorVersion,
 			buildLevel:     buildLevel,
@@ -739,15 +621,16 @@ func Test_Verify(t *testing.T) {
 			expected:       errs.ErrorMismatch,
 		},
 		{
-			name: "no env no version no annotations",
+			name: "no env no version",
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
 					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
-					Package: intoto.ResourceDescriptor{
-						URI: packageURI,
+					Package: intoto.PackageDescriptor{
+						Name:     packageName,
+						Registry: packageRegistry,
 					},
 					Properties: releaseProperties,
 				},
@@ -755,7 +638,7 @@ func Test_Verify(t *testing.T) {
 			creatorID:      creatorID,
 			creatorVersion: creatorVersion,
 			buildLevel:     buildLevel,
-			packageURI:     packageURI,
+			packageName:    packageName,
 			digests:        digests,
 			policy:         policy,
 		},
@@ -765,7 +648,7 @@ func Test_Verify(t *testing.T) {
 			creatorID:          creatorID,
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
@@ -793,7 +676,7 @@ func Test_Verify(t *testing.T) {
 			creatorID:          creatorID,
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
@@ -821,7 +704,7 @@ func Test_Verify(t *testing.T) {
 			creatorID:          creatorID,
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
@@ -849,7 +732,7 @@ func Test_Verify(t *testing.T) {
 			creatorID:          creatorID,
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
@@ -879,15 +762,13 @@ func Test_Verify(t *testing.T) {
 					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
-					Package: intoto.ResourceDescriptor{
-						URI: packageURI,
-					},
+					Package:      packageDesc,
 				},
 			},
 			creatorID:          creatorID,
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
@@ -902,9 +783,7 @@ func Test_Verify(t *testing.T) {
 					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
-					Package: intoto.ResourceDescriptor{
-						URI: packageURI,
-					},
+					Package:      packageDesc,
 					Properties: map[string]interface{}{
 						buildLevelProperty + "a": 3,
 					},
@@ -913,7 +792,7 @@ func Test_Verify(t *testing.T) {
 			creatorID:          creatorID,
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
@@ -926,7 +805,7 @@ func Test_Verify(t *testing.T) {
 			att:                att,
 			creatorID:          creatorID,
 			buildLevel:         common.AsPointer(3),
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
@@ -937,7 +816,7 @@ func Test_Verify(t *testing.T) {
 			att:                att,
 			creatorID:          creatorID,
 			creatorVersion:     creatorVersion,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
@@ -949,7 +828,7 @@ func Test_Verify(t *testing.T) {
 			creatorID:      creatorID,
 			creatorVersion: creatorVersion,
 			buildLevel:     buildLevel,
-			packageURI:     packageURI,
+			packageName:    packageName,
 			packageVersion: packageVersion,
 			digests:        digests,
 			policy:         policy,
@@ -961,7 +840,7 @@ func Test_Verify(t *testing.T) {
 			creatorID:          creatorID,
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			policy:             policy,
@@ -972,7 +851,7 @@ func Test_Verify(t *testing.T) {
 			att:                att,
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
@@ -985,7 +864,7 @@ func Test_Verify(t *testing.T) {
 			creatorID:          creatorID,
 			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
-			packageURI:         packageURI,
+			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
@@ -1001,7 +880,7 @@ func Test_Verify(t *testing.T) {
 				t.Fatalf("failed to marshal: %v", err)
 			}
 			reader := io.NopCloser(bytes.NewReader(content))
-			verification, err := VerificationNew(reader)
+			verification, err := VerificationNew(reader, newPackageHelper(tt.att.Predicate.Package.Registry))
 			if err != nil {
 				t.Fatalf("failed to creation verification: %v", err)
 			}
@@ -1028,7 +907,7 @@ func Test_Verify(t *testing.T) {
 			options = append(options, IsPackageEnvironment(tt.packageEnvironment))
 
 			// Verify.
-			err = verification.Verify(tt.creatorID, tt.digests, tt.packageURI, options...)
+			err = verification.Verify(tt.creatorID, tt.digests, tt.packageName, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -1042,7 +921,7 @@ func Test_Verify(t *testing.T) {
 					options = append(options, IsSlsaBuildLevelOrAbove(i))
 					i++
 				}
-				err = verification.Verify(tt.creatorID, tt.digests, tt.packageURI, options...)
+				err = verification.Verify(tt.creatorID, tt.digests, tt.packageName, options...)
 				if diff := cmp.Diff(errs.ErrorMismatch, err, cmpopts.EquateErrors()); diff != "" {
 					t.Fatalf("unexpected err (-want +got): \n%s", diff)
 				}

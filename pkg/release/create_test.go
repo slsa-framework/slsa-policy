@@ -19,12 +19,11 @@ func Test_CreationNew(t *testing.T) {
 			"gitCommit": "another_value",
 		},
 	}
-	packageURI := "package_uri"
-	packageDesc := intoto.ResourceDescriptor{
-		URI: packageURI,
-		Annotations: map[string]interface{}{
-			versionAnnotation: "package_version",
-		},
+	packageName := "package_name"
+	packageRegistry := "package_registry"
+	packageDesc := intoto.PackageDescriptor{
+		Name:     packageName,
+		Registry: packageRegistry,
 	}
 	policy := map[string]intoto.Policy{
 		"org": intoto.Policy{
@@ -48,7 +47,7 @@ func Test_CreationNew(t *testing.T) {
 		subject        intoto.Subject
 		creatorVersion string
 		buildLevel     *int
-		packageDesc    intoto.ResourceDescriptor
+		packageDesc    intoto.PackageDescriptor
 		policy         map[string]intoto.Policy
 		expected       error
 	}{
@@ -119,11 +118,10 @@ func Test_CreationNew(t *testing.T) {
 		{
 			name:    "result with env",
 			subject: subject,
-			packageDesc: intoto.ResourceDescriptor{
-				URI: packageURI,
-				Annotations: map[string]interface{}{
-					environmentAnnotation: "prod",
-				},
+			packageDesc: intoto.PackageDescriptor{
+				Name:        packageName,
+				Registry:    packageRegistry,
+				Environment: "prod",
 			},
 		},
 		{
@@ -133,14 +131,9 @@ func Test_CreationNew(t *testing.T) {
 			policy:      policy,
 		},
 		{
-			name:    "result with all set",
-			subject: subject,
-			packageDesc: intoto.ResourceDescriptor{
-				URI: packageURI,
-				Annotations: map[string]interface{}{
-					environmentAnnotation: "prod",
-				},
-			},
+			name:           "result with all set",
+			subject:        subject,
+			packageDesc:    packageDesc,
 			buildLevel:     common.AsPointer(4),
 			creatorVersion: creatorVersion,
 			policy:         policy,
@@ -212,23 +205,23 @@ func Test_CreationNew(t *testing.T) {
 func Test_EnterSafeMode(t *testing.T) {
 	t.Parallel()
 	subject := intoto.Subject{
-		URI: "the_uri",
 		Digests: intoto.DigestSet{
 			"sha256":    "some_value",
 			"gitCommit": "another_value",
 		},
 	}
-	packageURI := "package_uri"
-	packageDesc := intoto.ResourceDescriptor{
-		URI: packageURI,
-		Annotations: map[string]interface{}{
-			versionAnnotation: "package_version",
-		},
+	packageName := "package_name"
+	packageRegistry := "package_registry"
+	packageVersion := "v1.2.3"
+	packageDesc := intoto.PackageDescriptor{
+		Name:     packageName,
+		Registry: packageRegistry,
+		Version:  packageVersion,
 	}
 	tests := []struct {
 		name        string
 		subject     intoto.Subject
-		packageDesc intoto.ResourceDescriptor
+		packageDesc intoto.PackageDescriptor
 		options     []AttestationCreationOption
 		expected    error
 	}{

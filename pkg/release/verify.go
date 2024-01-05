@@ -12,11 +12,12 @@ import (
 
 type Verification struct {
 	attestation
+	packageHelper PackageHelper
 }
 
 type AttestationVerificationOption func(*Verification) error
 
-func VerificationNew(reader io.ReadCloser) (*Verification, error) {
+func VerificationNew(reader io.ReadCloser, packageHelper PackageHelper) (*Verification, error) {
 	content, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read: %w", err)
@@ -26,12 +27,16 @@ func VerificationNew(reader io.ReadCloser) (*Verification, error) {
 	if err := json.Unmarshal(content, &att); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal: %w", err)
 	}
+	if packageHelper == nil {
+		return nil, fmt.Errorf("%w: package hepler is nil", errs.ErrorInvalidInput)
+	}
 	return &Verification{
-		attestation: att,
+		attestation:   att,
+		packageHelper: packageHelper,
 	}, nil
 }
 
-func (v *Verification) Verify(creatorID string, digests intoto.DigestSet, packageURI string, options ...AttestationVerificationOption) error {
+func (v *Verification) Verify(creatorID string, digests intoto.DigestSet, policyPackageName string, options ...AttestationVerificationOption) error {
 	// Statement type.
 	if v.attestation.Header.Type != statementType {
 		return fmt.Errorf("%w: attestation type (%q) != intoto type (%q)", errs.ErrorMismatch,
@@ -55,7 +60,7 @@ func (v *Verification) Verify(creatorID string, digests intoto.DigestSet, packag
 	}
 
 	// Package.
-	if err := v.verifyPackage(packageURI); err != nil {
+	if err := v.verifyPackage(policyPackageName); err != nil {
 		return err
 	}
 	// TODO: verify time. Use default margin, but allow passing
@@ -82,34 +87,23 @@ func (v *Verification) verifyCreatorID(creatorID string) error {
 	return nil
 }
 
-func (v *Verification) verifyPackage(packageURI string) error {
-	if packageURI == "" {
+func (v *Verification) verifyPackage(policyPackageName string) error {
+	if policyPackageName == "" {
 		return fmt.Errorf("%w: empty URI", errs.ErrorInvalidField)
 	}
 	if err := v.attestation.Predicate.Package.Validate(); err != nil {
-		return fmt.Errorf("input package: %w", err)
-	}
-	if packageURI != v.attestation.Predicate.Package.URI {
-		return fmt.Errorf("%w: package URI (%q) != attestation package URI (%q)", errs.ErrorMismatch,
-			packageURI, v.attestation.Predicate.Package.URI)
-	}
-	return nil
-}
-
-func (v *Verification) verifyAnnotation(anno map[string]interface{}, name string) error {
-	inputValue, err := intoto.GetAnnotationValue(anno, name)
-	if err != nil {
 		return err
 	}
-	attValue, err := intoto.GetAnnotationValue(v.attestation.Predicate.Package.Annotations, name)
+
+	packageDesc, err := v.packageHelper.PackageDescriptor(policyPackageName)
 	if err != nil {
-		return err
-	}
-	if inputValue != attValue {
-		return fmt.Errorf("%w: package annotation (%q: %q) != attestation package annotation (%q: %q)", errs.ErrorMismatch,
-			name, inputValue, name, attValue)
+		return fmt.Errorf("%w: failed to create package descriptor: %v", errs.ErrorInternal, err.Error())
 	}
 
+	if packageDesc.Name != v.attestation.Predicate.Package.Name || packageDesc.Registry != v.attestation.Predicate.Package.Registry {
+		return fmt.Errorf("%w: package (%q) != attestation package (%q)", errs.ErrorMismatch,
+			policyPackageName, v.attestation.Predicate.Package.Name+"/"+v.attestation.Predicate.Package.Registry)
+	}
 	return nil
 }
 
@@ -141,13 +135,9 @@ func IsPackageEnvironment(env string) AttestationVerificationOption {
 }
 
 func (v *Verification) isPackageEnvironment(env string) error {
-	attEnv, err := intoto.GetAnnotationValue(v.attestation.Predicate.Package.Annotations, environmentAnnotation)
-	if err != nil {
-		return err
-	}
-	if attEnv != env {
+	if v.attestation.Predicate.Package.Environment != env {
 		return fmt.Errorf("%w: environment (%q) != attestation environment (%q)", errs.ErrorMismatch,
-			env, attEnv)
+			env, v.attestation.Predicate.Package.Environment)
 	}
 	return nil
 }
@@ -159,13 +149,9 @@ func IsPackageVersion(version string) AttestationVerificationOption {
 }
 
 func (v *Verification) isPackageVersion(version string) error {
-	attVersion, err := intoto.GetAnnotationValue(v.attestation.Predicate.Package.Annotations, versionAnnotation)
-	if err != nil {
-		return err
-	}
-	if attVersion != version {
+	if v.attestation.Predicate.Package.Version != version {
 		return fmt.Errorf("%w: version (%q) != attestation version (%q)", errs.ErrorMismatch,
-			version, attVersion)
+			version, v.attestation.Predicate.Package.Version)
 	}
 	return nil
 }

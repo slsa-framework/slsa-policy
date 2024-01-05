@@ -3,7 +3,6 @@ package release
 import (
 	"fmt"
 	"io"
-	"path"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
 	"github.com/laurentsimon/slsa-policy/pkg/release/internal"
@@ -14,8 +13,8 @@ import (
 
 // AttestationVerifier defines an interface to verify attestations.
 type AttestationVerifier interface {
-	// Build attestations.
-	VerifyBuildAttestation(digests intoto.DigestSet, packageName, builderID, sourceURI string) error
+	// Build attestation verification.
+	VerifyBuildAttestation(digests intoto.DigestSet, policyPackageName, builderID, sourceURI string) error
 }
 
 // BuildVerificationOption defines the configuration to verify
@@ -31,27 +30,9 @@ type RequestOption struct {
 
 // Policy defines the release policy.
 type Policy struct {
-	policy    *internal.Policy
-	validator options.PolicyValidator
-}
-
-// ValidationPackage defines the structure holding
-// package information to be validated.
-type ValidationPackage struct {
-	Name        string
-	Environment ValidationEnvironment
-}
-
-// ValidationEnvironment defines the structure containing
-// the policy environment to validate.
-type ValidationEnvironment struct {
-	AnyOf []string
-}
-
-// PolicyValidator defines an interface to validate
-// certain fields in the policy.
-type PolicyValidator interface {
-	ValidatePackage(pkg ValidationPackage) error
+	policy        *internal.Policy
+	validator     options.PolicyValidator
+	packageHelper PackageHelper
 }
 
 // PolicyOption defines a policy option.
@@ -59,12 +40,12 @@ type PolicyOption func(*Policy) error
 
 // PolicyEvaluationResult defines the result of policy evaluation.
 type PolicyEvaluationResult struct {
-	level           int
-	err             error
-	packageName     string
-	packageRegistry string
-	digests         intoto.DigestSet
-	environment     *string
+	level       int
+	err         error
+	packageDesc intoto.PackageDescriptor
+	digests     intoto.DigestSet
+	environment *string
+	evaluated   bool
 }
 
 // This is a helpder class to forward calls between the internal
@@ -73,14 +54,14 @@ type internal_verifier struct {
 	buildOpts BuildVerificationOption
 }
 
-func (i *internal_verifier) VerifyBuildAttestation(digests intoto.DigestSet, packageName, builderID, sourceURI string) error {
+func (i *internal_verifier) VerifyBuildAttestation(digests intoto.DigestSet, policyPackageName, builderID, sourceURI string) error {
 	if i.buildOpts.Verifier == nil {
 		return fmt.Errorf("%w: verifier is nil", errs.ErrorInvalidInput)
 	}
-	return i.buildOpts.Verifier.VerifyBuildAttestation(digests, packageName, builderID, sourceURI)
+	return i.buildOpts.Verifier.VerifyBuildAttestation(digests, policyPackageName, builderID, sourceURI)
 }
 
-// This is a helper class to forward calls between internal
+// This is a class to forward calls between internal
 // classes and the caller for the PolicyValidator interface.
 type internal_validator struct {
 	validator PolicyValidator
@@ -100,7 +81,7 @@ func (i *internal_validator) ValidatePackage(pkg options.ValidationPackage) erro
 }
 
 // New creates a release policy.
-func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator, opts ...PolicyOption) (*Policy, error) {
+func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator, packageHelper PackageHelper, opts ...PolicyOption) (*Policy, error) {
 	// Initialize a policy with caller options.
 	p := new(Policy)
 	for _, option := range opts {
@@ -114,6 +95,10 @@ func PolicyNew(org io.ReadCloser, projects iterator.ReadCloserIterator, opts ...
 		return nil, err
 	}
 	p.policy = policy
+	if packageHelper == nil {
+		return nil, fmt.Errorf("%w: package hepler is nil", errs.ErrorInvalidInput)
+	}
+	p.packageHelper = packageHelper
 	return p, nil
 }
 
@@ -134,9 +119,9 @@ func (p *Policy) setValidator(validator PolicyValidator) error {
 }
 
 // Evaluate evalues the release policy.
-func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string, reqOpts RequestOption,
+func (p *Policy) Evaluate(digests intoto.DigestSet, policyPackageName string, reqOpts RequestOption,
 	buildOpts BuildVerificationOption) PolicyEvaluationResult {
-	level, err := p.policy.Evaluate(digests, packageName,
+	level, err := p.policy.Evaluate(digests, policyPackageName,
 		options.Request{
 			Environment: reqOpts.Environment,
 		},
@@ -146,12 +131,28 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string, reqOpts 
 			},
 		},
 	)
+	if err != nil {
+		return PolicyEvaluationResult{
+			err:       err,
+			evaluated: true,
+		}
+	}
+
+	// Translate the policy package names to a package descriptor.
+	packageDesc, err := p.packageHelper.PackageDescriptor(policyPackageName)
+	if err != nil {
+		return PolicyEvaluationResult{
+			err:       err,
+			evaluated: true,
+		}
+	}
 	return PolicyEvaluationResult{
 		level:       level,
 		err:         err,
-		packageName: packageName,
+		packageDesc: packageDesc,
 		digests:     digests,
 		environment: reqOpts.Environment,
+		evaluated:   true,
 	}
 }
 
@@ -166,19 +167,9 @@ func (r PolicyEvaluationResult) AttestationNew(creatorID string, options ...Atte
 	subject := intoto.Subject{
 		Digests: r.digests,
 	}
-	uri := r.packageName
-	if r.packageRegistry != "" {
-		uri = path.Join(r.packageRegistry, r.packageName)
-	}
-	packageDesc := intoto.ResourceDescriptor{
-		URI: uri,
-		// Version.
-	}
 	// Set environment if not empty.
 	if r.environment != nil {
-		packageDesc.Annotations = map[string]interface{}{
-			environmentAnnotation: *r.environment,
-		}
+		r.packageDesc.Environment = *r.environment
 	}
 	// Create the options.
 	opts := []AttestationCreationOption{
@@ -189,7 +180,7 @@ func (r PolicyEvaluationResult) AttestationNew(creatorID string, options ...Atte
 	opts = append(opts, EnterSafeMode())
 	// Add caller options.
 	opts = append(opts, options...)
-	att, err := CreationNew(creatorID, subject, packageDesc, opts...)
+	att, err := CreationNew(creatorID, subject, r.packageDesc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -201,13 +192,13 @@ func (r PolicyEvaluationResult) Error() error {
 }
 
 func (r PolicyEvaluationResult) isValid() error {
-	if r.packageName == "" {
-		return fmt.Errorf("%w: empty package URI", errs.ErrorInternal)
+	if !r.evaluated {
+		return fmt.Errorf("%w: evaluation result not ready", errs.ErrorInternal)
 	}
 	return nil
 }
 
-// API required by cosign.
+// Utility function for cosign integration.
 func PredicateType() string {
 	return predicateType
 }

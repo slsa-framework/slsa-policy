@@ -3,7 +3,6 @@ package release
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"testing"
 
@@ -26,10 +25,15 @@ func Test_AttestationNew(t *testing.T) {
 		Digests: digests,
 	}
 	level := 2
-	packageName := "package_uri"
+	packageName := "package_name"
+	packageRegistry := "package_registry"
+	packageDesc := intoto.PackageDescriptor{
+		Name:     packageName,
+		Registry: packageRegistry,
+	}
 	environment := common.AsPointer("prod")
 	creatorID := "creator_id"
-	creatorVersion := "creato_version"
+	creatorVersion := "creator_version"
 	policy := map[string]intoto.Policy{
 		"org": intoto.Policy{
 			URI: "policy1_uri",
@@ -61,8 +65,9 @@ func Test_AttestationNew(t *testing.T) {
 			name:      "all fields set",
 			creatorID: creatorID,
 			result: PolicyEvaluationResult{
+				evaluated:   true,
 				level:       level,
-				packageName: packageName,
+				packageDesc: packageDesc,
 				digests:     digests,
 				environment: environment,
 			},
@@ -79,8 +84,9 @@ func Test_AttestationNew(t *testing.T) {
 			name:      "no env",
 			creatorID: creatorID,
 			result: PolicyEvaluationResult{
+				evaluated:   true,
 				level:       level,
-				packageName: packageName,
+				packageDesc: packageDesc,
 				digests:     digests,
 			},
 			options: []AttestationCreationOption{
@@ -96,8 +102,9 @@ func Test_AttestationNew(t *testing.T) {
 			name:      "no creator version",
 			creatorID: creatorID,
 			result: PolicyEvaluationResult{
+				evaluated:   true,
 				level:       level,
-				packageName: packageName,
+				packageDesc: packageDesc,
 				digests:     digests,
 				environment: environment,
 			},
@@ -112,8 +119,9 @@ func Test_AttestationNew(t *testing.T) {
 			name:      "no policy",
 			creatorID: creatorID,
 			result: PolicyEvaluationResult{
+				evaluated:   true,
 				level:       level,
-				packageName: packageName,
+				packageDesc: packageDesc,
 				digests:     digests,
 				environment: environment,
 			},
@@ -128,7 +136,8 @@ func Test_AttestationNew(t *testing.T) {
 			name:      "error result",
 			creatorID: creatorID,
 			result: PolicyEvaluationResult{
-				err: errs.ErrorMismatch,
+				evaluated: true,
+				err:       errs.ErrorMismatch,
 			},
 			expected: errs.ErrorInternal,
 		},
@@ -161,7 +170,13 @@ func Test_AttestationNew(t *testing.T) {
 			if diff := cmp.Diff([]intoto.Subject{tt.subject}, att.attestation.Header.Subjects); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
-			if diff := cmp.Diff(tt.result.packageName, att.attestation.Predicate.Package.URI); diff != "" {
+			// TODO: need translation.
+			pkgHelper := newPackageHelper(tt.result.packageDesc.Registry)
+			packageDesc, err := pkgHelper.PackageDescriptor(tt.result.packageDesc.Name)
+			if err != nil {
+				t.Fatalf("failed to create package descriptor: %v\n", err)
+			}
+			if diff := cmp.Diff(tt.result.packageDesc, packageDesc); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			properties := att.attestation.Predicate.Properties
@@ -180,10 +195,7 @@ func Test_AttestationNew(t *testing.T) {
 			if tt.result.environment != nil {
 				expectedEnv = *tt.result.environment
 			}
-			env, err := intoto.GetAnnotationValue(att.attestation.Predicate.Package.Annotations, environmentAnnotation)
-			if err != nil {
-				t.Fatalf("failed to retrieve annotation: %v\n", err)
-			}
+			env := att.attestation.Predicate.Package.Environment
 			if diff := cmp.Diff(expectedEnv, env); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -197,30 +209,15 @@ func Test_AttestationNew(t *testing.T) {
 	}
 }
 
-func newPolicyValidator(pass bool) PolicyValidator {
-	return &policyValidator{pass: pass}
-}
-
-type policyValidator struct {
-	pass bool
-}
-
-func (v *policyValidator) ValidatePackage(pkg ValidationPackage) error {
-	if v.pass {
-		return nil
-	}
-	return fmt.Errorf("failed to validate package: pass (%v)", v.pass)
-}
-
 func Test_e2e(t *testing.T) {
 	t.Parallel()
 	digests := intoto.DigestSet{
 		"sha256":    "some_value",
 		"gitCommit": "another_value",
 	}
-
-	packageName := "package_uri"
-	packageName1 := "package_uri1"
+	packageRegistry := "registry"
+	packageName := "package_name"
+	packageName1 := "package_name1"
 	packageEnvironment := common.AsPointer("prod")
 	packageVersion := "v1.2.3"
 	creatorVersion := "v1.2.3"
@@ -539,22 +536,23 @@ func Test_e2e(t *testing.T) {
 				policies[i] = content
 			}
 			projectsReader := common.NewBytesIterator(policies)
+			packageHelper := newPackageHelper(packageRegistry)
 			// Passing validator.
-			pol, err := PolicyNew(orgReader, projectsReader, SetValidator(newPolicyValidator(true)))
+			pol, err := PolicyNew(orgReader, projectsReader, packageHelper, SetValidator(newPolicyValidator(true)))
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)
 			}
 			// Failing validator.
 			orgReader = io.NopCloser(bytes.NewReader(orgContent))
 			projectsReader = common.NewBytesIterator(policies)
-			pol, err = PolicyNew(orgReader, projectsReader, SetValidator(newPolicyValidator(false)))
+			pol, err = PolicyNew(orgReader, projectsReader, packageHelper, SetValidator(newPolicyValidator(false)))
 			if diff := cmp.Diff(errs.ErrorInvalidField, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			// No validator.
 			orgReader = io.NopCloser(bytes.NewReader(orgContent))
 			projectsReader = common.NewBytesIterator(policies)
-			pol, err = PolicyNew(orgReader, projectsReader)
+			pol, err = PolicyNew(orgReader, projectsReader, packageHelper)
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)
 			}
@@ -584,7 +582,7 @@ func Test_e2e(t *testing.T) {
 				t.Fatalf("failed to get attestation bytes: %v\n", err)
 			}
 			verifReader := io.NopCloser(bytes.NewReader(attBytes))
-			verification, err := VerificationNew(verifReader)
+			verification, err := VerificationNew(verifReader, packageHelper)
 			if err != nil {
 				t.Fatalf("failed to creation verification: %v", err)
 			}

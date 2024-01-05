@@ -22,7 +22,7 @@ type AttestationVerifierReleaseOptions struct {
 
 // AttestationVerifier defines an interface to verify attestations.
 type AttestationVerifier interface {
-	// Release attestations. The string returned contains the value of the environment, if present.
+	// Release attestation verification. The string returned contains the value of the environment, if present.
 	VerifyReleaseAttestation(digests intoto.DigestSet, packageURI string, environment []string, opts AttestationVerifierReleaseOptions) (*string, error)
 }
 
@@ -40,6 +40,13 @@ type Policy struct {
 
 // PolicyOption defines a policy option.
 type PolicyOption func(*Policy) error
+
+// PolicyEvaluationResult defines the result of policy evaluation.
+type PolicyEvaluationResult struct {
+	err       error
+	digests   intoto.DigestSet
+	principal *project.Principal
+}
 
 // ValidationPackage defines the structure holding
 // package information to be validated.
@@ -60,13 +67,6 @@ type PolicyValidator interface {
 	ValidatePackage(pkg ValidationPackage) error
 }
 
-// PolicyEvaluationResult defines the result of policy evaluation.
-type PolicyEvaluationResult struct {
-	err       error
-	digests   intoto.DigestSet
-	principal *project.Principal
-}
-
 // This is a helpder class to forward calls between the internal
 // classes and the caller.
 type internal_verifier struct {
@@ -85,7 +85,7 @@ func (i *internal_verifier) VerifyReleaseAttestation(digests intoto.DigestSet, p
 	return i.releaseOpts.Verifier.VerifyReleaseAttestation(digests, packageURI, environment, opts)
 }
 
-// This is a helper class to forward calls between internal
+// This is a class to forward calls between internal
 // classes and the caller for the PolicyValidator interface.
 type internal_validator struct {
 	validator PolicyValidator
@@ -139,8 +139,8 @@ func (p *Policy) setValidator(validator PolicyValidator) error {
 }
 
 // Evaluate evalues the deployment policy.
-func (p *Policy) Evaluate(digests intoto.DigestSet, packageURI string, policyID string, releaseOpts ReleaseVerificationOption) PolicyEvaluationResult {
-	principal, err := p.policy.Evaluate(digests, packageURI, policyID,
+func (p *Policy) Evaluate(digests intoto.DigestSet, policyPackageName string, policyID string, releaseOpts ReleaseVerificationOption) PolicyEvaluationResult {
+	principal, err := p.policy.Evaluate(digests, policyPackageName, policyID,
 		options.ReleaseVerification{
 			Verifier: &internal_verifier{
 				releaseOpts: releaseOpts,
@@ -193,4 +193,9 @@ func (r PolicyEvaluationResult) isValid() error {
 		return fmt.Errorf("%w: empty principal URI", errs.ErrorInternal)
 	}
 	return nil
+}
+
+// Utility function for cosign integration.
+func PredicateType() string {
+	return predicateType
 }

@@ -17,7 +17,7 @@ type Creation struct {
 type AttestationCreationOption func(*Creation) error
 
 // NOTE: See https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis.
-func CreationNew(creatorID string, subject intoto.Subject, packageDesc intoto.ResourceDescriptor,
+func CreationNew(creatorID string, subject intoto.Subject, packageDesc intoto.PackageDescriptor,
 	options ...AttestationCreationOption) (*Creation, error) {
 	if err := subject.Validate(); err != nil {
 		return nil, err
@@ -102,10 +102,7 @@ func SetPackageVersion(version string) AttestationCreationOption {
 }
 
 func (a *Creation) setPackageVersion(version string) error {
-	if a.attestation.Predicate.Package.Annotations == nil {
-		a.attestation.Predicate.Package.Annotations = make(map[string]interface{})
-	}
-	a.attestation.Predicate.Package.Annotations[versionAnnotation] = version
+	a.attestation.Predicate.Package.Version = version
 	return nil
 }
 

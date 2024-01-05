@@ -47,19 +47,19 @@ func (iter *bytesIterator) Error() error {
 
 // Attestation verifier.
 func NewAttestationVerifier(digests intoto.DigestSet, packageName, builderID, sourceName string) options.AttestationVerifier {
-	return &attesationVerifier{packageName: packageName,
+	return &attestationVerifier{packageName: packageName,
 		builderID: builderID, sourceName: sourceName,
 		digests: digests}
 }
 
-type attesationVerifier struct {
+type attestationVerifier struct {
 	packageName string
 	builderID   string
 	sourceName  string
 	digests     intoto.DigestSet
 }
 
-func (v *attesationVerifier) VerifyBuildAttestation(digests intoto.DigestSet, packageName, builderID, sourceName string) error {
+func (v *attestationVerifier) VerifyBuildAttestation(digests intoto.DigestSet, packageName, builderID, sourceName string) error {
 	if packageName == v.packageName && builderID == v.builderID && sourceName == v.sourceName && mapEq(digests, v.digests) {
 		return nil
 	}

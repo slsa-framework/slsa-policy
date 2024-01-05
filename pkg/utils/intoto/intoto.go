@@ -9,7 +9,10 @@ import (
 
 type DigestSet map[string]string
 
-type Subject ResourceDescriptor
+type Subject struct {
+	Name    string    `json:"name,omitempty"`
+	Digests DigestSet `json:"digest,omitempty"`
+}
 
 type Header struct {
 	Type          string    `json:"_type"`
@@ -28,42 +31,33 @@ type Policy struct {
 	Digests DigestSet `json:"digest,omitempty"`
 }
 
-type ResourceDescriptor struct {
-	// A URI used to identify the resource or artifact globally. This field is
-	// REQUIRED unless either digest or content is set.
-	URI string `json:"uri,omitempty"`
-
-	// A set of cryptographic digests of the contents of the resource or
-	// artifact. This field is REQUIRED unless either uri or content is set.
-	Digests DigestSet `json:"digest,omitempty"`
-
-	// Machine-readable identifier for distinguishing between descriptors.
+type PackageDescriptor struct {
+	// Package name.
 	Name string `json:"name,omitempty"`
-
-	// The location of the described resource or artifact, if different from the
-	// uri.
-	DownloadLocation string `json:"downloadLocation,omitempty"`
-
-	// The MIME Type (i.e., media type) of the described resource or artifact.
-	MediaType string `json:"mediaType,omitempty"`
-
-	// The contents of the resource or artifact. This field is REQUIRED unless
-	// either uri or digest is set.
-	Content []byte `json:"content,omitempty"`
-
-	// This field MAY be used to provide additional information or metadata
-	// about the resource or artifact that may be useful to the consumer when
-	// evaluating the attestation against a policy.
-	Annotations map[string]interface{} `json:"annotations,omitempty"`
+	// Package registry.
+	Registry string `json:"registry,omitempty"`
+	// Package version.
+	Version string `json:"version,omitempty"`
+	// Package architectures.
+	Arch string `json:"arch,omitempty"`
+	// The package target distro.
+	Distro string `json:"distro,omitempty"`
+	// Package environment (debug, prod, etc).
+	Environment string `json:"environment,omitempty"`
+	// NOTE: Can add any additional fields.
+	// We may define this structure as simmply a map[string]string.
 }
 
 func (s Subject) Validate() error {
 	return s.Digests.Validate()
 }
 
-func (r ResourceDescriptor) Validate() error {
-	if r.URI == "" {
-		return fmt.Errorf("%w: resource URI is empty", errs.ErrorInvalidField)
+func (r PackageDescriptor) Validate() error {
+	if r.Name == "" {
+		return fmt.Errorf("%w: package name is empty", errs.ErrorInvalidField)
+	}
+	if r.Registry == "" {
+		return fmt.Errorf("%w: package registry is empty", errs.ErrorInvalidField)
 	}
 	return nil
 }

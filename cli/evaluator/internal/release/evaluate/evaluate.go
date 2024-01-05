@@ -52,7 +52,7 @@ func Run(cli string, args []string) error {
 	// Create a policy.
 	projectsReader := files_reader.FromPaths(projectsPath)
 	organizationReader, err := os.Open(orgPath)
-	pol, err := release.PolicyNew(organizationReader, projectsReader, release.SetValidator(&validate.PolicyValidator{}))
+	pol, err := release.PolicyNew(organizationReader, projectsReader, &utils.PackageHelper{}, release.SetValidator(&validate.PolicyValidator{}))
 	if err != nil {
 		return fmt.Errorf("failed to create policy: %w", err)
 	}

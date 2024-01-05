@@ -10,7 +10,7 @@ type predicate struct {
 	Policy       map[string]intoto.Policy `json:"policy,omitempty"`
 	ContextType  string                   `json:"contextType"`
 	Context      interface{}              `json:"context,omitempty"`
-	// TODO: add inputs as a list of intoto.ResourceDescriptor, so that we can
+	// TODO: add inputs as a list of intoto.PackageDescriptor, so that we can
 	// indicate which attestations were used.
 }
 

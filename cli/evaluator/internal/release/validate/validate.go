@@ -41,7 +41,7 @@ func Run(cli string, args []string) error {
 	// Create a policy. This will validate the files.
 	projectsReader := files_reader.FromPaths(projectsPath)
 	organizationReader, err := os.Open(orgPath)
-	_, err = release.PolicyNew(organizationReader, projectsReader, release.SetValidator(&PolicyValidator{}))
+	_, err = release.PolicyNew(organizationReader, projectsReader, &utils.PackageHelper{}, release.SetValidator(&PolicyValidator{}))
 	if err != nil {
 		return err
 	}
