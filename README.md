@@ -11,7 +11,7 @@
 - [Setup](#setup)
   - [Release policy](#release-policy)
     - [Org setup](#org-setup)
-      - [Policy setup](#org-wide-policy-setup)
+      - [Policy setup](policy-setup)
       - [Pre-submit validation](#pre-submit-validation)
       - [Releaser workflow](#releaser-workflow)
     - [Team setup](#team-setup)
@@ -19,7 +19,7 @@
       - [Call the release evaluator](#call-the-release-evaluator)
   - [Deployment policy](#deployment-policy)
     - [Org setup](#org-setup-1)
-      - [Policy setup](#org-wide-policy-setup-1)
+      - [Policy setup](#policy-setup-1)
       - [Pre-submit validation](#pre-submit-validation-1)
       - [Releaser workflow](#releaser-workflow-1)
     - [Team setup](#team-setup-1)
@@ -75,17 +75,18 @@ slsa-policy is a Go library, a CLI and a set of GitHub Actions to implement sour
 
 ##### Policy setup
 
-1. Create a folder to store the release policies. See an example [here](https://github.com/laurentsimon/slsa-org/tree/main/policies/release/).
-1. Create a file with your trusted roots. See example [org.json](https://github.com/laurentsimon/slsa-org/tree/main/policies/release/org.json).
-1. Set up ACLs on `org.json` and on the folder:
-    1. Assign ownership via GitHub [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) for the folder and `org.json` file. Set the ownership to the administrators of the policy repository.
-    1. Enable [Repository Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository) (formerly Branch Protection) for the branch that stores the policies. The following settings can be written as one rule, or [split into multiple rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets#about-rule-layering). They can be specified at the repository level, or the [organization level](https://docs.github.com/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization).
+1. Set up ACLs on for your entire repository:
+    1. Assign ownership via GitHub [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) for entire repository. Set the ownership to the administrators of the policy repository. It's important the workflows are also protected by CODEOWNERS.
+    1. Enable [Repository Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository) (formerly Branch Protection) for all branches. The following settings can be written as one rule, or [split into multiple rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets#about-rule-layering). They can be specified at the repository level, or the [organization level](https://docs.github.com/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization).
         1. Require a pull request before merging. Under additional settings: Require approvals (select at least 1-2 as the required number of approvals before merging).
         1. Require status checks to pass before merging. Under additional settings: Require branches to be up to date before merging (may be problematic for busy repos).
         1. Block force pushes
         1. Restrict deletions
         1. Limit any bypass actors to those that are strictly necessary (i.e. break glass).
         1. Require review from [CODEOWNERS](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#additional-settings).
+1. Add team maintainers as contributors to the repository. Give them `write` access. Do *NOT* give them admin access. Note that you can  do that later when teams create their first policy, see [Policy definition](#policy-definition).
+1. Create a folder to store the release policies. See an example [here](https://github.com/laurentsimon/slsa-org/tree/main/policies/release/).
+1. Create a file with your trusted roots. See example [org.json](https://github.com/laurentsimon/slsa-org/tree/main/policies/release/org.json).
 
 ##### Pre-submit validation
 
@@ -117,13 +118,16 @@ go run . release evaluate org.json . "${image}" "${creator_id}" "${env}"
 
 ##### Policy definition
 
-Teams create their policy files under the folder defined by their organization in [Org-wide policy setup](#org-wide-policy-setup). See an example of a policy in [echo-server.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/release/echo-server.json).
+Teams create their policy files under the folder defined by their organization in [Policy setup](#policy-setup). See an example of a policy in [echo-server.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/release/echo-server.json).
 
-When a team creates a new file, the CODEOWNERS file should be udpated to give permissions to the team members who own the package. This allows teams to edit their policies without requiring reviews by the organization admnistrators.
+When a team creates a new file or folder:
+
+1. If not already done in [Org setup](#org-setup), add users as contributors and give them `write` access. Do *NOT* gives them admiin access.
+1. Update the CODEOWNERS file to give permissions to the team members who own the package. This allows teams to edit their policies without requiring reviews by the organization admnistrators.
 
 ##### Call the release evaluator
 
-When publishing containers, teams must call the release policy evaluator service [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml) from [Releaser workflow](#release-workflow). See an example [build-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/build-echo-server.yml).
+When publishing containers, teams must call the release policy evaluator service [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml) from [Release workflow](#release-workflow). See an example [build-echo-server.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/build-echo-server.yml).
 
 After the workflow has successfully run, you may manually verify the release attestation via:
 
@@ -144,17 +148,18 @@ $ cosign verify-attestation "{$image}" \
 
 ##### Policy setup
 
-1. Create a folder to store the release policies. See an example [here](https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/).
-1. Create a file with your trusted roots. See example [org.json](https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/org.json).
-1. Set up ACLs on the folder and the `org.json` file:
-    1. Assign ownership via GitHub [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) for the folder and `org.json` file. Set the ownership to the administrators of the policy repository.
-    1. Enable [Repository Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository) (formerly Branch Protection) for the branch that stores the policies. The following settings can be written as one rule, or [split into multiple rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets#about-rule-layering). They can be specified at the repository level, or the [organization level](https://docs.github.com/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization).
+1. Set up ACLs on for your entire repository:
+    1. Assign ownership via GitHub [CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) for entire repository. Set the ownership to the administrators of the policy repository. It's important the workflows are also protected by CODEOWNERS.
+    1. Enable [Repository Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository) (formerly Branch Protection) for all branches. The following settings can be written as one rule, or [split into multiple rules](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets#about-rule-layering). They can be specified at the repository level, or the [organization level](https://docs.github.com/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization).
         1. Require a pull request before merging. Under additional settings: Require approvals (select at least 1-2 as the required number of approvals before merging).
         1. Require status checks to pass before merging. Under additional settings: Require branches to be up to date before merging (may be problematic for busy repos).
         1. Block force pushes
         1. Restrict deletions
         1. Limit any bypass actors to those that are strictly necessary (i.e. break glass).
         1. Require review from [CODEOWNERS](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#additional-settings).
+1. Add team maintainers as contributors to the repository. Give them `write` access. Do *NOT* give them admin access. Note that you can  do that later when teams create their first policy, see [Policy definition](#policy-definition).
+1. Create a folder to store the deployment policies. See an example [here](https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/).
+1. Create a file with your trusted roots. See example [org.json](https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/org.json).
 
 ##### Pre-submit validation
 
@@ -186,9 +191,12 @@ go run . deployment evaluate org.json . "${image}" "${policy_id}" "${creator_id}
 
 ##### Policy definition
 
-Teams create their policy files under the folder defined by their organization in [Org-wide policy setup](#org-wide-policy-setup-1). See an example of a policy in [servers-prod.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/deployment/servers-prod.json).
+Teams create their policy files under the folder defined by their organization in [Policy setup](#policy-setup-1). See an example of a policy in [servers-prod.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/deployment/servers-prod.json).
 
-When a team creates a new file, the CODEOWNERS file should be udpated to give permissions to the team members who own the package. This allows teams to edit their policies without requiring reviews by the organization admnistrators.
+When a team creates a new file or folder:
+
+1. If not already done in [Org setup](#org-setup-1), add users as contributors and give them `write` access. Do *NOT* gives them admiin access.
+1. Update the CODEOWNERS file to give permissions to the team members who own the package. This allows teams to edit their policies without requiring reviews by the organization admnistrators.
 
 ##### Call the deployment evaluator
 

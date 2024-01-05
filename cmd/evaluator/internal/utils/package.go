@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
@@ -45,6 +46,17 @@ func ValidatePolicyPackage(policyPackageName string, environment []string) error
 	registry := ref.Context().RegistryStr()
 	if registry == "" {
 		return fmt.Errorf("%w: registry is empty for image (%q)", errorPackageName, policyPackageName)
+	}
+	// Verify the registry value is one of the allowed values.
+	// TODO(#14): Provide a configuration option in policy for allowed list.
+	// NOTE: It's really important to ensure that the registries are validated. If not,
+	// a team can "take over" a package policy by using a registry that resolves to the same
+	// host. Example: index.docker.io resolves to docker.io. 44.219.3.189 also "resolves" to docker.io.
+	// Recall that the package (name,registry) must be unique across all the team policy files.
+	allowed := []string{"docker.io", "gcr.io", "ghcr.io"}
+	if !slices.Contains(allowed, registry) {
+		return fmt.Errorf("%w: registry (%q) not in the allow list (%q)", errorPackageName,
+			policyPackageName, registry, allowed)
 	}
 	// Verify the identifier is not set.
 	if ref.Identifier() != "" {

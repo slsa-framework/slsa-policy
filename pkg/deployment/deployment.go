@@ -6,7 +6,6 @@ import (
 
 	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal"
 	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/options"
-	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/project"
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
@@ -40,32 +39,6 @@ type Policy struct {
 
 // PolicyOption defines a policy option.
 type PolicyOption func(*Policy) error
-
-// PolicyEvaluationResult defines the result of policy evaluation.
-type PolicyEvaluationResult struct {
-	err       error
-	digests   intoto.DigestSet
-	principal *project.Principal
-}
-
-// ValidationPackage defines the structure holding
-// package information to be validated.
-type ValidationPackage struct {
-	Name        string
-	Environment ValidationEnvironment
-}
-
-// ValidationEnvironment defines the structure containing
-// the policy environment to validate.
-type ValidationEnvironment struct {
-	AnyOf []string
-}
-
-// PolicyValidator defines an interface to validate
-// certain fields in the policy.
-type PolicyValidator interface {
-	ValidatePackage(pkg ValidationPackage) error
-}
 
 // This is a helpder class to forward calls between the internal
 // classes and the caller.
@@ -152,47 +125,6 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, policyPackageName string, po
 		digests:   digests,
 		principal: principal,
 	}
-}
-
-// Attestation creates a deployment attestation.
-func (r PolicyEvaluationResult) AttestationNew(creatorID string, options ...AttestationCreationOption) (*Creation, error) {
-	if r.Error() != nil {
-		return nil, fmt.Errorf("%w: evaluation failed. Cannot create attestation", errs.ErrorInternal)
-	}
-	if err := r.isValid(); err != nil {
-		return nil, err
-	}
-	subject := intoto.Subject{
-		Digests: r.digests,
-	}
-	// Create the options.
-	opts := []AttestationCreationOption{}
-	// Enter safe mode.
-	opts = append(opts, EnterSafeMode())
-	// Add caller options.
-	opts = append(opts, options...)
-	context := map[string]string{
-		contextPrincipal: r.principal.URI,
-	}
-	att, err := CreationNew(creatorID, subject, contextTypePrincipal, context, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return att, err
-}
-
-func (r PolicyEvaluationResult) Error() error {
-	return r.err
-}
-
-func (r PolicyEvaluationResult) isValid() error {
-	if r.principal == nil {
-		return fmt.Errorf("%w: nil principal", errs.ErrorInternal)
-	}
-	if r.principal.URI == "" {
-		return fmt.Errorf("%w: empty principal URI", errs.ErrorInternal)
-	}
-	return nil
 }
 
 // Utility function for cosign integration.
