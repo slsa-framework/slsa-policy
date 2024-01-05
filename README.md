@@ -61,10 +61,10 @@ metadata.
 
 ### What is slsa-policy?
 
-slsa-policy is a Go library, a CLI and a set of GitHub Actions to implement source-to-deployment policies across an organization. The policy provides the fllowing guarantees:
+slsa-policy is a Go library, a CLI and a set of GitHub Actions to implement source-to-deployment policies across an organization. The policy provides the following guarantees:
 
 1. Containers (builds) are protected against tampering across the SDLC
-2. Containers (builds) are bounds to a set of privileges, the same way that OS processes are restricted to a set of running privilages.In cloud environments,
+2. Containers (builds) are bounds to a set of privileges, the same way that OS processes are restricted to a set of running privilages. In cloud environments,
   permissions are defined via IAM and are associated with Service Accounts (SAs) by the policy. For more details on the design, see [Technical design](#technical-design).
 
 ## Setup
