@@ -82,7 +82,7 @@ func Run(cli string, args []string) error {
 	}
 	attBytes, err := att.ToBytes()
 	if err != nil {
-		return fmt.Errorf("failed to get attestation bytes: %v\n", err)
+		return fmt.Errorf("failed to get attestation bytes: %w\n", err)
 	}
 	fmt.Println(string(attBytes))
 
