@@ -107,11 +107,9 @@ In the workflow above, the CLI is called as follows:
 
 ```bash
 cd policies/release
-# This expands to https://github.com/laurentsimon/slsa-org/.github/workflows/image-releaser.yml@refs/heads/main
-creator_id="https://github.com/${{ needs.detect-env.outputs.repository }}/.github/workflows/image-releaser.yml@${{ needs.detect-env.outputs.ref }}"
 # This is passed by the caller, e.g. dev or prod.
 env="${{ inputs.environment }}"
-go run . release evaluate org.json . "${image}" "${creator_id}" "${env}"
+go run . release evaluate org.json . "${image}" "${env}"
 ```
 
 #### Team setup
