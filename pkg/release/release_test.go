@@ -32,8 +32,6 @@ func Test_AttestationNew(t *testing.T) {
 		Registry: packageRegistry,
 	}
 	environment := common.AsPointer("prod")
-	creatorID := "creator_id"
-	creatorVersion := "creator_version"
 	policy := map[string]intoto.Policy{
 		"org": intoto.Policy{
 			URI: "policy1_uri",
@@ -51,56 +49,16 @@ func Test_AttestationNew(t *testing.T) {
 		},
 	}
 	tests := []struct {
-		name           string
-		creatorID      string
-		result         PolicyEvaluationResult
-		options        []AttestationCreationOption
-		subject        intoto.Subject
-		creatorVersion string
-		policy         map[string]intoto.Policy
-		buildLevel     int
-		expected       error
+		name       string
+		result     PolicyEvaluationResult
+		options    []AttestationCreationOption
+		subject    intoto.Subject
+		policy     map[string]intoto.Policy
+		buildLevel int
+		expected   error
 	}{
 		{
-			name:      "all fields set",
-			creatorID: creatorID,
-			result: PolicyEvaluationResult{
-				evaluated:   true,
-				level:       level,
-				packageDesc: packageDesc,
-				digests:     digests,
-				environment: environment,
-			},
-			options: []AttestationCreationOption{
-				SetCreatorVersion(creatorVersion),
-				SetPolicy(policy),
-			},
-			subject:        subject,
-			buildLevel:     level,
-			creatorVersion: creatorVersion,
-			policy:         policy,
-		},
-		{
-			name:      "no env",
-			creatorID: creatorID,
-			result: PolicyEvaluationResult{
-				evaluated:   true,
-				level:       level,
-				packageDesc: packageDesc,
-				digests:     digests,
-			},
-			options: []AttestationCreationOption{
-				SetCreatorVersion(creatorVersion),
-				SetPolicy(policy),
-			},
-			subject:        subject,
-			buildLevel:     level,
-			creatorVersion: creatorVersion,
-			policy:         policy,
-		},
-		{
-			name:      "no creator version",
-			creatorID: creatorID,
+			name: "all fields set",
 			result: PolicyEvaluationResult{
 				evaluated:   true,
 				level:       level,
@@ -116,8 +74,22 @@ func Test_AttestationNew(t *testing.T) {
 			policy:     policy,
 		},
 		{
-			name:      "no policy",
-			creatorID: creatorID,
+			name: "no env",
+			result: PolicyEvaluationResult{
+				evaluated:   true,
+				level:       level,
+				packageDesc: packageDesc,
+				digests:     digests,
+			},
+			options: []AttestationCreationOption{
+				SetPolicy(policy),
+			},
+			subject:    subject,
+			buildLevel: level,
+			policy:     policy,
+		},
+		{
+			name: "no creator version",
 			result: PolicyEvaluationResult{
 				evaluated:   true,
 				level:       level,
@@ -126,15 +98,27 @@ func Test_AttestationNew(t *testing.T) {
 				environment: environment,
 			},
 			options: []AttestationCreationOption{
-				SetCreatorVersion(creatorVersion),
+				SetPolicy(policy),
 			},
-			subject:        subject,
-			buildLevel:     level,
-			creatorVersion: creatorVersion,
+			subject:    subject,
+			buildLevel: level,
+			policy:     policy,
 		},
 		{
-			name:      "error result",
-			creatorID: creatorID,
+			name: "no policy",
+			result: PolicyEvaluationResult{
+				evaluated:   true,
+				level:       level,
+				packageDesc: packageDesc,
+				digests:     digests,
+				environment: environment,
+			},
+			options:    []AttestationCreationOption{},
+			subject:    subject,
+			buildLevel: level,
+		},
+		{
+			name: "error result",
 			result: PolicyEvaluationResult{
 				evaluated: true,
 				err:       errs.ErrorMismatch,
@@ -142,16 +126,15 @@ func Test_AttestationNew(t *testing.T) {
 			expected: errs.ErrorInternal,
 		},
 		{
-			name:      "invalid result",
-			creatorID: creatorID,
-			expected:  errs.ErrorInternal,
+			name:     "invalid result",
+			expected: errs.ErrorInternal,
 		},
 	}
 	for _, tt := range tests {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			att, err := tt.result.AttestationNew(tt.creatorID, tt.options...)
+			att, err := tt.result.AttestationNew(tt.options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -162,9 +145,6 @@ func Test_AttestationNew(t *testing.T) {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			if diff := cmp.Diff(predicateType, att.Header.PredicateType); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			if diff := cmp.Diff(tt.creatorID, att.attestation.Predicate.Creator.ID); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			if diff := cmp.Diff([]intoto.Subject{tt.subject}, att.attestation.Header.Subjects); diff != "" {
@@ -199,9 +179,6 @@ func Test_AttestationNew(t *testing.T) {
 			if diff := cmp.Diff(expectedEnv, env); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
-			if diff := cmp.Diff(tt.creatorVersion, att.attestation.Predicate.Creator.Version); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
 			if diff := cmp.Diff(tt.policy, att.attestation.Predicate.Policy); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -220,7 +197,6 @@ func Test_e2e(t *testing.T) {
 	packageName1 := "package_name1"
 	packageEnvironment := common.AsPointer("prod")
 	packageVersion := "v1.2.3"
-	creatorVersion := "v1.2.3"
 	policy := map[string]intoto.Policy{
 		"org": intoto.Policy{
 			URI: "policy1_uri",
@@ -241,7 +217,6 @@ func Test_e2e(t *testing.T) {
 	githubHostedRunner := "https://github.com/actions/runner/github-hosted"
 	selfLevel := 2
 	githubLevel := 3
-	creatorID := "creator_id"
 	sourceURI := "source_uri"
 	sourceURI1 := "source_uri1"
 	orgPolicy := organization.Policy{
@@ -292,7 +267,6 @@ func Test_e2e(t *testing.T) {
 	}
 	tests := []struct {
 		name               string
-		creatorID          string
 		org                organization.Policy
 		projects           []project.Policy
 		options            []AttestationCreationOption
@@ -300,7 +274,6 @@ func Test_e2e(t *testing.T) {
 		packageEnvironment *string
 		packageVersion     string
 		packageName        string
-		creatorVersion     string
 		policy             map[string]intoto.Policy
 		buildLevel         int
 		builderID          string
@@ -310,8 +283,7 @@ func Test_e2e(t *testing.T) {
 		errorVerify        error
 	}{
 		{
-			name:      "all fields set",
-			creatorID: creatorID,
+			name: "all fields set",
 			// Policies to evaluate.
 			org:                orgPolicy,
 			projects:           projectsPolicy,
@@ -319,37 +291,32 @@ func Test_e2e(t *testing.T) {
 			packageVersion:     packageVersion,
 			// Options to create the attestation.
 			options: []AttestationCreationOption{
-				SetCreatorVersion(creatorVersion),
 				SetPolicy(policy),
 				SetPackageVersion(packageVersion),
 			},
 			packageName: packageName,
 			// Fields to validate the created attestation.
-			digests:        digests,
-			buildLevel:     githubLevel,
-			creatorVersion: creatorVersion,
-			policy:         policy,
+			digests:    digests,
+			buildLevel: githubLevel,
+			policy:     policy,
 			// Builder that the verifier will use.
 			builderID: githubHostedRunner,
 			sourceURI: sourceURI,
 		},
 		{
-			name:      "env not provided",
-			creatorID: creatorID,
+			name: "env not provided",
 			// Policies to evaluate.
 			org:      orgPolicy,
 			projects: projectsPolicy,
 			// Options to create the attestation.
 			options: []AttestationCreationOption{
-				SetCreatorVersion(creatorVersion),
 				SetPolicy(policy),
 			},
 			packageName: packageName,
 			// Fields to validate the created attestation.
-			digests:        digests,
-			buildLevel:     githubLevel,
-			creatorVersion: creatorVersion,
-			policy:         policy,
+			digests:    digests,
+			buildLevel: githubLevel,
+			policy:     policy,
 			// Builder that the verifier will use.
 			builderID:        githubHostedRunner,
 			sourceURI:        sourceURI,
@@ -357,8 +324,7 @@ func Test_e2e(t *testing.T) {
 			errorAttestation: errs.ErrorInternal,
 		},
 		{
-			name:      "env not in policy",
-			creatorID: creatorID,
+			name: "env not in policy",
 			// Policies to evaluate.
 			org: orgPolicy,
 			projects: []project.Policy{
@@ -378,15 +344,13 @@ func Test_e2e(t *testing.T) {
 			packageEnvironment: packageEnvironment,
 			// Options to create the attestation.
 			options: []AttestationCreationOption{
-				SetCreatorVersion(creatorVersion),
 				SetPolicy(policy),
 			},
 			packageName: packageName,
 			// Fields to validate the created attestation.
-			digests:        digests,
-			buildLevel:     githubLevel,
-			creatorVersion: creatorVersion,
-			policy:         policy,
+			digests:    digests,
+			buildLevel: githubLevel,
+			policy:     policy,
 			// Builder that the verifier will use.
 			builderID:        githubHostedRunner,
 			sourceURI:        sourceURI,
@@ -394,23 +358,20 @@ func Test_e2e(t *testing.T) {
 			errorAttestation: errs.ErrorInternal,
 		},
 		{
-			name:      "mismatch env",
-			creatorID: creatorID,
+			name: "mismatch env",
 			// Policies to evaluate.
 			org:                orgPolicy,
 			projects:           projectsPolicy,
 			packageEnvironment: common.AsPointer("not_prod"),
 			// Options to create the attestation.
 			options: []AttestationCreationOption{
-				SetCreatorVersion(creatorVersion),
 				SetPolicy(policy),
 			},
 			packageName: packageName,
 			// Fields to validate the created attestation.
-			digests:        digests,
-			buildLevel:     githubLevel,
-			creatorVersion: creatorVersion,
-			policy:         policy,
+			digests:    digests,
+			buildLevel: githubLevel,
+			policy:     policy,
 			// Builder that the verifier will use.
 			builderID:        githubHostedRunner,
 			sourceURI:        sourceURI,
@@ -418,8 +379,7 @@ func Test_e2e(t *testing.T) {
 			errorAttestation: errs.ErrorInternal,
 		},
 		{
-			name:      "no env",
-			creatorID: creatorID,
+			name: "no env",
 			// Policies to evaluate.
 			org: orgPolicy,
 			projects: []project.Policy{
@@ -438,22 +398,19 @@ func Test_e2e(t *testing.T) {
 			},
 			// Options to create the attestation.
 			options: []AttestationCreationOption{
-				SetCreatorVersion(creatorVersion),
 				SetPolicy(policy),
 			},
 			packageName: packageName,
 			// Fields to validate the created attestation.
-			digests:        digests,
-			buildLevel:     githubLevel,
-			creatorVersion: creatorVersion,
-			policy:         policy,
+			digests:    digests,
+			buildLevel: githubLevel,
+			policy:     policy,
 			// Builder that the verifier will use.
 			builderID: githubHostedRunner,
 			sourceURI: sourceURI,
 		},
 		{
-			name:      "no author version",
-			creatorID: creatorID,
+			name: "no author version",
 			// Policies to evaluate.
 			org:                orgPolicy,
 			projects:           projectsPolicy,
@@ -472,42 +429,35 @@ func Test_e2e(t *testing.T) {
 			sourceURI: sourceURI,
 		},
 		{
-			name:      "no policy",
-			creatorID: creatorID,
+			name: "no policy",
 			// Policies to evaluate.
 			org:                orgPolicy,
 			projects:           projectsPolicy,
 			packageEnvironment: packageEnvironment,
 			// Options to create the attestation.
-			options: []AttestationCreationOption{
-				SetCreatorVersion(creatorVersion),
-			},
+			options:     []AttestationCreationOption{},
 			packageName: packageName,
 			// Fields to validate the created attestation.
-			digests:        digests,
-			buildLevel:     githubLevel,
-			creatorVersion: creatorVersion,
+			digests:    digests,
+			buildLevel: githubLevel,
 			// Builder that the verifier will use.
 			builderID: githubHostedRunner,
 			sourceURI: sourceURI,
 		},
 		{
-			name:      "evaluation error",
-			creatorID: creatorID,
+			name: "evaluation error",
 			// Policies to evaluate.
 			org:      orgPolicy,
 			projects: projectsPolicy,
 			// Options to create the attestation.
 			options: []AttestationCreationOption{
-				SetCreatorVersion(creatorVersion),
 				SetPolicy(policy),
 			},
 			packageName: packageName,
 			// Fields to validate the created attestation.
-			digests:        digests,
-			buildLevel:     githubLevel,
-			creatorVersion: creatorVersion,
-			policy:         policy,
+			digests:    digests,
+			buildLevel: githubLevel,
+			policy:     policy,
 			// Builder that the verifier will use.
 			builderID:        githubHostedRunner,
 			sourceURI:        sourceURI,
@@ -570,7 +520,7 @@ func Test_e2e(t *testing.T) {
 			if err != nil {
 				return
 			}
-			att, err := result.AttestationNew(tt.creatorID, tt.options...)
+			att, err := result.AttestationNew(tt.options...)
 			if diff := cmp.Diff(tt.errorAttestation, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -591,9 +541,6 @@ func Test_e2e(t *testing.T) {
 			options := []VerificationOption{
 				IsSlsaBuildLevel(tt.buildLevel),
 			}
-			if tt.creatorVersion != "" {
-				options = append(options, IsCreatorVersion(tt.creatorVersion))
-			}
 
 			for name, policy := range tt.policy {
 				options = append(options, HasPolicy(name, policy.URI, policy.Digests))
@@ -606,7 +553,7 @@ func Test_e2e(t *testing.T) {
 			}
 
 			// Verify.
-			err = verification.Verify(tt.creatorID, tt.digests, tt.packageName, options...)
+			err = verification.Verify(tt.digests, tt.packageName, options...)
 			if diff := cmp.Diff(tt.errorVerify, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

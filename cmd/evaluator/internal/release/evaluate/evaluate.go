@@ -18,14 +18,14 @@ func usage(cli string) {
 		"Usage: %s release evaluate orgPath projectsPath packageName creatorID [optional:environment]\n" +
 		"\n" +
 		"Example:\n" +
-		"%s release evaluate ./path/to/policy/org ./path/to/policy/projects laurentsimon/echo-server@sha256:xxxx https://github.com/org/.slsa/.github/workflows/releaser.yml prod\n" +
+		"%s release evaluate ./path/to/policy/org ./path/to/policy/projects laurentsimon/echo-server@sha256:xxxx prod\n" +
 		"\n"
 	fmt.Fprintf(os.Stderr, msg, cli, cli)
 	os.Exit(1)
 }
 
 func Run(cli string, args []string) error {
-	if len(args) < 4 || len(args) > 5 {
+	if len(args) != 4 {
 		usage(cli)
 	}
 	// Extract inputs.
@@ -38,12 +38,11 @@ func Run(cli string, args []string) error {
 	if err != nil {
 		return err
 	}
-	creatorID := args[3]
 	var env *string
-	if len(args) == 5 && args[4] != "" {
+	if len(args) == 4 && args[3] != "" {
 		// Only set the env if it's not empty.
 		env = new(string)
-		*env = args[4]
+		*env = args[34]
 	}
 	digestsArr := strings.Split(digest, ":")
 	if len(digestsArr) != 2 {
@@ -76,7 +75,7 @@ func Run(cli string, args []string) error {
 	// Create a release attestation and sign it.
 	// TODO(#3): do not attach the attestation, so that caller can do it however they want.
 	// TODO(#2): add policy.
-	att, err := result.AttestationNew(creatorID)
+	att, err := result.AttestationNew()
 	if err != nil {
 		return fmt.Errorf("failed to create attestation: %w", err)
 	}

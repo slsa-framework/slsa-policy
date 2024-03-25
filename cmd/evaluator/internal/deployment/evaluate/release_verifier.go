@@ -23,12 +23,13 @@ func newReleaseVerifier() *releaseVerifier {
 
 func (v *releaseVerifier) validate() error {
 	// Validate the identities.
-	if err := crypto.ValidateIdentity(v.ReleaserID, v.ReleaserIDRegex); err != nil {
+	if err := crypto.ValidateIdentity(v.AttestationVerifierReleaseOptions.ReleaserID,
+		v.AttestationVerifierReleaseOptions.ReleaserIDRegex); err != nil {
 		return err
 	}
 	// Validate the build level.
-	if v.BuildLevel <= 0 || v.BuildLevel > 4 {
-		return fmt.Errorf("build level (%d) must be between 1 and 4", v.BuildLevel)
+	if v.AttestationVerifierReleaseOptions.BuildLevel <= 0 || v.AttestationVerifierReleaseOptions.BuildLevel > 4 {
+		return fmt.Errorf("build level (%d) must be between 1 and 4", v.AttestationVerifierReleaseOptions.BuildLevel)
 	}
 	return nil
 }
@@ -57,15 +58,16 @@ func (v *releaseVerifier) verifySignature(imageName string, digests intoto.Diges
 	fmt.Println("imageURI:", imageURI)
 
 	// Verify the signature.
-	fullReleaserID, attBytes, err := crypto.VerifySignature(imageURI, v.ReleaserID, v.ReleaserIDRegex)
+	fullReleaserID, attBytes, err := crypto.VerifySignature(imageURI, v.AttestationVerifierReleaseOptions.ReleaserID,
+		v.AttestationVerifierReleaseOptions.ReleaserIDRegex)
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to verify image (%q) with releaser ID (%q) releaser ID regex (%q): %v",
-			imageURI, v.ReleaserID, v.ReleaserIDRegex, err)
+			imageURI, v.AttestationVerifierReleaseOptions.ReleaserID, v.AttestationVerifierReleaseOptions.ReleaserIDRegex, err)
 	}
 	return fullReleaserID, attBytes, nil
 }
 
-func (v *releaseVerifier) verifyAttestationContent(attBytes []byte, imageName, fullReleaserID string, digests intoto.DigestSet, environment []string) (*string, error) {
+func (v *releaseVerifier) verifyAttestationContent(attBytes []byte, imageName string, digests intoto.DigestSet, environment []string) (*string, error) {
 	attReader := io.NopCloser(bytes.NewReader(attBytes))
 	verification, err := release.VerificationNew(attReader, &utils.PackageHelper{})
 	if err != nil {
@@ -74,7 +76,7 @@ func (v *releaseVerifier) verifyAttestationContent(attBytes []byte, imageName, f
 
 	// Build level verification.
 	levelOpts := []release.VerificationOption{
-		release.IsSlsaBuildLevelOrAbove(v.BuildLevel),
+		release.IsSlsaBuildLevelOrAbove(v.AttestationVerifierReleaseOptions.BuildLevel),
 	}
 	// If environment is present, we must verify it.
 	var errList []error
@@ -84,14 +86,14 @@ func (v *releaseVerifier) verifyAttestationContent(attBytes []byte, imageName, f
 			opts := append(levelOpts, release.IsPackageEnvironment(*penv))
 			// WARNING: We must ensure that the imageName follows the format defined in the policy.
 			// This is the case, since our policy expect an image as registry/image.
-			if err := verification.Verify(fullReleaserID, digests, imageName, opts...); err != nil {
+			if err := verification.Verify(digests, imageName, opts...); err != nil {
 				// Keep track of errors.
 				errList = append(errList, fmt.Errorf("failed to verify image (%q) and env (%q): %w", imageName, *penv, err))
 				continue
 			}
 			// Success.
 			utils.Log("Image (%q) verified with releaser ID (%q) and releaser ID regex (%q) and env (%q)\n",
-				imageName, v.ReleaserID, v.ReleaserIDRegex, *penv)
+				imageName, v.AttestationVerifierReleaseOptions.ReleaserID, v.AttestationVerifierReleaseOptions.ReleaserIDRegex, *penv)
 			return penv, nil
 		}
 		// We could not verify the attestation.
@@ -99,11 +101,11 @@ func (v *releaseVerifier) verifyAttestationContent(attBytes []byte, imageName, f
 	}
 
 	// No environment present.
-	if err := verification.Verify(fullReleaserID, digests, imageName, levelOpts...); err != nil {
+	if err := verification.Verify(digests, imageName, levelOpts...); err != nil {
 		return nil, fmt.Errorf("failed to verify image (%q) and env (%q): %w", imageName, environment, err)
 	}
 	utils.Log("Image (%q) verified with releaser ID (%q) and releaser ID regex (%q) and nil env\n",
-		imageName, v.ReleaserID, v.ReleaserIDRegex)
+		imageName, v.AttestationVerifierReleaseOptions.ReleaserID, v.AttestationVerifierReleaseOptions.ReleaserIDRegex)
 	return nil, nil
 }
 
@@ -113,7 +115,7 @@ func (v *releaseVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, ima
 	}
 
 	// Verify the signature.
-	fullReleaserID, attBytes, err := v.verifySignature(imageName, digests)
+	_, attBytes, err := v.verifySignature(imageName, digests)
 	if err != nil {
 		return nil, err
 	}
@@ -121,5 +123,5 @@ func (v *releaseVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, ima
 	fmt.Println(string(attBytes))
 
 	// Verify the attestation content.
-	return v.verifyAttestationContent(attBytes, imageName, fullReleaserID, digests, environment)
+	return v.verifyAttestationContent(attBytes, imageName, digests, environment)
 }

@@ -17,7 +17,7 @@ type Creation struct {
 type AttestationCreationOption func(*Creation) error
 
 // NOTE: See https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis.
-func CreationNew(creatorID string, subject intoto.Subject, packageDesc intoto.PackageDescriptor,
+func CreationNew(subject intoto.Subject, packageDesc intoto.PackageDescriptor,
 	options ...AttestationCreationOption) (*Creation, error) {
 	if err := subject.Validate(); err != nil {
 		return nil, err
@@ -34,10 +34,7 @@ func CreationNew(creatorID string, subject intoto.Subject, packageDesc intoto.Pa
 			},
 			Predicate: predicate{
 				CreationTime: intoto.Now(),
-				Creator: intoto.Creator{
-					ID: creatorID,
-				},
-				Package: packageDesc,
+				Package:      packageDesc,
 			},
 		},
 	}
@@ -71,17 +68,6 @@ func (a *Creation) enterSafeMode() error {
 
 func (a *Creation) isSafeMode() bool {
 	return a.safeMode
-}
-
-func SetCreatorVersion(version string) AttestationCreationOption {
-	return func(a *Creation) error {
-		return a.setCreatorVersion(version)
-	}
-}
-
-func (a *Creation) setCreatorVersion(version string) error {
-	a.attestation.Predicate.Creator.Version = version
-	return nil
 }
 
 func SetPolicy(policy map[string]intoto.Policy) AttestationCreationOption {

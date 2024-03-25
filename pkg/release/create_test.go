@@ -41,15 +41,13 @@ func Test_CreationNew(t *testing.T) {
 			},
 		},
 	}
-	creatorVersion := "creator_version"
 	tests := []struct {
-		name           string
-		subject        intoto.Subject
-		creatorVersion string
-		buildLevel     *int
-		packageDesc    intoto.PackageDescriptor
-		policy         map[string]intoto.Policy
-		expected       error
+		name        string
+		subject     intoto.Subject
+		buildLevel  *int
+		packageDesc intoto.PackageDescriptor
+		policy      map[string]intoto.Policy
+		expected    error
 	}{
 		{
 			name:        "subject and package set",
@@ -90,12 +88,6 @@ func Test_CreationNew(t *testing.T) {
 			expected:    errs.ErrorInvalidField,
 		},
 		{
-			name:           "result with creator version",
-			subject:        subject,
-			packageDesc:    packageDesc,
-			creatorVersion: creatorVersion,
-		},
-		{
 			name:        "result with level",
 			subject:     subject,
 			packageDesc: packageDesc,
@@ -131,12 +123,11 @@ func Test_CreationNew(t *testing.T) {
 			policy:      policy,
 		},
 		{
-			name:           "result with all set",
-			subject:        subject,
-			packageDesc:    packageDesc,
-			buildLevel:     common.AsPointer(4),
-			creatorVersion: creatorVersion,
-			policy:         policy,
+			name:        "result with all set",
+			subject:     subject,
+			packageDesc: packageDesc,
+			buildLevel:  common.AsPointer(4),
+			policy:      policy,
 		},
 	}
 	for _, tt := range tests {
@@ -144,16 +135,13 @@ func Test_CreationNew(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			var options []AttestationCreationOption
-			if tt.creatorVersion != "" {
-				options = append(options, SetCreatorVersion(tt.creatorVersion))
-			}
 			if tt.buildLevel != nil {
 				options = append(options, SetSlsaBuildLevel(*tt.buildLevel))
 			}
 			if tt.policy != nil {
 				options = append(options, SetPolicy(tt.policy))
 			}
-			att, err := CreationNew("creator_id", tt.subject, tt.packageDesc, options...)
+			att, err := CreationNew(tt.subject, tt.packageDesc, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -170,14 +158,6 @@ func Test_CreationNew(t *testing.T) {
 			}
 			// Subjects must match.
 			if diff := cmp.Diff([]intoto.Subject{tt.subject}, att.Header.Subjects); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			// Creator ID must match.
-			if diff := cmp.Diff("creator_id", att.Predicate.Creator.ID); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			// Creator version must match.
-			if diff := cmp.Diff(tt.creatorVersion, att.Predicate.Creator.Version); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			// Policy must match.
@@ -236,7 +216,6 @@ func Test_EnterSafeMode(t *testing.T) {
 			packageDesc: packageDesc,
 			options: []AttestationCreationOption{
 				EnterSafeMode(),
-				SetCreatorVersion("v1.2.3"),
 				SetPolicy(map[string]intoto.Policy{
 					"org": intoto.Policy{
 						URI: "policy1_uri",
@@ -270,7 +249,6 @@ func Test_EnterSafeMode(t *testing.T) {
 			options: []AttestationCreationOption{
 				SetSlsaBuildLevel(4),
 				EnterSafeMode(),
-				SetCreatorVersion("v1.2.3"),
 				SetPolicy(map[string]intoto.Policy{
 					"org": intoto.Policy{
 						URI: "policy1_uri",
@@ -283,7 +261,7 @@ func Test_EnterSafeMode(t *testing.T) {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			_, err := CreationNew("creator_id", tt.subject, tt.packageDesc, tt.options...)
+			_, err := CreationNew(tt.subject, tt.packageDesc, tt.options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

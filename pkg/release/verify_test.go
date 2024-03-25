@@ -124,12 +124,6 @@ func Test_Verify(t *testing.T) {
 			},
 		},
 	}
-	creatorID := "creatorID"
-	creatorVersion := "creatorVersion"
-	creator := intoto.Creator{
-		ID:      creatorID,
-		Version: creatorVersion,
-	}
 	prod := "prod"
 	header := intoto.Header{
 		Type:          statementType,
@@ -150,7 +144,6 @@ func Test_Verify(t *testing.T) {
 		Environment: packageEnv,
 	}
 	pred := predicate{
-		Creator:      creator,
 		Policy:       policy,
 		CreationTime: intoto.Now(),
 		Package:      packageDesc,
@@ -165,8 +158,6 @@ func Test_Verify(t *testing.T) {
 		name               string
 		att                attestation
 		digests            intoto.DigestSet
-		creatorID          string
-		creatorVersion     string
 		packageVersion     string
 		packageName        string
 		packageEnvironment string
@@ -177,10 +168,8 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "all fields set",
 			att:                att,
-			creatorID:          creatorID,
 			packageVersion:     packageVersion,
 			packageName:        packageName,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			digests:            digests,
@@ -196,8 +185,6 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -216,34 +203,6 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
-			buildLevel:         buildLevel,
-			packageEnvironment: prod,
-			packageName:        packageName,
-			packageVersion:     packageVersion,
-			digests:            digests,
-			policy:             policy,
-			expected:           errs.ErrorMismatch,
-		},
-		{
-			name:               "mismatch creator id",
-			att:                att,
-			creatorID:          creatorID + "_mismatch",
-			creatorVersion:     creatorVersion,
-			buildLevel:         buildLevel,
-			packageEnvironment: prod,
-			packageName:        packageName,
-			packageVersion:     packageVersion,
-			digests:            digests,
-			policy:             policy,
-			expected:           errs.ErrorMismatch,
-		},
-		{
-			name:               "mismatch creator version",
-			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion + "_mismatch",
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -255,8 +214,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "mismatch package version",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -275,8 +232,6 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -292,7 +247,6 @@ func Test_Verify(t *testing.T) {
 					Subjects:      subjects,
 				},
 				Predicate: predicate{
-					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
 					Package: intoto.PackageDescriptor{
@@ -303,8 +257,6 @@ func Test_Verify(t *testing.T) {
 					Properties: releaseProperties,
 				},
 			},
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -322,15 +274,12 @@ func Test_Verify(t *testing.T) {
 					Subjects:      subjects,
 				},
 				Predicate: predicate{
-					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
 					// NOTE: no package set so empty URI.
 					Properties: releaseProperties,
 				},
 			},
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -342,9 +291,7 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "empty request uri",
 			att:                att,
-			creatorID:          creatorID,
 			packageVersion:     packageVersion,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			digests:            digests,
@@ -360,8 +307,6 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -373,8 +318,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "empty input subject",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -399,8 +342,6 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -412,8 +353,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "empty input digest key",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -442,8 +381,6 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -469,8 +406,6 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -485,11 +420,9 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "mismatch sha256 digest",
 			att:                att,
-			creatorID:          creatorID,
 			packageEnvironment: prod,
 			packageName:        packageName,
 			packageVersion:     packageVersion,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			digests: intoto.DigestSet{
 				"sha256":    "not_another",
@@ -501,8 +434,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "mismatch gitCommit digest",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -517,8 +448,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "mismatch digest not present",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -533,8 +462,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "one of digests",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -547,8 +474,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "input no digest",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -559,8 +484,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "mismatch level",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         common.AsPointer(1),
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -572,8 +495,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "mismatch env",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: "dev",
 			packageName:        packageName,
@@ -587,7 +508,6 @@ func Test_Verify(t *testing.T) {
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
-					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
 					Package: intoto.PackageDescriptor{
@@ -598,8 +518,6 @@ func Test_Verify(t *testing.T) {
 					Properties: releaseProperties,
 				},
 			},
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			packageName:        packageName,
@@ -611,10 +529,8 @@ func Test_Verify(t *testing.T) {
 		{
 			name:           "mismatch no env input",
 			att:            att,
-			creatorID:      creatorID,
 			packageName:    packageName,
 			packageVersion: packageVersion,
-			creatorVersion: creatorVersion,
 			buildLevel:     buildLevel,
 			digests:        digests,
 			policy:         policy,
@@ -625,7 +541,6 @@ func Test_Verify(t *testing.T) {
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
-					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
 					Package: intoto.PackageDescriptor{
@@ -635,18 +550,14 @@ func Test_Verify(t *testing.T) {
 					Properties: releaseProperties,
 				},
 			},
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			buildLevel:     buildLevel,
-			packageName:    packageName,
-			digests:        digests,
-			policy:         policy,
+			buildLevel:  buildLevel,
+			packageName: packageName,
+			digests:     digests,
+			policy:      policy,
 		},
 		{
 			name:               "mismatch no org",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageName:        packageName,
 			packageEnvironment: prod,
@@ -673,8 +584,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "mismatch org uri",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageName:        packageName,
 			packageEnvironment: prod,
@@ -701,8 +610,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "mismatch org sha256",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageName:        packageName,
 			packageEnvironment: prod,
@@ -729,8 +636,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "mismatch org gitCommit",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageName:        packageName,
 			packageEnvironment: prod,
@@ -759,14 +664,11 @@ func Test_Verify(t *testing.T) {
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
-					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
 					Package:      packageDesc,
 				},
 			},
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageName:        packageName,
 			packageEnvironment: prod,
@@ -780,7 +682,6 @@ func Test_Verify(t *testing.T) {
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
-					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
 					Package:      packageDesc,
@@ -789,8 +690,6 @@ func Test_Verify(t *testing.T) {
 					},
 				},
 			},
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageName:        packageName,
 			packageEnvironment: prod,
@@ -801,21 +700,8 @@ func Test_Verify(t *testing.T) {
 		},
 		// Ignored fields.
 		{
-			name:               "ignore creator version",
-			att:                att,
-			creatorID:          creatorID,
-			buildLevel:         common.AsPointer(3),
-			packageName:        packageName,
-			packageEnvironment: prod,
-			packageVersion:     packageVersion,
-			digests:            digests,
-			policy:             policy,
-		},
-		{
 			name:               "ignore build level",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
@@ -825,8 +711,6 @@ func Test_Verify(t *testing.T) {
 		{
 			name:           "ignore env",
 			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
 			buildLevel:     buildLevel,
 			packageName:    packageName,
 			packageVersion: packageVersion,
@@ -837,32 +721,16 @@ func Test_Verify(t *testing.T) {
 		{
 			name:               "ignore digests",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
-			policy:             policy,
-			expected:           errs.ErrorInvalidField,
-		},
-		{
-			name:               "ignore creator id",
-			att:                att,
-			creatorVersion:     creatorVersion,
-			buildLevel:         buildLevel,
-			packageName:        packageName,
-			packageEnvironment: prod,
-			packageVersion:     packageVersion,
-			digests:            digests,
 			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
 		{
 			name:               "ignore policy",
 			att:                att,
-			creatorID:          creatorID,
-			creatorVersion:     creatorVersion,
 			buildLevel:         buildLevel,
 			packageName:        packageName,
 			packageEnvironment: prod,
@@ -887,9 +755,6 @@ func Test_Verify(t *testing.T) {
 
 			// Create verification options.
 			var options []VerificationOption
-			if tt.creatorVersion != "" {
-				options = append(options, IsCreatorVersion(tt.creatorVersion))
-			}
 			if tt.buildLevel != nil {
 				options = append(options, IsSlsaBuildLevel(*tt.buildLevel))
 				i := 1
@@ -907,7 +772,7 @@ func Test_Verify(t *testing.T) {
 			options = append(options, IsPackageEnvironment(tt.packageEnvironment))
 
 			// Verify.
-			err = verification.Verify(tt.creatorID, tt.digests, tt.packageName, options...)
+			err = verification.Verify(tt.digests, tt.packageName, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -921,7 +786,7 @@ func Test_Verify(t *testing.T) {
 					options = append(options, IsSlsaBuildLevelOrAbove(i))
 					i++
 				}
-				err = verification.Verify(tt.creatorID, tt.digests, tt.packageName, options...)
+				err = verification.Verify(tt.digests, tt.packageName, options...)
 				if diff := cmp.Diff(errs.ErrorMismatch, err, cmpopts.EquateErrors()); diff != "" {
 					t.Fatalf("unexpected err (-want +got): \n%s", diff)
 				}
