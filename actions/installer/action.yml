@@ -43,5 +43,5 @@ runs:
       run: |
         set -euo pipefail
         mkdir -p "${HOME}/.slsa/bin/${ref}"
-        mv binary-linux-amd64 "${HOME}/.slsa/bin/${ref}/slsa-policy-evaluator"
+        mv binary-linux-amd64 "${HOME}/.slsa/bin/${ref}/slsa-policy"
         echo "${HOME}/.slsa/bin/${ref}" >> $GITHUB_PATH
