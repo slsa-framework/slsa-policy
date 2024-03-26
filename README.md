@@ -132,7 +132,7 @@ After the workflow has successfully run, you may manually verify the release att
 ```bash
 # NOTE: change image to your image.
 $ image=docker.io/laurentsimon/slsa-project-echo-server@sha256:4378b3d11e11ede0f64946e588c590e460e44f90c8a7921ad2cb7b04aaf298d4
-$ creator_id=https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml@refs/heads/main
+$ creator_id=https://github.com/laurentsimon/slsa-org/.github/workflows/image-releaser.yml@refs/heads/main
 $ type=https://slsa.dev/release/v0.1
 $ cosign verify-attestation "${image}" \
     --certificate-oidc-issuer https://token.actions.githubusercontent.com \
