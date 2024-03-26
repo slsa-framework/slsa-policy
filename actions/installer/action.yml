@@ -36,7 +36,7 @@ runs:
       run: |
         set -euo pipefail
 
-        # TODO: Support commit sha.
+        # TODO(21): Support commit sha.
         sha=$(echo -n "${GH_ACTION_REF}" | grep -o -E -e "^[a-f0-9]{40}$" || true)
         if [[ -n "${sha}" ]]; then
           echo "${GH_ACTION_REF} not supported"
