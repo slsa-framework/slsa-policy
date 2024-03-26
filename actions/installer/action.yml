@@ -1,0 +1,47 @@
+name: 'Evaluator installer'
+description: 'Install the policy evaluator'
+runs:
+  using: "composite"
+  steps:
+    - name: Install the slsa-verifier
+      uses: slsa-framework/slsa-verifier/actions/installer@eb7007070baa04976cb9e25a0d8034f8db030a86 # v2.5.1
+
+    - name: Create tmp dir
+      id: working_dir
+      shell: bash
+      run: |
+        set -euo pipefail
+        working_dir=$(mktemp -d)
+        echo "name=${working_dir}" >> "$GITHUB_OUTPUT"
+
+    - name: Download the release binary
+      shell: bash
+      working-directory: ${{ steps.working_dir.outputs.name }}
+      run: |
+        set -euo pipefail
+
+        # TODO: Support commit sha.
+        # sha=$(echo -n "${GITHUB_ACTION_REF}" | grep -o -E -e "^[a-f0-9]{40}$")
+        if [[ "${GITHUB_ACTION_REF}" != refs/tags/* ]]; then
+          echo "${GITHUB_ACTION_REF} not supported"
+          exit 1
+        fi
+        ref=$(echo -n "${GITHUB_ACTION_REF}" | cut -d "/" -f3)
+        gh release -R laurentsimon/slsa-policy download "${ref}" -p "binary-linux-amd64*"
+        chmod u+x binary-linux-amd64
+
+    - name: Verify the binary
+      shell: bash
+      working-directory: ${{ steps.working_dir.outputs.name }}
+      run: |
+        set -euo pipefail
+        slsa-verifier verify-artifact binary-linux-amd64 --provenance-path binary-linux-amd64.intoto.jsonl --source-uri github.com/laurentsimon/slsa-policy --source-tag "${ref}"
+
+    - name: Add binary to path
+      shell: bash
+      working-directory: ${{ steps.working_dir.outputs.name }}
+      run: |
+        set -euo pipefail
+        mkdir -p "${HOME}/.slsa/bin/${ref}"
+        mv binary-linux-amd64 "${HOME}/.slsa/bin/${ref}/slsa-verifier"
+        echo "${HOME}/.slsa/bin/${ref}" >> $GITHUB_PATH
