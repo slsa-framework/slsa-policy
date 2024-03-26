@@ -32,6 +32,7 @@ runs:
       env:
         GH_ACTION_REF: ${{ github.action_ref }}
         GH_ACTION_REPOSITORY: ${{ github.action_repository }}
+        GH_TOKEN: ${{ github.token }}
       run: |
         set -euo pipefail
 
