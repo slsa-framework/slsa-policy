@@ -25,6 +25,7 @@ runs:
         echo "GH_ACTION_REPOSITORY: ${GH_ACTION_REPOSITORY}"
 
     - name: Download the release binary
+      id: download
       shell: bash
       working-directory: ${{ steps.working_dir.outputs.name }}
       env:
@@ -42,19 +43,24 @@ runs:
         ref=$(echo -n "${GH_ACTION_REF}" | cut -d "/" -f3)
         gh release -R "${GH_ACTION_REPOSITORY}" download "${ref}" -p "binary-linux-amd64*"
         chmod u+x binary-linux-amd64
+        echo "ref=${ref}" >> "$GITHUB_OUTPUT"
 
     - name: Verify the binary
       shell: bash
       working-directory: ${{ steps.working_dir.outputs.name }}
+      env:
+        GH_ACTION_REF: ${{ steps.download.outputs.ref }}
       run: |
         set -euo pipefail
-        slsa-verifier verify-artifact binary-linux-amd64 --provenance-path binary-linux-amd64.intoto.jsonl --source-uri github.com/laurentsimon/slsa-policy --source-tag "${ref}"
+        slsa-verifier verify-artifact binary-linux-amd64 --provenance-path binary-linux-amd64.intoto.jsonl --source-uri github.com/laurentsimon/slsa-policy --source-tag "${GH_ACTION_REF}"
 
     - name: Add binary to path
       shell: bash
       working-directory: ${{ steps.working_dir.outputs.name }}
+      env:
+        GH_ACTION_REF: ${{ steps.download.outputs.ref }}
       run: |
         set -euo pipefail
-        mkdir -p "${HOME}/.slsa/bin/${ref}"
-        mv binary-linux-amd64 "${HOME}/.slsa/bin/${ref}/slsa-policy"
-        echo "${HOME}/.slsa/bin/${ref}" >> $GITHUB_PATH
+        mkdir -p "${HOME}/.slsa/bin/${GH_ACTION_REF}"
+        mv binary-linux-amd64 "${HOME}/.slsa/bin/${GH_ACTION_REF}/slsa-policy"
+        echo "${HOME}/.slsa/bin/${GH_ACTION_REF}" >> $GITHUB_PATH
