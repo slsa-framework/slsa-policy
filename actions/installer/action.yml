@@ -36,12 +36,12 @@ runs:
         set -euo pipefail
 
         # TODO: Support commit sha.
-        # sha=$(echo -n "${GH_ACTION_REF}" | grep -o -E -e "^[a-f0-9]{40}$")
-        if [[ "${GH_ACTION_REF}" != refs/tags/* ]]; then
+        sha=$(echo -n "${GH_ACTION_REF}" | grep -o -E -e "^[a-f0-9]{40}$")
+        if [[ -n "${sha}" ]]; then
           echo "${GH_ACTION_REF} not supported"
           exit 1
         fi
-        ref=$(echo -n "${GH_ACTION_REF}" | cut -d "/" -f3)
+        ref="${GH_ACTION_REF}"
         gh release -R "${GH_ACTION_REPOSITORY}" download "${ref}" -p "binary-linux-amd64*"
         chmod u+x binary-linux-amd64
         echo "ref=${ref}" >> "$GITHUB_OUTPUT"
