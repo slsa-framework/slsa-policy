@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+
 	//"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/common"
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
@@ -279,19 +280,12 @@ func Test_Verify(t *testing.T) {
 		"key1": []string{"val11", "val12"},
 		"key2": []string{"val21", "val22"},
 	}
-	creatorID := "creatorID"
-	creatorVersion := "creatorVersion"
-	creator := intoto.Creator{
-		ID:      creatorID,
-		Version: creatorVersion,
-	}
 	header := intoto.Header{
 		Type:          statementType,
 		PredicateType: predicateType,
 		Subjects:      subjects,
 	}
 	pred := predicate{
-		Creator:      creator,
 		Policy:       policy,
 		CreationTime: intoto.Now(),
 		ContextType:  contextType,
@@ -302,25 +296,21 @@ func Test_Verify(t *testing.T) {
 		Predicate: pred,
 	}
 	tests := []struct {
-		name           string
-		att            attestation
-		digests        intoto.DigestSet
-		contextType    string
-		context        interface{}
-		creatorID      string
-		creatorVersion string
-		policy         map[string]intoto.Policy
-		expected       error
+		name        string
+		att         attestation
+		digests     intoto.DigestSet
+		contextType string
+		context     interface{}
+		policy      map[string]intoto.Policy
+		expected    error
 	}{
 		{
-			name:           "all fields set",
-			att:            att,
-			contextType:    contextType,
-			context:        context,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			digests:        digests,
-			policy:         policy,
+			name:        "all fields set",
+			att:         att,
+			contextType: contextType,
+			context:     context,
+			digests:     digests,
+			policy:      policy,
 		},
 		{
 			name:     "mismatch statement type",
@@ -333,12 +323,10 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
-			policy:         policy,
+			contextType: contextType,
+			context:     context,
+			digests:     digests,
+			policy:      policy,
 		},
 		{
 			name:     "mismatch predicate type",
@@ -351,34 +339,10 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
-			policy:         policy,
-		},
-		{
-			name:           "mismatch creator id",
-			expected:       errs.ErrorMismatch,
-			att:            att,
-			creatorID:      creatorID + "_mismatch",
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
-			policy:         policy,
-		},
-		{
-			name:           "mismatch creator version",
-			expected:       errs.ErrorMismatch,
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion + "_mismatch",
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
-			policy:         policy,
+			contextType: contextType,
+			context:     context,
+			digests:     digests,
+			policy:      policy,
 		},
 		{
 			name:     "empty att subject",
@@ -390,22 +354,18 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
-			policy:         policy,
+			contextType: contextType,
+			context:     context,
+			digests:     digests,
+			policy:      policy,
 		},
 		{
-			name:           "empty input subject",
-			expected:       errs.ErrorInvalidField,
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			policy:         policy,
+			name:        "empty input subject",
+			expected:    errs.ErrorInvalidField,
+			att:         att,
+			contextType: contextType,
+			context:     context,
+			policy:      policy,
 		},
 		{
 			name:     "empty att digest key",
@@ -425,21 +385,17 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
-			policy:         policy,
+			contextType: contextType,
+			context:     context,
+			digests:     digests,
+			policy:      policy,
 		},
 		{
-			name:           "empty input digest key",
-			expected:       errs.ErrorInvalidField,
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
+			name:        "empty input digest key",
+			expected:    errs.ErrorInvalidField,
+			att:         att,
+			contextType: contextType,
+			context:     context,
 			digests: intoto.DigestSet{
 				"sha256": "another",
 				"":       "mismatch_another_com",
@@ -464,12 +420,10 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
-			policy:         policy,
+			contextType: contextType,
+			context:     context,
+			digests:     digests,
+			policy:      policy,
 		},
 		{
 			name:     "empty input digest value",
@@ -489,10 +443,8 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
+			contextType: contextType,
+			context:     context,
 			digests: intoto.DigestSet{
 				"sha256":    "another",
 				"gitCommit": "",
@@ -500,13 +452,11 @@ func Test_Verify(t *testing.T) {
 			policy: policy,
 		},
 		{
-			name:           "mismatch sha256 digest",
-			expected:       errs.ErrorMismatch,
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
+			name:        "mismatch sha256 digest",
+			expected:    errs.ErrorMismatch,
+			att:         att,
+			contextType: contextType,
+			context:     context,
 			digests: intoto.DigestSet{
 				"sha256":    "not_another",
 				"gitCommit": "mismatch_another_com",
@@ -514,13 +464,11 @@ func Test_Verify(t *testing.T) {
 			policy: policy,
 		},
 		{
-			name:           "mismatch gitCommit digest",
-			expected:       errs.ErrorMismatch,
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
+			name:        "mismatch gitCommit digest",
+			expected:    errs.ErrorMismatch,
+			att:         att,
+			contextType: contextType,
+			context:     context,
 			digests: intoto.DigestSet{
 				"sha256":    "another",
 				"gitCommit": "mismatch_another_com",
@@ -528,13 +476,11 @@ func Test_Verify(t *testing.T) {
 			policy: policy,
 		},
 		{
-			name:           "mismatch digest not present",
-			expected:       errs.ErrorMismatch,
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
+			name:        "mismatch digest not present",
+			expected:    errs.ErrorMismatch,
+			att:         att,
+			contextType: contextType,
+			context:     context,
 			digests: intoto.DigestSet{
 				"other":  "another",
 				"other2": "mismatch_another_com",
@@ -542,36 +488,30 @@ func Test_Verify(t *testing.T) {
 			policy: policy,
 		},
 		{
-			name:           "one of digests",
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
+			name:        "one of digests",
+			att:         att,
+			contextType: contextType,
+			context:     context,
 			digests: intoto.DigestSet{
 				"gitCommit": "another_com",
 			},
 			policy: policy,
 		},
 		{
-			name:           "input no digest",
-			expected:       errs.ErrorInvalidField,
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			policy:         policy,
+			name:        "input no digest",
+			expected:    errs.ErrorInvalidField,
+			att:         att,
+			contextType: contextType,
+			context:     context,
+			policy:      policy,
 		},
 		{
-			name:           "mismatch no org",
-			expected:       errs.ErrorMismatch,
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
+			name:        "mismatch no org",
+			expected:    errs.ErrorMismatch,
+			att:         att,
+			contextType: contextType,
+			context:     context,
+			digests:     digests,
 			policy: map[string]intoto.Policy{
 				"not_org": {
 					URI: "org_uri",
@@ -590,14 +530,12 @@ func Test_Verify(t *testing.T) {
 			},
 		},
 		{
-			name:           "mismatch org uri",
-			expected:       errs.ErrorMismatch,
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
+			name:        "mismatch org uri",
+			expected:    errs.ErrorMismatch,
+			att:         att,
+			contextType: contextType,
+			context:     context,
+			digests:     digests,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "no_org_uri",
@@ -616,14 +554,12 @@ func Test_Verify(t *testing.T) {
 			},
 		},
 		{
-			name:           "mismatch org sha256",
-			expected:       errs.ErrorMismatch,
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
+			name:        "mismatch org sha256",
+			expected:    errs.ErrorMismatch,
+			att:         att,
+			contextType: contextType,
+			context:     context,
+			digests:     digests,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "org_uri",
@@ -642,14 +578,12 @@ func Test_Verify(t *testing.T) {
 			},
 		},
 		{
-			name:           "mismatch org gitCommit",
-			expected:       errs.ErrorMismatch,
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
+			name:        "mismatch org gitCommit",
+			expected:    errs.ErrorMismatch,
+			att:         att,
+			contextType: contextType,
+			context:     context,
+			digests:     digests,
 			policy: map[string]intoto.Policy{
 				"org": {
 					URI: "org_uri",
@@ -668,25 +602,21 @@ func Test_Verify(t *testing.T) {
 			},
 		},
 		{
-			name:           "mismatch context type",
-			expected:       errs.ErrorMismatch,
-			att:            att,
-			contextType:    contextType + "_mismatch",
-			context:        context,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			digests:        digests,
-			policy:         policy,
+			name:        "mismatch context type",
+			expected:    errs.ErrorMismatch,
+			att:         att,
+			contextType: contextType + "_mismatch",
+			context:     context,
+			digests:     digests,
+			policy:      policy,
 		},
 		{
-			name:           "error empty context type",
-			expected:       errs.ErrorInvalidField,
-			att:            att,
-			context:        context,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			digests:        digests,
-			policy:         policy,
+			name:     "error empty context type",
+			expected: errs.ErrorInvalidField,
+			att:      att,
+			context:  context,
+			digests:  digests,
+			policy:   policy,
 		},
 		{
 			name:     "error empty context type att",
@@ -694,35 +624,29 @@ func Test_Verify(t *testing.T) {
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
-					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
 					Context:      context,
 				},
 			},
-			contextType:    contextType,
-			context:        context,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			digests:        digests,
-			policy:         policy,
+			contextType: contextType,
+			context:     context,
+			digests:     digests,
+			policy:      policy,
 		},
 		{
 			name: "both empty context",
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
-					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
 					ContextType:  contextType,
 				},
 			},
-			contextType:    contextType,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			digests:        digests,
-			policy:         policy,
+			contextType: contextType,
+			digests:     digests,
+			policy:      policy,
 		},
 		{
 			name:        "mismatch context key1",
@@ -733,10 +657,8 @@ func Test_Verify(t *testing.T) {
 				"key1_mismatch": []string{"val11", "val12"},
 				"key2":          []string{"val21", "val22"},
 			},
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			digests:        digests,
-			policy:         policy,
+			digests: digests,
+			policy:  policy,
 		},
 		{
 			name:        "mismatch context key2",
@@ -747,10 +669,8 @@ func Test_Verify(t *testing.T) {
 				"key1":          []string{"val11", "val12"},
 				"key2_mismatch": []string{"val21", "val22"},
 			},
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			digests:        digests,
-			policy:         policy,
+			digests: digests,
+			policy:  policy,
 		},
 		{
 			name:        "mismatch context val12",
@@ -761,10 +681,8 @@ func Test_Verify(t *testing.T) {
 				"key1": []string{"val11", "val12_mismatch"},
 				"key2": []string{"val21", "val22"},
 			},
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			digests:        digests,
-			policy:         policy,
+			digests: digests,
+			policy:  policy,
 		},
 		{
 			name:        "mismatch context val22",
@@ -775,20 +693,16 @@ func Test_Verify(t *testing.T) {
 				"key1": []string{"val11", "val12"},
 				"key2": []string{"val21", "val22_mismatch"},
 			},
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			digests:        digests,
-			policy:         policy,
+			digests: digests,
+			policy:  policy,
 		},
 		{
-			name:           "mismatch empty context",
-			expected:       errs.ErrorMismatch,
-			att:            att,
-			contextType:    contextType,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			digests:        digests,
-			policy:         policy,
+			name:        "mismatch empty context",
+			expected:    errs.ErrorMismatch,
+			att:         att,
+			contextType: contextType,
+			digests:     digests,
+			policy:      policy,
 		},
 		{
 			name:     "mismatch empty context att",
@@ -796,83 +710,54 @@ func Test_Verify(t *testing.T) {
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
-					Creator:      creator,
 					Policy:       policy,
 					CreationTime: intoto.Now(),
 					ContextType:  contextType,
 				},
 			},
-			contextType:    contextType,
-			context:        context,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			digests:        digests,
-			policy:         policy,
-		},
-		// Ignored fields.
-		{
-			name:        "ignore creator version",
-			att:         att,
-			creatorID:   creatorID,
 			contextType: contextType,
 			context:     context,
 			digests:     digests,
 			policy:      policy,
 		},
+		// Ignored fields.
 		{
-			name:           "ignore digests",
-			expected:       errs.ErrorInvalidField,
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			policy:         policy,
+			name:        "ignore digests",
+			expected:    errs.ErrorInvalidField,
+			att:         att,
+			contextType: contextType,
+			context:     context,
+			policy:      policy,
 		},
 		{
-			name:           "ignore creator id",
-			expected:       errs.ErrorInvalidField,
-			att:            att,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
-			policy:         policy,
+			name:        "ignore policy",
+			att:         att,
+			contextType: contextType,
+			context:     context,
+			digests:     digests,
 		},
 		{
-			name:           "ignore policy",
-			att:            att,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			contextType:    contextType,
-			context:        context,
-			digests:        digests,
-		},
-		{
-			name:      "ignore context type",
-			expected:  errs.ErrorInvalidField,
-			att:       att,
-			creatorID: creatorID,
-			context:   context,
-			digests:   digests,
-			policy:    policy,
+			name:     "ignore context type",
+			expected: errs.ErrorInvalidField,
+			att:      att,
+			context:  context,
+			digests:  digests,
+			policy:   policy,
 		},
 		{
 			name:        "ignore context",
 			expected:    errs.ErrorMismatch,
 			att:         att,
-			creatorID:   creatorID,
 			contextType: contextType,
 			digests:     digests,
 			policy:      policy,
 		},
 		{
-			name:      "ignore context type",
-			expected:  errs.ErrorInvalidField,
-			att:       att,
-			creatorID: creatorID,
-			digests:   digests,
-			policy:    policy,
+			name:     "ignore context type",
+			expected: errs.ErrorInvalidField,
+			att:      att,
+			digests:  digests,
+			policy:   policy,
 		},
 	}
 	for _, tt := range tests {
@@ -892,15 +777,12 @@ func Test_Verify(t *testing.T) {
 
 			// Create verification options.
 			var options []VerificationOption
-			if tt.creatorVersion != "" {
-				options = append(options, IsCreatorVersion(tt.creatorVersion))
-			}
 			for name, policy := range tt.policy {
 				options = append(options, HasPolicy(name, policy.URI, policy.Digests))
 			}
 
 			// Verify.
-			err = verification.Verify(tt.creatorID, tt.digests, tt.contextType, tt.context, options...)
+			err = verification.Verify(tt.digests, tt.contextType, tt.context, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

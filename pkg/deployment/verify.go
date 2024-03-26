@@ -32,7 +32,7 @@ func VerificationNew(reader io.ReadCloser) (*Verification, error) {
 	}, nil
 }
 
-func (v *Verification) Verify(creatorID string, digests intoto.DigestSet, contextType string, context interface{}, options ...VerificationOption) error {
+func (v *Verification) Verify(digests intoto.DigestSet, contextType string, context interface{}, options ...VerificationOption) error {
 	// Statement type.
 	if v.attestation.Header.Type != statementType {
 		return fmt.Errorf("%w: attestation type (%q) != intoto type (%q)", errs.ErrorMismatch,
@@ -48,10 +48,6 @@ func (v *Verification) Verify(creatorID string, digests intoto.DigestSet, contex
 		return fmt.Errorf("%w: no subjects in attestation", errs.ErrorInvalidField)
 	}
 	if err := verifyDigests(v.attestation.Header.Subjects[0].Digests, digests); err != nil {
-		return err
-	}
-	// Creator ID.
-	if err := v.verifyCreatorID(creatorID); err != nil {
 		return err
 	}
 	// Context and context type.
@@ -108,17 +104,6 @@ func asInterface(context interface{}) (interface{}, error) {
 	return contextInt, nil
 }
 
-func (v *Verification) verifyCreatorID(creatorID string) error {
-	if creatorID == "" {
-		return fmt.Errorf("%w: creator ID is empty", errs.ErrorInvalidField)
-	}
-	if creatorID != v.attestation.Predicate.Creator.ID {
-		return fmt.Errorf("%w: creator ID (%q) != attestation creator id (%q)", errs.ErrorMismatch,
-			creatorID, v.attestation.Predicate.Creator.ID)
-	}
-	return nil
-}
-
 func verifyDigests(ds intoto.DigestSet, digests intoto.DigestSet) error {
 	if err := ds.Validate(); err != nil {
 		return err
@@ -136,20 +121,6 @@ func verifyDigests(ds intoto.DigestSet, digests intoto.DigestSet) error {
 			return fmt.Errorf("%w: subject with digest (%q:%q) != attestation (%q:%q)", errs.ErrorMismatch,
 				name, value, name, val)
 		}
-	}
-	return nil
-}
-
-func IsCreatorVersion(version string) VerificationOption {
-	return func(v *Verification) error {
-		return v.isCreatorVersion(version)
-	}
-}
-
-func (v *Verification) isCreatorVersion(version string) error {
-	if version != v.attestation.Predicate.Creator.Version {
-		return fmt.Errorf("%w: version (%q) != attestation version (%q)", errs.ErrorMismatch,
-			version, v.attestation.Predicate.Creator.Version)
 	}
 	return nil
 }

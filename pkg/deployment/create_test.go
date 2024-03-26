@@ -39,15 +39,13 @@ func Test_CreationNew(t *testing.T) {
 			},
 		},
 	}
-	creatorVersion := "creator_version"
 	tests := []struct {
-		name           string
-		subject        intoto.Subject
-		contextType    string
-		context        interface{}
-		creatorVersion string
-		policy         map[string]intoto.Policy
-		expected       error
+		name        string
+		subject     intoto.Subject
+		contextType string
+		context     interface{}
+		policy      map[string]intoto.Policy
+		expected    error
 	}{
 		{
 			name:        "required fields set nil context",
@@ -92,13 +90,6 @@ func Test_CreationNew(t *testing.T) {
 			expected:    errs.ErrorInvalidField,
 		},
 		{
-			name:           "result with creator version",
-			subject:        subject,
-			contextType:    contextType,
-			context:        context,
-			creatorVersion: creatorVersion,
-		},
-		{
 			name:        "result with policy",
 			subject:     subject,
 			contextType: contextType,
@@ -106,12 +97,11 @@ func Test_CreationNew(t *testing.T) {
 			policy:      policy,
 		},
 		{
-			name:           "result with all set",
-			subject:        subject,
-			contextType:    contextType,
-			context:        context,
-			creatorVersion: creatorVersion,
-			policy:         policy,
+			name:        "result with all set",
+			subject:     subject,
+			contextType: contextType,
+			context:     context,
+			policy:      policy,
 		},
 	}
 	for _, tt := range tests {
@@ -119,13 +109,10 @@ func Test_CreationNew(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			var options []AttestationCreationOption
-			if tt.creatorVersion != "" {
-				options = append(options, SetCreatorVersion(tt.creatorVersion))
-			}
 			if tt.policy != nil {
 				options = append(options, SetPolicy(tt.policy))
 			}
-			att, err := CreationNew("creator_id", tt.subject, tt.contextType, tt.context, options...)
+			att, err := CreationNew(tt.subject, tt.contextType, tt.context, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -142,14 +129,6 @@ func Test_CreationNew(t *testing.T) {
 			}
 			// Subjects must match.
 			if diff := cmp.Diff([]intoto.Subject{tt.subject}, att.Header.Subjects); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			// Creator ID must match.
-			if diff := cmp.Diff("creator_id", att.Predicate.Creator.ID); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			// Creator version must match.
-			if diff := cmp.Diff(tt.creatorVersion, att.Predicate.Creator.Version); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			// Policy must match.

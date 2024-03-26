@@ -5,7 +5,6 @@ import (
 )
 
 type predicate struct {
-	Creator      intoto.Creator           `json:"creator"`
 	CreationTime string                   `json:"creationTime"`
 	Policy       map[string]intoto.Policy `json:"policy,omitempty"`
 	ContextType  string                   `json:"contextType"`
@@ -24,6 +23,6 @@ type properties map[string]interface{}
 const (
 	statementType        = "https://in-toto.io/Statement/v1"
 	predicateType        = "https://slsa.dev/deployment/v0.1"
-	contextTypePrincipal = "https://slsa.dev/deployment/contextType/PrincipalID"
-	contextPrincipal     = "https://slsa.dev/deployment/context/principalID"
+	contextTypePrincipal = "slsa.dev/deployment/contextType/PrincipalID"
+	contextPrincipal     = "slsa.dev/deployment/context/principalID"
 )

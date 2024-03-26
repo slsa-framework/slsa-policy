@@ -16,7 +16,7 @@ type PolicyEvaluationResult struct {
 }
 
 // AttestationNew creates a deployment attestation.
-func (r PolicyEvaluationResult) AttestationNew(creatorID string, options ...AttestationCreationOption) (*Creation, error) {
+func (r PolicyEvaluationResult) AttestationNew(options ...AttestationCreationOption) (*Creation, error) {
 	if r.Error() != nil {
 		return nil, fmt.Errorf("%w: evaluation failed. Cannot create attestation", errs.ErrorInternal)
 	}
@@ -35,7 +35,7 @@ func (r PolicyEvaluationResult) AttestationNew(creatorID string, options ...Atte
 	context := map[string]string{
 		contextPrincipal: r.principal.URI,
 	}
-	att, err := CreationNew(creatorID, subject, contextTypePrincipal, context, opts...)
+	att, err := CreationNew(subject, contextTypePrincipal, context, opts...)
 	if err != nil {
 		return nil, err
 	}

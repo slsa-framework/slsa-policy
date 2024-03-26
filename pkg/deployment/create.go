@@ -14,7 +14,7 @@ type Creation struct {
 
 type AttestationCreationOption func(*Creation) error
 
-func CreationNew(creatorID string, subject intoto.Subject, contextType string,
+func CreationNew(subject intoto.Subject, contextType string,
 	context interface{}, options ...AttestationCreationOption) (*Creation, error) {
 	if err := subject.Validate(); err != nil {
 		return nil, err
@@ -30,11 +30,8 @@ func CreationNew(creatorID string, subject intoto.Subject, contextType string,
 			},
 			Predicate: predicate{
 				CreationTime: intoto.Now(),
-				Creator: intoto.Creator{
-					ID: creatorID,
-				},
-				ContextType: contextType,
-				Context:     context,
+				ContextType:  contextType,
+				Context:      context,
 			},
 		},
 	}
@@ -53,17 +50,6 @@ func (a *Creation) ToBytes() ([]byte, error) {
 		return nil, fmt.Errorf("failed to marshal: %v", err)
 	}
 	return content, nil
-}
-
-func SetCreatorVersion(version string) AttestationCreationOption {
-	return func(a *Creation) error {
-		return a.setCreatorVersion(version)
-	}
-}
-
-func (a *Creation) setCreatorVersion(version string) error {
-	a.attestation.Predicate.Creator.Version = version
-	return nil
 }
 
 func SetPolicy(policy map[string]intoto.Policy) AttestationCreationOption {

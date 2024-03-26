@@ -25,7 +25,8 @@ func usage(cli string) {
 }
 
 func Run(cli string, args []string) error {
-	if len(args) != 4 {
+	// Argument count is 3 or 4.
+	if len(args) < 3 || len(args) > 4 {
 		usage(cli)
 	}
 	// Extract inputs.

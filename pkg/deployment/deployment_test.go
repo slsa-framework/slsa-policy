@@ -26,8 +26,6 @@ func Test_AttestationNew(t *testing.T) {
 	subject := intoto.Subject{
 		Digests: digests,
 	}
-	creatorID := "creator_id"
-	creatorVersion := "creator_version"
 	policy := map[string]intoto.Policy{
 		"org": intoto.Policy{
 			URI: "policy1_uri",
@@ -52,53 +50,32 @@ func Test_AttestationNew(t *testing.T) {
 		principal: &principal,
 	}
 	opts := []AttestationCreationOption{
-		SetCreatorVersion(creatorVersion),
 		SetPolicy(policy),
 	}
 	tests := []struct {
-		name           string
-		creatorID      string
-		result         PolicyEvaluationResult
-		options        []AttestationCreationOption
-		subject        intoto.Subject
-		creatorVersion string
-		policy         map[string]intoto.Policy
-		expected       error
+		name     string
+		result   PolicyEvaluationResult
+		options  []AttestationCreationOption
+		subject  intoto.Subject
+		policy   map[string]intoto.Policy
+		expected error
 	}{
 		{
-			name:           "all fields set",
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			result:         result,
-			options:        opts,
-			subject:        subject,
-			policy:         policy,
-		},
-		{
-			name:      "no creator version",
-			creatorID: creatorID,
-			result:    result,
-			options: []AttestationCreationOption{
-				SetPolicy(policy),
-			},
+			name:    "all fields set",
+			result:  result,
+			options: opts,
 			subject: subject,
 			policy:  policy,
 		},
 		{
-			name:           "no policy",
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			result:         result,
-			options: []AttestationCreationOption{
-				SetCreatorVersion(creatorVersion),
-			},
+			name:    "no policy",
+			result:  result,
+			options: []AttestationCreationOption{},
 			subject: subject,
 		},
 		{
-			name:           "error result",
-			expected:       errs.ErrorInternal,
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
+			name:     "error result",
+			expected: errs.ErrorInternal,
 			result: PolicyEvaluationResult{
 				err: errs.ErrorMismatch,
 			},
@@ -107,16 +84,15 @@ func Test_AttestationNew(t *testing.T) {
 			policy:  policy,
 		},
 		{
-			name:      "invalid result",
-			creatorID: creatorID,
-			expected:  errs.ErrorInternal,
+			name:     "invalid result",
+			expected: errs.ErrorInternal,
 		},
 	}
 	for _, tt := range tests {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			att, err := tt.result.AttestationNew(tt.creatorID, tt.options...)
+			att, err := tt.result.AttestationNew(tt.options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -129,9 +105,6 @@ func Test_AttestationNew(t *testing.T) {
 			if diff := cmp.Diff(predicateType, att.Header.PredicateType); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
-			if diff := cmp.Diff(tt.creatorID, att.attestation.Predicate.Creator.ID); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
 			if diff := cmp.Diff([]intoto.Subject{tt.subject}, att.attestation.Header.Subjects); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -142,9 +115,6 @@ func Test_AttestationNew(t *testing.T) {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			if diff := cmp.Diff(contextTypePrincipal, att.attestation.Predicate.ContextType); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			if diff := cmp.Diff(tt.creatorVersion, att.attestation.Predicate.Creator.Version); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			if diff := cmp.Diff(tt.policy, att.attestation.Predicate.Policy); diff != "" {
@@ -294,10 +264,7 @@ func Test_e2e(t *testing.T) {
 			},
 		},
 	}
-	creatorID := "creator_id"
-	creatorVersion := "creator_version"
 	opts := []AttestationCreationOption{
-		SetCreatorVersion(creatorVersion),
 		SetPolicy(policy),
 	}
 	buildLevel3 := 3
@@ -313,8 +280,6 @@ func Test_e2e(t *testing.T) {
 		env              string
 		buildLevel       int
 		releaserID       string
-		creatorID        string
-		creatorVersion   string
 		principalURI     string
 		expected         error
 		errorEvaluate    error
@@ -328,10 +293,8 @@ func Test_e2e(t *testing.T) {
 			projects: projects,
 			policyID: policyID2,
 			// Options to create the attestation.
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			options:        opts,
-			env:            "prod",
+			options: opts,
+			env:     "prod",
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
@@ -348,9 +311,7 @@ func Test_e2e(t *testing.T) {
 			projects: projects,
 			policyID: policyID2,
 			// Options to create the attestation.
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			options:        opts,
+			options: opts,
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
@@ -414,10 +375,8 @@ func Test_e2e(t *testing.T) {
 			},
 			policyID: policyID2,
 			// Options to create the attestation.
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			options:        opts,
-			env:            "prod",
+			options: opts,
+			env:     "prod",
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
@@ -436,10 +395,8 @@ func Test_e2e(t *testing.T) {
 			projects: projects,
 			policyID: policyID2,
 			// Options to create the attestation.
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			options:        opts,
-			env:            "mismatch",
+			options: opts,
+			env:     "mismatch",
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
@@ -503,28 +460,7 @@ func Test_e2e(t *testing.T) {
 			},
 			policyID: policyID2,
 			// Options to create the attestation.
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			options:        opts,
-			// Fields to validate the created attestation.
-			digests:      digests,
-			packageName:  packageName1,
-			policy:       policy,
-			principalURI: pricipalURI2,
-			// Data that the verifier will use.
-			releaserID: releaserID2,
-			buildLevel: buildLevel3,
-		},
-		{
-			name: "no author version",
-			// Policies to evaluate.
-			org:      org,
-			projects: projects,
-			policyID: policyID2,
-			// Options to create the attestation.
-			creatorID: creatorID,
-			options:   opts,
-			env:       "prod",
+			options: opts,
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
@@ -541,10 +477,8 @@ func Test_e2e(t *testing.T) {
 			projects: projects,
 			policyID: policyID2,
 			// Options to create the attestation.
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			options:        opts,
-			env:            "prod",
+			options: opts,
+			env:     "prod",
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
@@ -560,10 +494,8 @@ func Test_e2e(t *testing.T) {
 			projects: projects,
 			policyID: policyID2,
 			// Options to create the attestation.
-			creatorID:      creatorID,
-			creatorVersion: creatorVersion,
-			options:        opts,
-			env:            "prod",
+			options: opts,
+			env:     "prod",
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
@@ -598,21 +530,21 @@ func Test_e2e(t *testing.T) {
 			}
 			projectsReader := common.NewNamedBytesIterator(policies, true)
 			// Passing validator.
-			pol, err := PolicyNew(orgReader, projectsReader, SetValidator(newPolicyValidator(true)))
+			_, err = PolicyNew(orgReader, projectsReader, SetValidator(newPolicyValidator(true)))
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)
 			}
 			// Failing validator.
 			orgReader = io.NopCloser(bytes.NewReader(orgContent))
 			projectsReader = common.NewNamedBytesIterator(policies, true)
-			pol, err = PolicyNew(orgReader, projectsReader, SetValidator(newPolicyValidator(false)))
+			_, err = PolicyNew(orgReader, projectsReader, SetValidator(newPolicyValidator(false)))
 			if diff := cmp.Diff(errs.ErrorInvalidField, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			// No validator.
 			orgReader = io.NopCloser(bytes.NewReader(orgContent))
 			projectsReader = common.NewNamedBytesIterator(policies, true)
-			pol, err = PolicyNew(orgReader, projectsReader)
+			pol, err := PolicyNew(orgReader, projectsReader)
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)
 			}
@@ -627,7 +559,7 @@ func Test_e2e(t *testing.T) {
 			if err != nil {
 				return
 			}
-			att, err := result.AttestationNew(tt.creatorID, tt.options...)
+			att, err := result.AttestationNew(tt.options...)
 			if diff := cmp.Diff(tt.errorAttestation, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -646,9 +578,6 @@ func Test_e2e(t *testing.T) {
 
 			// Create verification options.
 			options := []VerificationOption{}
-			if tt.creatorVersion != "" {
-				options = append(options, IsCreatorVersion(tt.creatorVersion))
-			}
 			for name, policy := range tt.policy {
 				options = append(options, HasPolicy(name, policy.URI, policy.Digests))
 			}
@@ -656,7 +585,7 @@ func Test_e2e(t *testing.T) {
 			context := map[string]string{
 				contextPrincipal: tt.principalURI,
 			}
-			err = verification.Verify(tt.creatorID, tt.digests, contextTypePrincipal, context, options...)
+			err = verification.Verify(tt.digests, contextTypePrincipal, context, options...)
 			if diff := cmp.Diff(tt.errorVerify, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

@@ -15,17 +15,17 @@ import (
 
 func usage(cli string) {
 	msg := "" +
-		"Usage: %s deployment evaluate orgPath projectsPath packageURI policyID creatorID\n" +
+		"Usage: %s deployment evaluate orgPath projectsPath packageURI policyID\n" +
 		"\n" +
 		"Example:\n" +
-		"%s deployment evaluate ./path/to/policy/org ./path/to/policy/projects laurentsimon/echo-server@sha256:xxxx https://github.com/org/.slsa/.github/workflows/releaser.yml\n" +
+		"%s deployment evaluate ./path/to/policy/org ./path/to/policy/projects laurentsimon/echo-server@sha256:xxxx servers-prod.json\n" +
 		"\n"
 	fmt.Fprintf(os.Stderr, msg, cli, cli)
 	os.Exit(1)
 }
 
 func Run(cli string, args []string) error {
-	if len(args) != 5 {
+	if len(args) != 4 {
 		usage(cli)
 	}
 	// Extract inputs.
@@ -39,13 +39,6 @@ func Run(cli string, args []string) error {
 		return err
 	}
 	policyID := args[3]
-	creatorID := args[4]
-	var env *string
-	if len(args) == 6 && args[5] != "" {
-		// Only set the env if it's not empty.
-		env = new(string)
-		*env = args[5]
-	}
 	digestsArr := strings.Split(digest, ":")
 	if len(digestsArr) != 2 {
 		return fmt.Errorf("invalid digest (%q)", digest)
@@ -57,6 +50,9 @@ func Run(cli string, args []string) error {
 	// Create a policy.
 	projectsReader := named_files_reader.FromPaths(wd, projectsPath)
 	organizationReader, err := os.Open(orgPath)
+	if err != nil {
+		return fmt.Errorf("failed to read org path: %w", err)
+	}
 	pol, err := deployment.PolicyNew(organizationReader, projectsReader, deployment.SetValidator(&validate.PolicyValidator{}))
 	if err != nil {
 		return fmt.Errorf("failed to create policy: %w", err)
@@ -78,13 +74,13 @@ func Run(cli string, args []string) error {
 	// Create a release attestation and sign it.
 	// TODO(#3): do not attach the attestation, so that caller can do it however they want.
 	// TODO(#2): add policy.
-	att, err := result.AttestationNew(creatorID)
+	att, err := result.AttestationNew()
 	if err != nil {
 		return fmt.Errorf("failed to create attestation: %w", err)
 	}
 	attBytes, err := att.ToBytes()
 	if err != nil {
-		return fmt.Errorf("failed to get attestation bytes: %v\n", err)
+		return fmt.Errorf("failed to get attestation bytes: %v", err)
 	}
 	fmt.Println(string(attBytes))
 

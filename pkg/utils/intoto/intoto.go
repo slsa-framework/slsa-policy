@@ -20,12 +20,6 @@ type Header struct {
 	Subjects      []Subject `json:"subject"`
 }
 
-// Creator is the author of the attestation.
-type Creator struct {
-	ID      string `json:"id"`
-	Version string `json:"version,omitempty"`
-}
-
 type Policy struct {
 	URI     string    `json:"uri,omitempty"`
 	Digests DigestSet `json:"digest,omitempty"`
