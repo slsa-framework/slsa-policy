@@ -14,20 +14,33 @@ runs:
         working_dir=$(mktemp -d)
         echo "name=${working_dir}" >> "$GITHUB_OUTPUT"
 
+    - name: Debug
+      shell: bash
+      working-directory: ${{ steps.working_dir.outputs.name }}
+      env:
+        GH_ACTION_REF: ${{ github.action_ref }}
+        GH_ACTION_REPOSITORY: ${{ github.action_repository }}
+      run: |
+        echo "GH_ACTION_REF: ${GH_ACTION_REF}"
+        echo "GH_ACTION_REPOSITORY: ${GH_ACTION_REPOSITORY}"
+
     - name: Download the release binary
       shell: bash
       working-directory: ${{ steps.working_dir.outputs.name }}
+      env:
+        GH_ACTION_REF: ${{ github.action_ref }}
+        GH_ACTION_REPOSITORY: ${{ github.action_repository }}
       run: |
         set -euo pipefail
 
         # TODO: Support commit sha.
-        # sha=$(echo -n "${GITHUB_ACTION_REF}" | grep -o -E -e "^[a-f0-9]{40}$")
-        if [[ "${GITHUB_ACTION_REF}" != refs/tags/* ]]; then
-          echo "${GITHUB_ACTION_REF} not supported"
+        # sha=$(echo -n "${GH_ACTION_REF}" | grep -o -E -e "^[a-f0-9]{40}$")
+        if [[ "${GH_ACTION_REF}" != refs/tags/* ]]; then
+          echo "${GH_ACTION_REF} not supported"
           exit 1
         fi
-        ref=$(echo -n "${GITHUB_ACTION_REF}" | cut -d "/" -f3)
-        gh release -R laurentsimon/slsa-policy download "${ref}" -p "binary-linux-amd64*"
+        ref=$(echo -n "${GH_ACTION_REF}" | cut -d "/" -f3)
+        gh release -R "${GH_ACTION_REPOSITORY}" download "${ref}" -p "binary-linux-amd64*"
         chmod u+x binary-linux-amd64
 
     - name: Verify the binary
