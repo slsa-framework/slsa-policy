@@ -23,6 +23,7 @@ runs:
       run: |
         echo "GH_ACTION_REF: ${GH_ACTION_REF}"
         echo "GH_ACTION_REPOSITORY: ${GH_ACTION_REPOSITORY}"
+        echo "PWD: $PWD"
 
     - name: Download the release binary
       id: download
