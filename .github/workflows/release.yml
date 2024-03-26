@@ -1,0 +1,21 @@
+name: CLI release
+
+on:
+  # For manual tests.
+  workflow_dispatch:
+  push:
+    tags:
+      - "*" # triggers only if push new tag version, like `0.8.4` or else
+
+permissions: read-all
+
+jobs:
+  evaluator:
+    permissions:
+      id-token: write # For signing.
+      contents: write # For asset uploads.
+      actions: read # For the entrypoint.
+    uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v1.10.0
+    with:
+      go-version-file: "./cmd/evaluator/go.mod"
+      config-file: .github/workflows/release/slsa-evaluator.yml

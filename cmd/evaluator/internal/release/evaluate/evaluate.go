@@ -15,7 +15,7 @@ import (
 
 func usage(cli string) {
 	msg := "" +
-		"Usage: %s release evaluate orgPath projectsPath packageName creatorID [optional:environment]\n" +
+		"Usage: %s release evaluate orgPath projectsPath packageName [optional:environment]\n" +
 		"\n" +
 		"Example:\n" +
 		"%s release evaluate ./path/to/policy/org ./path/to/policy/projects laurentsimon/echo-server@sha256:xxxx prod\n" +
@@ -42,7 +42,7 @@ func Run(cli string, args []string) error {
 	if len(args) == 4 && args[3] != "" {
 		// Only set the env if it's not empty.
 		env = new(string)
-		*env = args[34]
+		*env = args[3]
 	}
 	digestsArr := strings.Split(digest, ":")
 	if len(digestsArr) != 2 {
