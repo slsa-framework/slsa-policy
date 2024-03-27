@@ -65,7 +65,7 @@ func Test_validateProtection(t *testing.T) {
 			name: "service_account present",
 			policy: Policy{
 				Protection: Protection{
-					ServiceAccount: "the_sa",
+					GoogleServiceAccount: "the_sa",
 				},
 			},
 		},
@@ -462,7 +462,7 @@ func Test_Evaluate(t *testing.T) {
 	}
 	project := Policy{
 		Protection: Protection{
-			ServiceAccount: "protection_name",
+			GoogleServiceAccount: "protection_name",
 		},
 		BuildRequirements: BuildRequirements{
 			RequireSlsaLevel: common.AsPointer(2),
@@ -666,7 +666,7 @@ func Test_FromReaders(t *testing.T) {
 				{
 					Format: 1,
 					Protection: Protection{
-						ServiceAccount: "protection_name",
+						GoogleServiceAccount: "protection_name",
 					},
 					Packages: []Package{
 						{
@@ -683,7 +683,7 @@ func Test_FromReaders(t *testing.T) {
 				{
 					Format: 1,
 					Protection: Protection{
-						ServiceAccount: "protection_name2",
+						GoogleServiceAccount: "protection_name2",
 					},
 					Packages: []Package{
 						{
@@ -707,7 +707,7 @@ func Test_FromReaders(t *testing.T) {
 				{
 					Format: 1,
 					Protection: Protection{
-						ServiceAccount: "protection_name",
+						GoogleServiceAccount: "protection_name",
 					},
 					Packages: []Package{
 						{
@@ -724,7 +724,7 @@ func Test_FromReaders(t *testing.T) {
 				{
 					Format: 1,
 					Protection: Protection{
-						ServiceAccount: "protection_name",
+						GoogleServiceAccount: "protection_name",
 					},
 					Packages: []Package{
 						{
@@ -749,7 +749,7 @@ func Test_FromReaders(t *testing.T) {
 				{
 					Format: 1,
 					Protection: Protection{
-						ServiceAccount: "protection_name",
+						GoogleServiceAccount: "protection_name",
 					},
 					Packages: []Package{
 						{
@@ -766,7 +766,7 @@ func Test_FromReaders(t *testing.T) {
 				{
 					Format: 1,
 					Protection: Protection{
-						ServiceAccount: "protection_name2",
+						GoogleServiceAccount: "protection_name2",
 					},
 					Packages: []Package{
 						{
@@ -791,7 +791,7 @@ func Test_FromReaders(t *testing.T) {
 				{
 					Format: 1,
 					Protection: Protection{
-						ServiceAccount: "protection_name",
+						GoogleServiceAccount: "protection_name",
 					},
 					Packages: []Package{
 						{

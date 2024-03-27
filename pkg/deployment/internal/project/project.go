@@ -32,7 +32,7 @@ type Package struct {
 }
 
 type Protection struct {
-	ServiceAccount string `json:"service_account"`
+	GoogleServiceAccount string `json:"google_service_account"`
 }
 
 // Policy defines the policy.
@@ -91,7 +91,7 @@ func (p *Policy) validateFormat() error {
 }
 
 func (p *Policy) validateProtection() error {
-	if p.Protection.ServiceAccount == "" {
+	if p.Protection.GoogleServiceAccount == "" {
 		return fmt.Errorf("[project] %w: empty protection service_account", errs.ErrorInvalidField)
 	}
 	return nil
@@ -176,7 +176,7 @@ func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organizatio
 		policies[id] = *policy
 
 		// The protection must be unique across all projects.
-		name := policy.Protection.ServiceAccount
+		name := policy.Protection.GoogleServiceAccount
 		if _, exists := protections[name]; exists {
 			return nil, fmt.Errorf("[project] %w: protection's serivce_account (%q) is defined more than once", errs.ErrorInvalidField, name)
 		}
