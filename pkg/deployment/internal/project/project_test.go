@@ -91,43 +91,36 @@ func Test_getPackage(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name            string
-		policy          Policy
-		packageName     string
-		packageRegistry string
-		expected        error
+		name        string
+		policy      Policy
+		packageName string
+		expected    error
 	}{
 		{
-			name:            "name2 / registry2 present",
-			packageName:     "name2",
-			packageRegistry: "registry2",
+			name:        "name2 present",
+			packageName: "name2",
 			policy: Policy{
 				Packages: []Package{
 					{
-						Name:     "name1",
-						Registry: "registry1",
+						Name: "name1",
 					},
 					{
-						Name:     "name2",
-						Registry: "registry2",
+						Name: "name2",
 					},
 				},
 			},
 		},
 		{
-			name:            "name3 not present",
-			expected:        errs.ErrorNotFound,
-			packageName:     "name3",
-			packageRegistry: "registry2",
+			name:        "name3 not present",
+			expected:    errs.ErrorNotFound,
+			packageName: "name3",
 			policy: Policy{
 				Packages: []Package{
 					{
-						Name:     "name1",
-						Registry: "registry1",
+						Name: "name1",
 					},
 					{
-						Name:     "name2",
-						Registry: "registry2",
+						Name: "name2",
 					},
 				},
 			},
@@ -145,9 +138,6 @@ func Test_getPackage(t *testing.T) {
 				return
 			}
 			if diff := cmp.Diff(tt.packageName, pkg.Name); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			if diff := cmp.Diff(tt.packageRegistry, pkg.Registry); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})
