@@ -23,7 +23,7 @@ type attestation struct {
 }
 
 const (
-	statementType          = "https://in-toto.io/Statement/v1"
-	predicateType          = "https://slsa.dev/deployment/v0.1"
-	scopeGCPServiceAccount = "cloud.google.com/service_account/v1"
+	statementType             = "https://in-toto.io/Statement/v1"
+	predicateType             = "https://slsa.dev/deployment/v0.1"
+	scopeGoogleServiceAccount = "cloud.google.com/service_account/v1"
 )

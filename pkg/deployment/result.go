@@ -33,7 +33,7 @@ func (r PolicyEvaluationResult) AttestationNew(options ...AttestationCreationOpt
 	// Add caller options.
 	opts = append(opts, options...)
 	scopes := map[string]string{
-		scopeGCPServiceAccount: r.protection.ServiceAccount,
+		scopeGoogleServiceAccount: r.protection.GoogleServiceAccount,
 	}
 	att, err := CreationNew(subject, scopes, opts...)
 	if err != nil {
@@ -50,7 +50,7 @@ func (r PolicyEvaluationResult) isValid() error {
 	if r.protection == nil {
 		return fmt.Errorf("%w: nil protection", errs.ErrorInternal)
 	}
-	if r.protection.ServiceAccount == "" {
+	if r.protection.GoogleServiceAccount == "" {
 		return fmt.Errorf("%w: empty protection service account", errs.ErrorInternal)
 	}
 	return nil
