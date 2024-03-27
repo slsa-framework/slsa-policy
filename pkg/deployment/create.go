@@ -14,8 +14,7 @@ type Creation struct {
 
 type AttestationCreationOption func(*Creation) error
 
-func CreationNew(subject intoto.Subject, contextType string,
-	context interface{}, options ...AttestationCreationOption) (*Creation, error) {
+func CreationNew(subject intoto.Subject, scopes map[string]string, options ...AttestationCreationOption) (*Creation, error) {
 	if err := subject.Validate(); err != nil {
 		return nil, err
 	}
@@ -30,8 +29,7 @@ func CreationNew(subject intoto.Subject, contextType string,
 			},
 			Predicate: predicate{
 				CreationTime: intoto.Now(),
-				ContextType:  contextType,
-				Context:      context,
+				Scopes:       scopes,
 			},
 		},
 	}
@@ -45,23 +43,14 @@ func CreationNew(subject intoto.Subject, contextType string,
 }
 
 func (a *Creation) ToBytes() ([]byte, error) {
-	content, err := json.Marshal(*&a.attestation)
+	content, err := json.Marshal(a.attestation)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal: %v", err)
 	}
 	return content, nil
 }
 
-func SetPolicy(policy map[string]intoto.Policy) AttestationCreationOption {
-	return func(a *Creation) error {
-		return a.setPolicy(policy)
-	}
-}
-
-func (a *Creation) setPolicy(policy map[string]intoto.Policy) error {
-	a.attestation.Predicate.Policy = policy
-	return nil
-}
+// TODO: Add support for decision details.
 
 func EnterSafeMode() AttestationCreationOption {
 	return func(a *Creation) error {

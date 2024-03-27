@@ -32,10 +32,10 @@ func (r PolicyEvaluationResult) AttestationNew(options ...AttestationCreationOpt
 	opts = append(opts, EnterSafeMode())
 	// Add caller options.
 	opts = append(opts, options...)
-	context := map[string]string{
-		contextPrincipal: r.principal.URI,
+	scopes := map[string]string{
+		scopeKubernetesServiceAccount: r.principal.URI,
 	}
-	att, err := CreationNew(subject, contextTypePrincipal, context, opts...)
+	att, err := CreationNew(subject, scopes, opts...)
 	if err != nil {
 		return nil, err
 	}

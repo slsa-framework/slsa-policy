@@ -18,52 +18,31 @@ func Test_CreationNew(t *testing.T) {
 			"gitCommit": "another_value",
 		},
 	}
-	contextType := "context_type"
-	context := map[string]string{
+	scopes := map[string]string{
 		"key1": "value1",
 		"ke2":  "value2",
 	}
-	policy := map[string]intoto.Policy{
-		"org": intoto.Policy{
-			URI: "policy1_uri",
-			Digests: intoto.DigestSet{
-				"sha256":    "value1",
-				"commitSha": "value2",
-			},
-		},
-		"project": intoto.Policy{
-			URI: "policy2_uri",
-			Digests: intoto.DigestSet{
-				"sha256":    "value3",
-				"commitSha": "value4",
-			},
-		},
-	}
 	tests := []struct {
-		name        string
-		subject     intoto.Subject
-		contextType string
-		context     interface{}
-		policy      map[string]intoto.Policy
-		expected    error
+		name     string
+		subject  intoto.Subject
+		scopes   map[string]string
+		policy   map[string]intoto.Policy
+		expected error
 	}{
 		{
-			name:        "required fields set nil context",
-			subject:     subject,
-			contextType: contextType,
+			name:    "required fields set nil context",
+			subject: subject,
 		},
 		{
-			name:        "required fields set non-nil context",
-			subject:     subject,
-			contextType: contextType,
-			context:     context,
+			name:    "required fields set non-nil context",
+			subject: subject,
+			scopes:  scopes,
 		},
 		{
-			name:        "result with no subject digests",
-			subject:     intoto.Subject{},
-			contextType: contextType,
-			context:     context,
-			expected:    errs.ErrorInvalidField,
+			name:     "result with no subject digests",
+			subject:  intoto.Subject{},
+			scopes:   scopes,
+			expected: errs.ErrorInvalidField,
 		},
 		{
 			name: "result with empty digest value",
@@ -73,9 +52,8 @@ func Test_CreationNew(t *testing.T) {
 					"gitCommit": "",
 				},
 			},
-			contextType: contextType,
-			context:     context,
-			expected:    errs.ErrorInvalidField,
+			scopes:   scopes,
+			expected: errs.ErrorInvalidField,
 		},
 		{
 			name: "result with empty digest key",
@@ -85,23 +63,13 @@ func Test_CreationNew(t *testing.T) {
 					"":       "another_value",
 				},
 			},
-			contextType: contextType,
-			context:     context,
-			expected:    errs.ErrorInvalidField,
+			scopes:   scopes,
+			expected: errs.ErrorInvalidField,
 		},
 		{
-			name:        "result with policy",
-			subject:     subject,
-			contextType: contextType,
-			context:     context,
-			policy:      policy,
-		},
-		{
-			name:        "result with all set",
-			subject:     subject,
-			contextType: contextType,
-			context:     context,
-			policy:      policy,
+			name:    "result with all set",
+			subject: subject,
+			scopes:  scopes,
 		},
 	}
 	for _, tt := range tests {
@@ -109,10 +77,7 @@ func Test_CreationNew(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			var options []AttestationCreationOption
-			if tt.policy != nil {
-				options = append(options, SetPolicy(tt.policy))
-			}
-			att, err := CreationNew(tt.subject, tt.contextType, tt.context, options...)
+			att, err := CreationNew(tt.subject, tt.scopes, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -131,16 +96,8 @@ func Test_CreationNew(t *testing.T) {
 			if diff := cmp.Diff([]intoto.Subject{tt.subject}, att.Header.Subjects); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
-			// Policy must match.
-			if diff := cmp.Diff(tt.policy, att.Predicate.Policy); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			// Context type must match.
-			if diff := cmp.Diff(tt.contextType, att.Predicate.ContextType); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			// Context must match.
-			if diff := cmp.Diff(tt.context, att.Predicate.Context); diff != "" {
+			// Scopes must match.
+			if diff := cmp.Diff(tt.scopes, att.Predicate.Scopes); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})

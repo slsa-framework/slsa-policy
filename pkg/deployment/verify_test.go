@@ -96,151 +96,92 @@ func Test_verifyDigests(t *testing.T) {
 	}
 }
 
-func Test_verifyContext(t *testing.T) {
+func Test_verifyScopes(t *testing.T) {
 	t.Parallel()
-	contextType := "context_type"
-	context := map[string][]string{
-		"key1": []string{"val11", "val12"},
-		"key2": []string{"val21", "val22"},
+	scopes := map[string]string{
+		"key1": "val1",
+		"key2": "val2",
 	}
 	att := attestation{
 		Predicate: predicate{
-			ContextType: contextType,
-			Context:     context,
+			Scopes: scopes,
 		},
 	}
 	tests := []struct {
 		name        string
-		contextType string
-		context     interface{}
 		attestation attestation
+		scopes      map[string]string
 		expected    error
 	}{
 		{
 			name:        "match all set",
 			attestation: att,
-			contextType: contextType,
-			context:     context,
+			scopes:      scopes,
 		},
 		{
-			name: "match empty context",
+			name: "match empty scopes",
 			attestation: attestation{
-				Predicate: predicate{
-					ContextType: contextType,
-				},
-			},
-			contextType: contextType,
-		},
-		{
-			name:        "mismatch type",
-			expected:    errs.ErrorMismatch,
-			attestation: att,
-			contextType: contextType + "_mismatch",
-			context:     context,
-		},
-		{
-			name:        "mismatch context key1",
-			expected:    errs.ErrorMismatch,
-			attestation: att,
-			contextType: contextType,
-			context: map[string][]string{
-				"key1_mismatch": []string{"val11", "val12"},
-				"key2":          []string{"val21", "val22"},
+				Predicate: predicate{},
 			},
 		},
 		{
-			name:        "mismatch context val11",
+			name:        "mismatch scopes key1",
 			expected:    errs.ErrorMismatch,
 			attestation: att,
-			contextType: contextType,
-			context: map[string][]string{
-				"key1": []string{"val11_mismatch", "val12"},
-				"key2": []string{"val21", "val22"},
+			scopes: map[string]string{
+				"key1_mismatch": "val1",
+				"key2":          "val2",
 			},
 		},
 		{
-			name:        "mismatch context key2",
+			name:        "mismatch scopes val1",
 			expected:    errs.ErrorMismatch,
 			attestation: att,
-			contextType: contextType,
-			context: map[string][]string{
-				"key1":          []string{"val11", "val12"},
-				"key2_mismatch": []string{"val21", "val22"},
+			scopes: map[string]string{
+				"key1": "val1_mismatch",
+				"key2": "val2",
 			},
 		},
 		{
-			name:        "mismatch context val22",
+			name:        "mismatch scopes key2",
 			expected:    errs.ErrorMismatch,
 			attestation: att,
-			contextType: contextType,
-			context: map[string][]string{
-				"key11": []string{"val11", "val12"},
-				"key2":  []string{"val21", "val22_mismatch"},
+			scopes: map[string]string{
+				"key1_":         "val1",
+				"key2_mismatch": "val2",
 			},
 		},
 		{
-			name:        "mismatch empty context",
+			name:        "mismatch scopes val2",
 			expected:    errs.ErrorMismatch,
 			attestation: att,
-			contextType: contextType,
+			scopes: map[string]string{
+				"key1_": "val1",
+				"key2":  "val2_mismatch",
+			},
 		},
 		{
-			name:     "mismatch empty context attestation",
+			name:        "mismatch empty scopes",
+			expected:    errs.ErrorMismatch,
+			attestation: att,
+		},
+		{
+			name:     "mismatch empty scopes attestation",
 			expected: errs.ErrorMismatch,
 			attestation: attestation{
-				Predicate: predicate{
-					ContextType: contextType,
-				},
+				Predicate: predicate{},
 			},
-			contextType: contextType,
-			context:     context,
-		},
-		{
-			name:        "error empty type",
-			expected:    errs.ErrorInvalidField,
-			attestation: att,
-			context:     context,
-		},
-		{
-			name:     "error empty type attestation",
-			expected: errs.ErrorInvalidField,
-			attestation: attestation{
-				Predicate: predicate{
-					Context: context,
-				},
-			},
-			contextType: contextType,
-			context:     context,
-		},
-		{
-			name:     "mismatch empty context attestation",
-			expected: errs.ErrorMismatch,
-			attestation: attestation{
-				Predicate: predicate{
-					ContextType: contextType,
-				},
-			},
-			contextType: contextType,
-			context:     context,
-		},
-		{
-			name:     "error both empty type",
-			expected: errs.ErrorInvalidField,
+			scopes: scopes,
 		},
 	}
 	for _, tt := range tests {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			contextInt, err := asInterface(tt.attestation.Predicate.Context)
-			if err != nil {
-				t.Fatalf("failed to asInterface: %v", err)
-			}
 			verification := Verification{
 				attestation: tt.attestation,
 			}
-			verification.attestation.Predicate.Context = contextInt
-			err = verification.verifyContext(tt.contextType, tt.context)
+			err := verification.verifyScopes(tt.scopes)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -259,26 +200,9 @@ func Test_Verify(t *testing.T) {
 			Digests: digests,
 		},
 	}
-	policy := map[string]intoto.Policy{
-		"org": {
-			URI: "org_uri",
-			Digests: intoto.DigestSet{
-				"sha256":    "org_256",
-				"gitCommit": "org_commit",
-			},
-		},
-		"project": {
-			URI: "project_uri",
-			Digests: intoto.DigestSet{
-				"sha256":    "project_256",
-				"gitCommit": "project_commit",
-			},
-		},
-	}
-	contextType := "context_type"
-	context := map[string][]string{
-		"key1": []string{"val11", "val12"},
-		"key2": []string{"val21", "val22"},
+	scopes := map[string]string{
+		"key1": "val1",
+		"key2": "val2",
 	}
 	header := intoto.Header{
 		Type:          statementType,
@@ -286,31 +210,25 @@ func Test_Verify(t *testing.T) {
 		Subjects:      subjects,
 	}
 	pred := predicate{
-		Policy:       policy,
 		CreationTime: intoto.Now(),
-		ContextType:  contextType,
-		Context:      context,
+		Scopes:       scopes,
 	}
 	att := attestation{
 		Header:    header,
 		Predicate: pred,
 	}
 	tests := []struct {
-		name        string
-		att         attestation
-		digests     intoto.DigestSet
-		contextType string
-		context     interface{}
-		policy      map[string]intoto.Policy
-		expected    error
+		name     string
+		att      attestation
+		digests  intoto.DigestSet
+		scopes   map[string]string
+		expected error
 	}{
 		{
-			name:        "all fields set",
-			att:         att,
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-			policy:      policy,
+			name:    "all fields set",
+			att:     att,
+			scopes:  scopes,
+			digests: digests,
 		},
 		{
 			name:     "mismatch statement type",
@@ -323,10 +241,8 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-			policy:      policy,
+			scopes:  scopes,
+			digests: digests,
 		},
 		{
 			name:     "mismatch predicate type",
@@ -339,10 +255,8 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-			policy:      policy,
+			scopes:  scopes,
+			digests: digests,
 		},
 		{
 			name:     "empty att subject",
@@ -354,18 +268,14 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-			policy:      policy,
+			scopes:  scopes,
+			digests: digests,
 		},
 		{
-			name:        "empty input subject",
-			expected:    errs.ErrorInvalidField,
-			att:         att,
-			contextType: contextType,
-			context:     context,
-			policy:      policy,
+			name:     "empty input subject",
+			expected: errs.ErrorInvalidField,
+			att:      att,
+			scopes:   scopes,
 		},
 		{
 			name:     "empty att digest key",
@@ -385,22 +295,18 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-			policy:      policy,
+			scopes:  scopes,
+			digests: digests,
 		},
 		{
-			name:        "empty input digest key",
-			expected:    errs.ErrorInvalidField,
-			att:         att,
-			contextType: contextType,
-			context:     context,
+			name:     "empty input digest key",
+			expected: errs.ErrorInvalidField,
+			att:      att,
+			scopes:   scopes,
 			digests: intoto.DigestSet{
 				"sha256": "another",
 				"":       "mismatch_another_com",
 			},
-			policy: policy,
 		},
 		{
 			name:     "empty att digest value",
@@ -420,10 +326,8 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-			policy:      policy,
+			scopes:  scopes,
+			digests: digests,
 		},
 		{
 			name:     "empty input digest value",
@@ -443,321 +347,136 @@ func Test_Verify(t *testing.T) {
 				},
 				Predicate: pred,
 			},
-			contextType: contextType,
-			context:     context,
+			scopes: scopes,
 			digests: intoto.DigestSet{
 				"sha256":    "another",
 				"gitCommit": "",
 			},
-			policy: policy,
 		},
 		{
-			name:        "mismatch sha256 digest",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			context:     context,
+			name:     "mismatch sha256 digest",
+			expected: errs.ErrorMismatch,
+			att:      att,
+			scopes:   scopes,
 			digests: intoto.DigestSet{
 				"sha256":    "not_another",
 				"gitCommit": "mismatch_another_com",
 			},
-			policy: policy,
 		},
 		{
-			name:        "mismatch gitCommit digest",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			context:     context,
+			name:     "mismatch gitCommit digest",
+			expected: errs.ErrorMismatch,
+			att:      att,
+			scopes:   scopes,
 			digests: intoto.DigestSet{
 				"sha256":    "another",
 				"gitCommit": "mismatch_another_com",
 			},
-			policy: policy,
 		},
 		{
-			name:        "mismatch digest not present",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			context:     context,
+			name:     "mismatch digest not present",
+			expected: errs.ErrorMismatch,
+			att:      att,
+			scopes:   scopes,
 			digests: intoto.DigestSet{
 				"other":  "another",
 				"other2": "mismatch_another_com",
 			},
-			policy: policy,
 		},
 		{
-			name:        "one of digests",
-			att:         att,
-			contextType: contextType,
-			context:     context,
+			name:   "one of digests",
+			att:    att,
+			scopes: scopes,
 			digests: intoto.DigestSet{
 				"gitCommit": "another_com",
 			},
-			policy: policy,
 		},
 		{
-			name:        "input no digest",
-			expected:    errs.ErrorInvalidField,
-			att:         att,
-			contextType: contextType,
-			context:     context,
-			policy:      policy,
-		},
-		{
-			name:        "mismatch no org",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-			policy: map[string]intoto.Policy{
-				"not_org": {
-					URI: "org_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "org_256",
-						"gitCommit": "org_commit",
-					},
-				},
-				"project": {
-					URI: "project_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "project_256",
-						"gitCommit": "project_commit",
-					},
-				},
-			},
-		},
-		{
-			name:        "mismatch org uri",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-			policy: map[string]intoto.Policy{
-				"org": {
-					URI: "no_org_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "org_256",
-						"gitCommit": "org_commit",
-					},
-				},
-				"project": {
-					URI: "project_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "project_256",
-						"gitCommit": "project_commit",
-					},
-				},
-			},
-		},
-		{
-			name:        "mismatch org sha256",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-			policy: map[string]intoto.Policy{
-				"org": {
-					URI: "org_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "no_org_256",
-						"gitCommit": "org_commit",
-					},
-				},
-				"project": {
-					URI: "project_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "project_256",
-						"gitCommit": "project_commit",
-					},
-				},
-			},
-		},
-		{
-			name:        "mismatch org gitCommit",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-			policy: map[string]intoto.Policy{
-				"org": {
-					URI: "org_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "org_256",
-						"gitCommit": "no_org_commit",
-					},
-				},
-				"project": {
-					URI: "project_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "project_256",
-						"gitCommit": "project_commit",
-					},
-				},
-			},
-		},
-		{
-			name:        "mismatch context type",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType + "_mismatch",
-			context:     context,
-			digests:     digests,
-			policy:      policy,
-		},
-		{
-			name:     "error empty context type",
+			name:     "input no digest",
 			expected: errs.ErrorInvalidField,
 			att:      att,
-			context:  context,
+			scopes:   scopes,
+		},
+		{
+			name: "both empty scopes",
+			att: attestation{
+				Header: header,
+				Predicate: predicate{
+					CreationTime: intoto.Now(),
+				},
+			},
+			digests: digests,
+		},
+		{
+			name:     "mismatch scopes key1",
+			expected: errs.ErrorMismatch,
+			att:      att,
+			scopes: map[string]string{
+				"key1_mismatch": "val1",
+				"key2":          "val2",
+			},
+			digests: digests,
+		},
+		{
+			name:     "mismatch scopes key2",
+			expected: errs.ErrorMismatch,
+			att:      att,
+			scopes: map[string]string{
+				"key1":          "val1",
+				"key2_mismatch": "val2",
+			},
+			digests: digests,
+		},
+		{
+			name:     "mismatch context val1",
+			expected: errs.ErrorMismatch,
+			att:      att,
+			scopes: map[string]string{
+				"key1": "val1_mismatch",
+				"key2": "val2",
+			},
+			digests: digests,
+		},
+		{
+			name:     "mismatch context val2",
+			expected: errs.ErrorMismatch,
+			att:      att,
+			scopes: map[string]string{
+				"key1": "val1",
+				"key2": "val2_mismatch",
+			},
+			digests: digests,
+		},
+		{
+			name:     "mismatch empty scopes",
+			expected: errs.ErrorMismatch,
+			att:      att,
 			digests:  digests,
-			policy:   policy,
 		},
 		{
-			name:     "error empty context type att",
-			expected: errs.ErrorInvalidField,
-			att: attestation{
-				Header: header,
-				Predicate: predicate{
-					Policy:       policy,
-					CreationTime: intoto.Now(),
-					Context:      context,
-				},
-			},
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-			policy:      policy,
-		},
-		{
-			name: "both empty context",
-			att: attestation{
-				Header: header,
-				Predicate: predicate{
-					Policy:       policy,
-					CreationTime: intoto.Now(),
-					ContextType:  contextType,
-				},
-			},
-			contextType: contextType,
-			digests:     digests,
-			policy:      policy,
-		},
-		{
-			name:        "mismatch context key1",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			context: map[string][]string{
-				"key1_mismatch": []string{"val11", "val12"},
-				"key2":          []string{"val21", "val22"},
-			},
-			digests: digests,
-			policy:  policy,
-		},
-		{
-			name:        "mismatch context key2",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			context: map[string][]string{
-				"key1":          []string{"val11", "val12"},
-				"key2_mismatch": []string{"val21", "val22"},
-			},
-			digests: digests,
-			policy:  policy,
-		},
-		{
-			name:        "mismatch context val12",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			context: map[string][]string{
-				"key1": []string{"val11", "val12_mismatch"},
-				"key2": []string{"val21", "val22"},
-			},
-			digests: digests,
-			policy:  policy,
-		},
-		{
-			name:        "mismatch context val22",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			context: map[string][]string{
-				"key1": []string{"val11", "val12"},
-				"key2": []string{"val21", "val22_mismatch"},
-			},
-			digests: digests,
-			policy:  policy,
-		},
-		{
-			name:        "mismatch empty context",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			digests:     digests,
-			policy:      policy,
-		},
-		{
-			name:     "mismatch empty context att",
+			name:     "mismatch empty scopes att",
 			expected: errs.ErrorMismatch,
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
-					Policy:       policy,
 					CreationTime: intoto.Now(),
-					ContextType:  contextType,
 				},
 			},
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-			policy:      policy,
+			scopes:  scopes,
+			digests: digests,
 		},
 		// Ignored fields.
 		{
-			name:        "ignore digests",
-			expected:    errs.ErrorInvalidField,
-			att:         att,
-			contextType: contextType,
-			context:     context,
-			policy:      policy,
-		},
-		{
-			name:        "ignore policy",
-			att:         att,
-			contextType: contextType,
-			context:     context,
-			digests:     digests,
-		},
-		{
-			name:     "ignore context type",
+			name:     "ignore digests",
 			expected: errs.ErrorInvalidField,
 			att:      att,
-			context:  context,
-			digests:  digests,
-			policy:   policy,
+			scopes:   scopes,
 		},
 		{
-			name:        "ignore context",
-			expected:    errs.ErrorMismatch,
-			att:         att,
-			contextType: contextType,
-			digests:     digests,
-			policy:      policy,
-		},
-		{
-			name:     "ignore context type",
-			expected: errs.ErrorInvalidField,
+			name:     "ignore scopes",
+			expected: errs.ErrorMismatch,
 			att:      att,
 			digests:  digests,
-			policy:   policy,
 		},
 	}
 	for _, tt := range tests {
@@ -777,12 +496,9 @@ func Test_Verify(t *testing.T) {
 
 			// Create verification options.
 			var options []VerificationOption
-			for name, policy := range tt.policy {
-				options = append(options, HasPolicy(name, policy.URI, policy.Digests))
-			}
 
 			// Verify.
-			err = verification.Verify(tt.digests, tt.contextType, tt.context, options...)
+			err = verification.Verify(tt.digests, tt.scopes, options...)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

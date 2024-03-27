@@ -4,9 +4,14 @@ import (
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
+type decisionDetails struct {
+	Evidence []intoto.ResourceDescriptor `json:"evidence,omitempty"`
+	Policy   []intoto.ResourceDescriptor `json:"policy,omitempty"`
+}
+
 type predicate struct {
 	CreationTime         string                   `json:"creationTime"`
-	Policy               map[string]intoto.Policy `json:"policy,omitempty"`
+	DecisionDetails      decisionDetails          `json:"decisionDetails,omitempty"`
 	Package              intoto.PackageDescriptor `json:"package"`
 	Properties           properties               `json:"properties,omitempty"`
 	DependencyProperties map[string]properties    `json:"dependencyProperties,omitempty"`

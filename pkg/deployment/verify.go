@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"reflect"
 
 	"github.com/laurentsimon/slsa-policy/pkg/errs"
@@ -18,7 +17,7 @@ type Verification struct {
 type VerificationOption func(*Verification) error
 
 func VerificationNew(reader io.ReadCloser) (*Verification, error) {
-	content, err := ioutil.ReadAll(reader)
+	content, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read: %w", err)
 	}
@@ -32,7 +31,7 @@ func VerificationNew(reader io.ReadCloser) (*Verification, error) {
 	}, nil
 }
 
-func (v *Verification) Verify(digests intoto.DigestSet, contextType string, context interface{}, options ...VerificationOption) error {
+func (v *Verification) Verify(digests intoto.DigestSet, scopes map[string]string, options ...VerificationOption) error {
 	// Statement type.
 	if v.attestation.Header.Type != statementType {
 		return fmt.Errorf("%w: attestation type (%q) != intoto type (%q)", errs.ErrorMismatch,
@@ -50,8 +49,8 @@ func (v *Verification) Verify(digests intoto.DigestSet, contextType string, cont
 	if err := verifyDigests(v.attestation.Header.Subjects[0].Digests, digests); err != nil {
 		return err
 	}
-	// Context and context type.
-	if err := v.verifyContext(contextType, context); err != nil {
+	// Scopes.
+	if err := v.verifyScopes(scopes); err != nil {
 		return err
 	}
 
@@ -68,40 +67,12 @@ func (v *Verification) Verify(digests intoto.DigestSet, contextType string, cont
 	return nil
 }
 
-func (v *Verification) verifyContext(contextType string, context interface{}) error {
-	if contextType == "" {
-		return fmt.Errorf("%w: context type is empty", errs.ErrorInvalidField)
-	}
-	if v.attestation.Predicate.ContextType == "" {
-		return fmt.Errorf("%w: attestation context type is empty", errs.ErrorInvalidField)
-	}
-	if contextType != v.attestation.Predicate.ContextType {
-		return fmt.Errorf("%w: context type (%q) != attestation context type (%q)", errs.ErrorMismatch,
-			contextType, v.attestation.Predicate.ContextType)
-	}
-
-	// Marshall and unmarshal to get an interface{}.
-	contextInt, err := asInterface(context)
-	if err != nil {
-		return err
-	}
-	if !reflect.DeepEqual(contextInt, v.attestation.Predicate.Context) {
-		return fmt.Errorf("%w: context (%q) != attestation context (%q)", errs.ErrorMismatch,
-			contextInt, v.attestation.Predicate.Context)
+func (v *Verification) verifyScopes(scopes map[string]string) error {
+	if !reflect.DeepEqual(v.attestation.Predicate.Scopes, scopes) {
+		return fmt.Errorf("%w: scopes (%q) != attestation scopes (%q)", errs.ErrorMismatch,
+			scopes, v.attestation.Predicate.Scopes)
 	}
 	return nil
-}
-
-func asInterface(context interface{}) (interface{}, error) {
-	var contextInt interface{}
-	contextBytes, err := json.Marshal(context)
-	if err != nil {
-		return nil, fmt.Errorf("cannot marshal context (%q): %w", context, err)
-	}
-	if err := json.Unmarshal(contextBytes, &contextInt); err != nil {
-		return nil, fmt.Errorf("cannot unmarshal context (%q): %w", context, err)
-	}
-	return contextInt, nil
 }
 
 func verifyDigests(ds intoto.DigestSet, digests intoto.DigestSet) error {
@@ -121,28 +92,6 @@ func verifyDigests(ds intoto.DigestSet, digests intoto.DigestSet) error {
 			return fmt.Errorf("%w: subject with digest (%q:%q) != attestation (%q:%q)", errs.ErrorMismatch,
 				name, value, name, val)
 		}
-	}
-	return nil
-}
-
-func HasPolicy(name, uri string, digests intoto.DigestSet) VerificationOption {
-	return func(v *Verification) error {
-		return v.hasPolicy(name, uri, digests)
-	}
-}
-
-func (v *Verification) hasPolicy(name, uri string, digests intoto.DigestSet) error {
-	policy, exists := v.attestation.Predicate.Policy[name]
-	if !exists {
-		return fmt.Errorf("%w: policy (%q) does not exist in attestation", errs.ErrorMismatch,
-			name)
-	}
-	if policy.URI != uri {
-		return fmt.Errorf("%w: policy (%q) with URI (%q) != attestation (%q)", errs.ErrorMismatch,
-			name, uri, policy.URI)
-	}
-	if err := verifyDigests(digests, policy.Digests); err != nil {
-		return err
 	}
 	return nil
 }

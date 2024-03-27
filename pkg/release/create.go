@@ -70,17 +70,6 @@ func (a *Creation) isSafeMode() bool {
 	return a.safeMode
 }
 
-func SetPolicy(policy map[string]intoto.Policy) AttestationCreationOption {
-	return func(a *Creation) error {
-		return a.setPolicy(policy)
-	}
-}
-
-func (a *Creation) setPolicy(policy map[string]intoto.Policy) error {
-	a.attestation.Predicate.Policy = policy
-	return nil
-}
-
 func SetPackageVersion(version string) AttestationCreationOption {
 	return func(a *Creation) error {
 		return a.setPackageVersion(version)

@@ -108,22 +108,6 @@ func Test_Verify(t *testing.T) {
 			Digests: digests,
 		},
 	}
-	policy := map[string]intoto.Policy{
-		"org": {
-			URI: "org_uri",
-			Digests: intoto.DigestSet{
-				"sha256":    "org_256",
-				"gitCommit": "org_commit",
-			},
-		},
-		"project": {
-			URI: "project_uri",
-			Digests: intoto.DigestSet{
-				"sha256":    "project_256",
-				"gitCommit": "project_commit",
-			},
-		},
-	}
 	prod := "prod"
 	header := intoto.Header{
 		Type:          statementType,
@@ -144,7 +128,6 @@ func Test_Verify(t *testing.T) {
 		Environment: packageEnv,
 	}
 	pred := predicate{
-		Policy:       policy,
 		CreationTime: intoto.Now(),
 		Package:      packageDesc,
 		Properties:   releaseProperties,
@@ -162,7 +145,6 @@ func Test_Verify(t *testing.T) {
 		packageName        string
 		packageEnvironment string
 		buildLevel         *int
-		policy             map[string]intoto.Policy
 		expected           error
 	}{
 		{
@@ -173,7 +155,6 @@ func Test_Verify(t *testing.T) {
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			digests:            digests,
-			policy:             policy,
 		},
 		{
 			name: "mismatch statement type",
@@ -190,7 +171,6 @@ func Test_Verify(t *testing.T) {
 			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
 		{
@@ -208,7 +188,6 @@ func Test_Verify(t *testing.T) {
 			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
 		{
@@ -219,7 +198,6 @@ func Test_Verify(t *testing.T) {
 			packageName:        packageName,
 			packageVersion:     "1.2.4",
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
 		{
@@ -236,7 +214,6 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageName:        packageName,
 			digests:            digests,
-			policy:             policy,
 		},
 		{
 			name: "no att package version",
@@ -247,7 +224,6 @@ func Test_Verify(t *testing.T) {
 					Subjects:      subjects,
 				},
 				Predicate: predicate{
-					Policy:       policy,
 					CreationTime: intoto.Now(),
 					Package: intoto.PackageDescriptor{
 						Name:        packageName,
@@ -262,7 +238,6 @@ func Test_Verify(t *testing.T) {
 			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
 		{
@@ -274,7 +249,6 @@ func Test_Verify(t *testing.T) {
 					Subjects:      subjects,
 				},
 				Predicate: predicate{
-					Policy:       policy,
 					CreationTime: intoto.Now(),
 					// NOTE: no package set so empty URI.
 					Properties: releaseProperties,
@@ -285,7 +259,6 @@ func Test_Verify(t *testing.T) {
 			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
 		{
@@ -295,7 +268,6 @@ func Test_Verify(t *testing.T) {
 			buildLevel:         buildLevel,
 			packageEnvironment: prod,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
 		{
@@ -312,7 +284,6 @@ func Test_Verify(t *testing.T) {
 			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
 		{
@@ -322,7 +293,6 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageName:        packageName,
 			packageVersion:     packageVersion,
-			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
 		{
@@ -347,7 +317,6 @@ func Test_Verify(t *testing.T) {
 			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
 		{
@@ -361,7 +330,6 @@ func Test_Verify(t *testing.T) {
 				"sha256": "another",
 				"":       "mismatch_another_com",
 			},
-			policy:   policy,
 			expected: errs.ErrorInvalidField,
 		},
 		{
@@ -386,7 +354,6 @@ func Test_Verify(t *testing.T) {
 			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
 		{
@@ -414,7 +381,6 @@ func Test_Verify(t *testing.T) {
 				"sha256":    "another",
 				"gitCommit": "",
 			},
-			policy:   policy,
 			expected: errs.ErrorInvalidField,
 		},
 		{
@@ -428,7 +394,6 @@ func Test_Verify(t *testing.T) {
 				"sha256":    "not_another",
 				"gitCommit": "mismatch_another_com",
 			},
-			policy:   policy,
 			expected: errs.ErrorMismatch,
 		},
 		{
@@ -442,7 +407,6 @@ func Test_Verify(t *testing.T) {
 				"sha256":    "another",
 				"gitCommit": "mismatch_another_com",
 			},
-			policy:   policy,
 			expected: errs.ErrorMismatch,
 		},
 		{
@@ -456,7 +420,6 @@ func Test_Verify(t *testing.T) {
 				"other":  "another",
 				"other2": "mismatch_another_com",
 			},
-			policy:   policy,
 			expected: errs.ErrorMismatch,
 		},
 		{
@@ -469,7 +432,6 @@ func Test_Verify(t *testing.T) {
 			digests: intoto.DigestSet{
 				"gitCommit": "another_com",
 			},
-			policy: policy,
 		},
 		{
 			name:               "input no digest",
@@ -478,7 +440,6 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageName:        packageName,
 			packageVersion:     packageVersion,
-			policy:             policy,
 			expected:           errs.ErrorInvalidField,
 		},
 		{
@@ -489,7 +450,6 @@ func Test_Verify(t *testing.T) {
 			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
 		{
@@ -500,7 +460,6 @@ func Test_Verify(t *testing.T) {
 			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
 		{
@@ -508,7 +467,6 @@ func Test_Verify(t *testing.T) {
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
-					Policy:       policy,
 					CreationTime: intoto.Now(),
 					Package: intoto.PackageDescriptor{
 						Name:     packageName,
@@ -523,7 +481,6 @@ func Test_Verify(t *testing.T) {
 			packageName:        packageName,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
 		{
@@ -533,7 +490,6 @@ func Test_Verify(t *testing.T) {
 			packageVersion: packageVersion,
 			buildLevel:     buildLevel,
 			digests:        digests,
-			policy:         policy,
 			expected:       errs.ErrorMismatch,
 		},
 		{
@@ -541,7 +497,6 @@ func Test_Verify(t *testing.T) {
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
-					Policy:       policy,
 					CreationTime: intoto.Now(),
 					Package: intoto.PackageDescriptor{
 						Name:     packageName,
@@ -553,118 +508,12 @@ func Test_Verify(t *testing.T) {
 			buildLevel:  buildLevel,
 			packageName: packageName,
 			digests:     digests,
-			policy:      policy,
-		},
-		{
-			name:               "mismatch no org",
-			att:                att,
-			buildLevel:         buildLevel,
-			packageName:        packageName,
-			packageEnvironment: prod,
-			packageVersion:     packageVersion,
-			digests:            digests,
-			policy: map[string]intoto.Policy{
-				"not_org": {
-					URI: "org_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "org_256",
-						"gitCommit": "org_commit",
-					},
-				},
-				"project": {
-					URI: "project_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "project_256",
-						"gitCommit": "project_commit",
-					},
-				},
-			},
-			expected: errs.ErrorMismatch,
-		},
-		{
-			name:               "mismatch org uri",
-			att:                att,
-			buildLevel:         buildLevel,
-			packageName:        packageName,
-			packageEnvironment: prod,
-			packageVersion:     packageVersion,
-			digests:            digests,
-			policy: map[string]intoto.Policy{
-				"org": {
-					URI: "no_org_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "org_256",
-						"gitCommit": "org_commit",
-					},
-				},
-				"project": {
-					URI: "project_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "project_256",
-						"gitCommit": "project_commit",
-					},
-				},
-			},
-			expected: errs.ErrorMismatch,
-		},
-		{
-			name:               "mismatch org sha256",
-			att:                att,
-			buildLevel:         buildLevel,
-			packageName:        packageName,
-			packageEnvironment: prod,
-			packageVersion:     packageVersion,
-			digests:            digests,
-			policy: map[string]intoto.Policy{
-				"org": {
-					URI: "org_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "no_org_256",
-						"gitCommit": "org_commit",
-					},
-				},
-				"project": {
-					URI: "project_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "project_256",
-						"gitCommit": "project_commit",
-					},
-				},
-			},
-			expected: errs.ErrorMismatch,
-		},
-		{
-			name:               "mismatch org gitCommit",
-			att:                att,
-			buildLevel:         buildLevel,
-			packageName:        packageName,
-			packageEnvironment: prod,
-			packageVersion:     packageVersion,
-			digests:            digests,
-			policy: map[string]intoto.Policy{
-				"org": {
-					URI: "org_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "org_256",
-						"gitCommit": "no_org_commit",
-					},
-				},
-				"project": {
-					URI: "project_uri",
-					Digests: intoto.DigestSet{
-						"sha256":    "project_256",
-						"gitCommit": "project_commit",
-					},
-				},
-			},
-			expected: errs.ErrorMismatch,
 		},
 		{
 			name: "level not present empty properties",
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
-					Policy:       policy,
 					CreationTime: intoto.Now(),
 					Package:      packageDesc,
 				},
@@ -674,7 +523,6 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
 		{
@@ -682,7 +530,6 @@ func Test_Verify(t *testing.T) {
 			att: attestation{
 				Header: header,
 				Predicate: predicate{
-					Policy:       policy,
 					CreationTime: intoto.Now(),
 					Package:      packageDesc,
 					Properties: map[string]interface{}{
@@ -695,7 +542,6 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 			expected:           errs.ErrorMismatch,
 		},
 		// Ignored fields.
@@ -706,7 +552,6 @@ func Test_Verify(t *testing.T) {
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
 			digests:            digests,
-			policy:             policy,
 		},
 		{
 			name:           "ignore env",
@@ -715,7 +560,6 @@ func Test_Verify(t *testing.T) {
 			packageName:    packageName,
 			packageVersion: packageVersion,
 			digests:        digests,
-			policy:         policy,
 			expected:       errs.ErrorMismatch,
 		},
 		{
@@ -725,17 +569,7 @@ func Test_Verify(t *testing.T) {
 			packageName:        packageName,
 			packageEnvironment: prod,
 			packageVersion:     packageVersion,
-			policy:             policy,
 			expected:           errs.ErrorInvalidField,
-		},
-		{
-			name:               "ignore policy",
-			att:                att,
-			buildLevel:         buildLevel,
-			packageName:        packageName,
-			packageEnvironment: prod,
-			packageVersion:     packageVersion,
-			digests:            digests,
 		},
 	}
 	for _, tt := range tests {
@@ -762,9 +596,6 @@ func Test_Verify(t *testing.T) {
 					options = append(options, IsSlsaBuildLevelOrAbove(i))
 					i++
 				}
-			}
-			for name, policy := range tt.policy {
-				options = append(options, HasPolicy(name, policy.URI, policy.Digests))
 			}
 			if tt.packageVersion != "" {
 				options = append(options, IsPackageVersion(tt.packageVersion))

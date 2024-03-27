@@ -141,28 +141,6 @@ func (v *Verification) isPackageVersion(version string) error {
 	return nil
 }
 
-func HasPolicy(name, uri string, digests intoto.DigestSet) VerificationOption {
-	return func(v *Verification) error {
-		return v.hasPolicy(name, uri, digests)
-	}
-}
-
-func (v *Verification) hasPolicy(name, uri string, digests intoto.DigestSet) error {
-	policy, exists := v.attestation.Predicate.Policy[name]
-	if !exists {
-		return fmt.Errorf("%w: policy (%q) does not exist in attestation", errs.ErrorMismatch,
-			name)
-	}
-	if policy.URI != uri {
-		return fmt.Errorf("%w: policy (%q) with URI (%q) != attestation (%q)", errs.ErrorMismatch,
-			name, uri, policy.URI)
-	}
-	if err := verifyDigests(digests, policy.Digests); err != nil {
-		return err
-	}
-	return nil
-}
-
 func IsSlsaBuildLevel(level int) VerificationOption {
 	return func(v *Verification) error {
 		return v.isSlsaBuildLevel(level)

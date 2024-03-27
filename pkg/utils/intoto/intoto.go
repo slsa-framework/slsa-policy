@@ -42,6 +42,16 @@ type PackageDescriptor struct {
 	// We may define this structure as simmply a map[string]string.
 }
 
+type ResourceDescriptor struct {
+	URI              string                 `json:"uri,omitempty"`
+	Digest           DigestSet              `json:"digest,omitempty"`
+	Name             string                 `json:"name,omitempty"`
+	DownloadLocation string                 `json:"downloadLocation,omitempty"`
+	MediaType        string                 `json:"mediaType,omitempty"`
+	Content          []byte                 `json:"content,omitempty"`
+	Annotations      map[string]interface{} `json:"annotations,omitempty"`
+}
+
 func (s Subject) Validate() error {
 	return s.Digests.Validate()
 }

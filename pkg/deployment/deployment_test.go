@@ -26,22 +26,6 @@ func Test_AttestationNew(t *testing.T) {
 	subject := intoto.Subject{
 		Digests: digests,
 	}
-	policy := map[string]intoto.Policy{
-		"org": intoto.Policy{
-			URI: "policy1_uri",
-			Digests: intoto.DigestSet{
-				"sha256":    "value1",
-				"commitSha": "value2",
-			},
-		},
-		"project": intoto.Policy{
-			URI: "policy2_uri",
-			Digests: intoto.DigestSet{
-				"sha256":    "value3",
-				"commitSha": "value4",
-			},
-		},
-	}
 	principal := project.Principal{
 		URI: "principal_uri",
 	}
@@ -49,28 +33,18 @@ func Test_AttestationNew(t *testing.T) {
 		digests:   digests,
 		principal: &principal,
 	}
-	opts := []AttestationCreationOption{
-		SetPolicy(policy),
-	}
+	opts := []AttestationCreationOption{}
 	tests := []struct {
 		name     string
 		result   PolicyEvaluationResult
 		options  []AttestationCreationOption
 		subject  intoto.Subject
-		policy   map[string]intoto.Policy
 		expected error
 	}{
 		{
 			name:    "all fields set",
 			result:  result,
 			options: opts,
-			subject: subject,
-			policy:  policy,
-		},
-		{
-			name:    "no policy",
-			result:  result,
-			options: []AttestationCreationOption{},
 			subject: subject,
 		},
 		{
@@ -81,7 +55,6 @@ func Test_AttestationNew(t *testing.T) {
 			},
 			options: opts,
 			subject: subject,
-			policy:  policy,
 		},
 		{
 			name:     "invalid result",
@@ -109,15 +82,9 @@ func Test_AttestationNew(t *testing.T) {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			c := map[string]string{
-				contextPrincipal: tt.result.principal.URI,
+				scopeKubernetesServiceAccount: tt.result.principal.URI,
 			}
-			if diff := cmp.Diff(c, att.attestation.Predicate.Context); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			if diff := cmp.Diff(contextTypePrincipal, att.attestation.Predicate.ContextType); diff != "" {
-				t.Fatalf("unexpected err (-want +got): \n%s", diff)
-			}
-			if diff := cmp.Diff(tt.policy, att.attestation.Predicate.Policy); diff != "" {
+			if diff := cmp.Diff(c, att.attestation.Predicate.Scopes); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})
@@ -170,22 +137,6 @@ func Test_e2e(t *testing.T) {
 	digests := intoto.DigestSet{
 		"sha256": "val256",
 		"sha512": "val512",
-	}
-	policy := map[string]intoto.Policy{
-		"org": intoto.Policy{
-			URI: "policy1_uri",
-			Digests: intoto.DigestSet{
-				"sha256":    "value1",
-				"commitSha": "value2",
-			},
-		},
-		"project": intoto.Policy{
-			URI: "policy2_uri",
-			Digests: intoto.DigestSet{
-				"sha256":    "value3",
-				"commitSha": "value4",
-			},
-		},
 	}
 	releaserID1 := "releaser_id1"
 	releaserID2 := "releaser_id2"
@@ -264,9 +215,7 @@ func Test_e2e(t *testing.T) {
 			},
 		},
 	}
-	opts := []AttestationCreationOption{
-		SetPolicy(policy),
-	}
+	opts := []AttestationCreationOption{}
 	buildLevel3 := 3
 	tests := []struct {
 		name             string
@@ -276,7 +225,6 @@ func Test_e2e(t *testing.T) {
 		digests          intoto.DigestSet
 		options          []AttestationCreationOption
 		policyID         string
-		policy           map[string]intoto.Policy
 		env              string
 		buildLevel       int
 		releaserID       string
@@ -298,7 +246,6 @@ func Test_e2e(t *testing.T) {
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
-			policy:       policy,
 			principalURI: pricipalURI2,
 			// Data that the verifier will use.
 			releaserID: releaserID2,
@@ -315,7 +262,6 @@ func Test_e2e(t *testing.T) {
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
-			policy:       policy,
 			principalURI: pricipalURI2,
 			// Data that the verifier will use.
 			releaserID:       releaserID2,
@@ -380,7 +326,6 @@ func Test_e2e(t *testing.T) {
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
-			policy:       policy,
 			principalURI: pricipalURI2,
 			// Data that the verifier will use.
 			releaserID:       releaserID2,
@@ -400,7 +345,6 @@ func Test_e2e(t *testing.T) {
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
-			policy:       policy,
 			principalURI: pricipalURI2,
 			// Data that the verifier will use.
 			releaserID:       releaserID2,
@@ -464,24 +408,6 @@ func Test_e2e(t *testing.T) {
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
-			policy:       policy,
-			principalURI: pricipalURI2,
-			// Data that the verifier will use.
-			releaserID: releaserID2,
-			buildLevel: buildLevel3,
-		},
-		{
-			name: "no policy",
-			// Policies to evaluate.
-			org:      org,
-			projects: projects,
-			policyID: policyID2,
-			// Options to create the attestation.
-			options: opts,
-			env:     "prod",
-			// Fields to validate the created attestation.
-			digests:      digests,
-			packageName:  packageName1,
 			principalURI: pricipalURI2,
 			// Data that the verifier will use.
 			releaserID: releaserID2,
@@ -499,7 +425,6 @@ func Test_e2e(t *testing.T) {
 			// Fields to validate the created attestation.
 			digests:      digests,
 			packageName:  packageName1,
-			policy:       policy,
 			principalURI: pricipalURI2,
 			// Data that the verifier will use.
 			releaserID:       releaserID1, // NOTE: mismatch releaser ID.
@@ -578,14 +503,11 @@ func Test_e2e(t *testing.T) {
 
 			// Create verification options.
 			options := []VerificationOption{}
-			for name, policy := range tt.policy {
-				options = append(options, HasPolicy(name, policy.URI, policy.Digests))
-			}
 			// Verify.
-			context := map[string]string{
-				contextPrincipal: tt.principalURI,
+			scopes := map[string]string{
+				scopeKubernetesServiceAccount: tt.principalURI,
 			}
-			err = verification.Verify(tt.digests, contextTypePrincipal, context, options...)
+			err = verification.Verify(tt.digests, scopes, options...)
 			if diff := cmp.Diff(tt.errorVerify, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

@@ -4,11 +4,15 @@ import (
 	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
 )
 
+type decisionDetails struct {
+	Evidence []intoto.ResourceDescriptor `json:"evidence,omitempty"`
+	Policy   []intoto.ResourceDescriptor `json:"policy,omitempty"`
+}
+
 type predicate struct {
-	CreationTime string                   `json:"creationTime"`
-	Policy       map[string]intoto.Policy `json:"policy,omitempty"`
-	ContextType  string                   `json:"contextType"`
-	Context      interface{}              `json:"context,omitempty"`
+	CreationTime    string            `json:"creationTime"`
+	DecisionDetails decisionDetails   `json:"decisionDetails,omitempty"`
+	Scopes          map[string]string `json:"scopes,omitempty"`
 	// TODO: add inputs as a list of intoto.PackageDescriptor, so that we can
 	// indicate which attestations were used.
 }
@@ -18,11 +22,9 @@ type attestation struct {
 	Predicate predicate `json:"predicate"`
 }
 
-type properties map[string]interface{}
-
 const (
-	statementType        = "https://in-toto.io/Statement/v1"
-	predicateType        = "https://slsa.dev/deployment/v0.1"
-	contextTypePrincipal = "slsa.dev/deployment/contextType/PrincipalID"
-	contextPrincipal     = "slsa.dev/deployment/context/principalID"
+	statementType                 = "https://in-toto.io/Statement/v1"
+	predicateType                 = "https://slsa.dev/deployment/v0.1"
+	scopeServiceAccount           = "cloud.google.com/service_account/v1"
+	scopeKubernetesServiceAccount = "kubernetes.io/pod/service_account/v1"
 )
