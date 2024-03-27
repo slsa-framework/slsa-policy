@@ -113,7 +113,7 @@ func (p *Policy) setValidator(validator PolicyValidator) error {
 
 // Evaluate evalues the deployment policy.
 func (p *Policy) Evaluate(digests intoto.DigestSet, policyPackageName string, policyID string, opts AttestationVerificationOption) PolicyEvaluationResult {
-	principal, err := p.policy.Evaluate(digests, policyPackageName, policyID,
+	protection, err := p.policy.Evaluate(digests, policyPackageName, policyID,
 		options.ReleaseVerification{
 			Verifier: &internal_verifier{
 				opts: opts,
@@ -121,9 +121,9 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, policyPackageName string, po
 		},
 	)
 	return PolicyEvaluationResult{
-		err:       err,
-		digests:   digests,
-		principal: principal,
+		err:        err,
+		digests:    digests,
+		protection: protection,
 	}
 }
 

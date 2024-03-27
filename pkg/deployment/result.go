@@ -10,9 +10,9 @@ import (
 
 // PolicyEvaluationResult defines the result of policy evaluation.
 type PolicyEvaluationResult struct {
-	err       error
-	digests   intoto.DigestSet
-	principal *project.Principal
+	err        error
+	digests    intoto.DigestSet
+	protection *project.Protection
 }
 
 // AttestationNew creates a deployment attestation.
@@ -33,7 +33,7 @@ func (r PolicyEvaluationResult) AttestationNew(options ...AttestationCreationOpt
 	// Add caller options.
 	opts = append(opts, options...)
 	scopes := map[string]string{
-		scopeKubernetesServiceAccount: r.principal.URI,
+		scopeGCPServiceAccount: r.protection.ServiceAccount,
 	}
 	att, err := CreationNew(subject, scopes, opts...)
 	if err != nil {
@@ -47,11 +47,11 @@ func (r PolicyEvaluationResult) Error() error {
 }
 
 func (r PolicyEvaluationResult) isValid() error {
-	if r.principal == nil {
-		return fmt.Errorf("%w: nil principal", errs.ErrorInternal)
+	if r.protection == nil {
+		return fmt.Errorf("%w: nil protection", errs.ErrorInternal)
 	}
-	if r.principal.URI == "" {
-		return fmt.Errorf("%w: empty principal URI", errs.ErrorInternal)
+	if r.protection.ServiceAccount == "" {
+		return fmt.Errorf("%w: empty protection service account", errs.ErrorInternal)
 	}
 	return nil
 }
