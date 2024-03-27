@@ -31,14 +31,14 @@ type Package struct {
 	Environment Environment `json:"environment"`
 }
 
-type Principal struct {
-	URI string `json:"uri"`
+type Protection struct {
+	ServiceAccount string `json:"service_account"`
 }
 
 // Policy defines the policy.
 type Policy struct {
 	Format            int                     `json:"format"`
-	Principal         Principal               `json:"principal"`
+	Protection        Protection              `json:"protection"`
 	Packages          []Package               `json:"packages"`
 	BuildRequirements BuildRequirements       `json:"build"`
 	validator         options.PolicyValidator `json:"-"`
@@ -70,7 +70,7 @@ func (p *Policy) validate(maxBuildLevel int) error {
 	if err := p.validateFormat(); err != nil {
 		return err
 	}
-	if err := p.validatePrincipal(); err != nil {
+	if err := p.validateProtection(); err != nil {
 		return err
 	}
 	if err := p.validatePackages(); err != nil {
@@ -90,9 +90,9 @@ func (p *Policy) validateFormat() error {
 	return nil
 }
 
-func (p *Policy) validatePrincipal() error {
-	if p.Principal.URI == "" {
-		return fmt.Errorf("[project] %w: empty principal name", errs.ErrorInvalidField)
+func (p *Policy) validateProtection() error {
+	if p.Protection.ServiceAccount == "" {
+		return fmt.Errorf("[project] %w: empty protection service_account", errs.ErrorInvalidField)
 	}
 	return nil
 }
@@ -161,7 +161,7 @@ func (p *Policy) validateBuildRequirements(maxBuildLevel int) error {
 // FromReaders creates a set of policies indexed by their unique id.
 func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organization.Policy, validator options.PolicyValidator) (map[string]Policy, error) {
 	policies := make(map[string]Policy)
-	principals := make(map[string]bool)
+	protections := make(map[string]bool)
 	for readers.HasNext() {
 		id, reader := readers.Next()
 		// NOTE: fromReader()validates that the required levels is achievable.
@@ -175,12 +175,12 @@ func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organizatio
 		}
 		policies[id] = *policy
 
-		// The principal must be unique across all projects.
-		name := policy.Principal.URI
-		if _, exists := principals[name]; exists {
-			return nil, fmt.Errorf("[project] %w: principal's name (%q) is defined more than once", errs.ErrorInvalidField, name)
+		// The protection must be unique across all projects.
+		name := policy.Protection.ServiceAccount
+		if _, exists := protections[name]; exists {
+			return nil, fmt.Errorf("[project] %w: protection's serivce_account (%q) is defined more than once", errs.ErrorInvalidField, name)
 		}
-		principals[name] = true
+		protections[name] = true
 	}
 	//TODO: add test for this.
 	if readers.Error() != nil {
@@ -191,7 +191,7 @@ func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organizatio
 
 // Evaluate evaluates a policy.
 func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string,
-	orgPolicy organization.Policy, releaseOpts options.ReleaseVerification) (*Principal, error) {
+	orgPolicy organization.Policy, releaseOpts options.ReleaseVerification) (*Protection, error) {
 	if releaseOpts.Verifier == nil {
 		return nil, fmt.Errorf("[project] %w: verifier is empty", errs.ErrorInvalidInput)
 	}
@@ -200,7 +200,7 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string,
 	if err := digests.Validate(); err != nil {
 		return nil, err
 	}
-	// Get the package for principal Name.
+	// Get the package for protection Name.
 	pkg, err := p.getPackage(packageName)
 	if err != nil {
 		return nil, err
@@ -236,7 +236,7 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string,
 			return nil, err
 		}
 		// The target Name of the policy.
-		cpy := p.Principal
+		cpy := p.Protection
 		return &cpy, nil
 	}
 	return nil, fmt.Errorf("[project] %w: cannot verify: %v", errs.ErrorVerification, allErrs)

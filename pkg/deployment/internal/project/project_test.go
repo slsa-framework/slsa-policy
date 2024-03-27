@@ -53,7 +53,7 @@ func Test_validateFormat(t *testing.T) {
 	}
 }
 
-func Test_validatePrincipal(t *testing.T) {
+func Test_validateProtection(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -62,15 +62,15 @@ func Test_validatePrincipal(t *testing.T) {
 		expected error
 	}{
 		{
-			name: "uri present",
+			name: "service_account present",
 			policy: Policy{
-				Principal: Principal{
-					URI: "the_uri",
+				Protection: Protection{
+					ServiceAccount: "the_sa",
 				},
 			},
 		},
 		{
-			name:     "uri not present",
+			name:     "service_account not present",
 			policy:   Policy{},
 			expected: errs.ErrorInvalidField,
 		},
@@ -79,7 +79,7 @@ func Test_validatePrincipal(t *testing.T) {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			err := tt.policy.validatePrincipal()
+			err := tt.policy.validateProtection()
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -461,8 +461,8 @@ func Test_Evaluate(t *testing.T) {
 		},
 	}
 	project := Policy{
-		Principal: Principal{
-			URI: "principal_name",
+		Protection: Protection{
+			ServiceAccount: "protection_name",
 		},
 		BuildRequirements: BuildRequirements{
 			RequireSlsaLevel: common.AsPointer(2),
@@ -635,14 +635,14 @@ func Test_Evaluate(t *testing.T) {
 			opts := options.ReleaseVerification{
 				Verifier: verifier,
 			}
-			principal, err := tt.policy.Evaluate(tt.digests, tt.packageName, tt.org, opts)
+			protection, err := tt.policy.Evaluate(tt.digests, tt.packageName, tt.org, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 			if err != nil {
 				return
 			}
-			if diff := cmp.Diff(*principal, project.Principal); diff != "" {
+			if diff := cmp.Diff(*protection, project.Protection); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})
@@ -665,8 +665,8 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				{
 					Format: 1,
-					Principal: Principal{
-						URI: "principal_name",
+					Protection: Protection{
+						ServiceAccount: "protection_name",
 					},
 					Packages: []Package{
 						{
@@ -682,8 +682,8 @@ func Test_FromReaders(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: Principal{
-						URI: "principal_name2",
+					Protection: Protection{
+						ServiceAccount: "protection_name2",
 					},
 					Packages: []Package{
 						{
@@ -700,14 +700,14 @@ func Test_FromReaders(t *testing.T) {
 			},
 		},
 		{
-			name:          "same principal name",
+			name:          "same protection name",
 			expected:      errs.ErrorInvalidField,
 			maxBuildLevel: 3,
 			policies: []Policy{
 				{
 					Format: 1,
-					Principal: Principal{
-						URI: "principal_name",
+					Protection: Protection{
+						ServiceAccount: "protection_name",
 					},
 					Packages: []Package{
 						{
@@ -723,8 +723,8 @@ func Test_FromReaders(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: Principal{
-						URI: "principal_name",
+					Protection: Protection{
+						ServiceAccount: "protection_name",
 					},
 					Packages: []Package{
 						{
@@ -748,8 +748,8 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				{
 					Format: 1,
-					Principal: Principal{
-						URI: "principal_name",
+					Protection: Protection{
+						ServiceAccount: "protection_name",
 					},
 					Packages: []Package{
 						{
@@ -765,8 +765,8 @@ func Test_FromReaders(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: Principal{
-						URI: "principal_name2",
+					Protection: Protection{
+						ServiceAccount: "protection_name2",
 					},
 					Packages: []Package{
 						{
@@ -790,8 +790,8 @@ func Test_FromReaders(t *testing.T) {
 			policies: []Policy{
 				{
 					Format: 1,
-					Principal: Principal{
-						URI: "principal_name",
+					Protection: Protection{
+						ServiceAccount: "protection_name",
 					},
 					Packages: []Package{
 						{
