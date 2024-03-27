@@ -11,7 +11,7 @@ type decisionDetails struct {
 
 type predicate struct {
 	CreationTime         string                   `json:"creationTime"`
-	DecisionDetails      decisionDetails          `json:"decisionDetails,omitempty"`
+	DecisionDetails      *decisionDetails         `json:"decisionDetails,omitempty"`
 	Package              intoto.PackageDescriptor `json:"package"`
 	Properties           properties               `json:"properties,omitempty"`
 	DependencyProperties map[string]properties    `json:"dependencyProperties,omitempty"`

@@ -25,7 +25,7 @@ type Environment struct {
 }
 
 // Package defines publication metadata, such as
-// the name and the target environment.
+// the name, registry and the target environment.
 type Package struct {
 	Name        string      `json:"name"`
 	Registry    string      `json:"registry"`

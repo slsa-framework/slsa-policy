@@ -48,7 +48,7 @@ func CreationNew(subject intoto.Subject, packageDesc intoto.PackageDescriptor,
 }
 
 func (a *Creation) ToBytes() ([]byte, error) {
-	content, err := json.Marshal(*&a.attestation)
+	content, err := json.Marshal(a.attestation)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal: %v", err)
 	}

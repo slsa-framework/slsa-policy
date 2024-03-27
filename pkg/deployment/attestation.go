@@ -11,7 +11,7 @@ type decisionDetails struct {
 
 type predicate struct {
 	CreationTime    string            `json:"creationTime"`
-	DecisionDetails decisionDetails   `json:"decisionDetails,omitempty"`
+	DecisionDetails *decisionDetails  `json:"decisionDetails,omitempty"`
 	Scopes          map[string]string `json:"scopes,omitempty"`
 	// TODO: add inputs as a list of intoto.PackageDescriptor, so that we can
 	// indicate which attestations were used.
