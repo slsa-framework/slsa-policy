@@ -24,8 +24,8 @@ func Test_PolicyNew(t *testing.T) {
 	packageName2 := "package_name2"
 	packageName3 := "package_name3"
 	packageName4 := "package_name4"
-	principalName1 := "principal_name1"
-	principalName2 := "principal_name2"
+	serviceAccount1 := "service_account1"
+	serviceAccount2 := "service_account2"
 	org := organization.Policy{
 		Format: 1,
 		Roots: organization.Roots{
@@ -51,8 +51,8 @@ func Test_PolicyNew(t *testing.T) {
 			BuildRequirements: project.BuildRequirements{
 				RequireSlsaLevel: common.AsPointer(2),
 			},
-			Principal: project.Principal{
-				URI: principalName1,
+			Protection: project.Protection{
+				ServiceAccount: serviceAccount1,
 			},
 			Packages: []project.Package{
 				{
@@ -71,8 +71,8 @@ func Test_PolicyNew(t *testing.T) {
 		},
 		{
 			Format: 1,
-			Principal: project.Principal{
-				URI: principalName2,
+			Protection: project.Protection{
+				ServiceAccount: serviceAccount2,
 			},
 			BuildRequirements: project.BuildRequirements{
 				RequireSlsaLevel: common.AsPointer(3),
@@ -140,8 +140,8 @@ func Test_PolicyNew(t *testing.T) {
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(2),
 					},
-					Principal: project.Principal{
-						URI: principalName1,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount1,
 					},
 					Packages: []project.Package{
 						{
@@ -160,8 +160,8 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: project.Principal{
-						URI: principalName2,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
@@ -193,8 +193,8 @@ func Test_PolicyNew(t *testing.T) {
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(2),
 					},
-					Principal: project.Principal{
-						URI: principalName1,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount1,
 					},
 					Packages: []project.Package{
 						{
@@ -213,8 +213,8 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: project.Principal{
-						URI: principalName2,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
@@ -232,8 +232,8 @@ func Test_PolicyNew(t *testing.T) {
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(2),
 					},
-					Principal: project.Principal{
-						URI: principalName1,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount1,
 					},
 					Packages: []project.Package{
 						{
@@ -252,8 +252,8 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: project.Principal{
-						URI: principalName2,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
@@ -271,8 +271,8 @@ func Test_PolicyNew(t *testing.T) {
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(2),
 					},
-					Principal: project.Principal{
-						URI: principalName1,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount1,
 					},
 					Packages: []project.Package{
 						{
@@ -291,8 +291,8 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: project.Principal{
-						URI: principalName2,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
@@ -317,8 +317,8 @@ func Test_PolicyNew(t *testing.T) {
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(2),
 					},
-					Principal: project.Principal{
-						URI: principalName1,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount1,
 					},
 					Packages: []project.Package{
 						{
@@ -337,8 +337,8 @@ func Test_PolicyNew(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: project.Principal{
-						URI: principalName2,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
@@ -355,7 +355,7 @@ func Test_PolicyNew(t *testing.T) {
 			},
 		},
 		{
-			name:     "project empty principal",
+			name:     "project empty Protection",
 			expected: errs.ErrorInvalidField,
 			org:      org,
 			projects: []project.Policy{
@@ -364,8 +364,8 @@ func Test_PolicyNew(t *testing.T) {
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(2),
 					},
-					Principal: project.Principal{
-						URI: principalName1,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount1,
 					},
 					Packages: []project.Package{
 						{
@@ -557,8 +557,8 @@ func Test_Evaluate(t *testing.T) {
 	packageName2 := "package_name2"
 	packageName3 := "package_name3"
 	packageName4 := "package_name4"
-	principalName1 := "principal_name1"
-	principalName2 := "principal_name2"
+	serviceAccount1 := "service_account1"
+	serviceAccount2 := "service_account2"
 	// NOTE: the test iterator indexes policies starting at 0.
 	policyID2 := "policy_id1"
 	org := organization.Policy{
@@ -586,8 +586,8 @@ func Test_Evaluate(t *testing.T) {
 			BuildRequirements: project.BuildRequirements{
 				RequireSlsaLevel: common.AsPointer(2),
 			},
-			Principal: project.Principal{
-				URI: principalName1,
+			Protection: project.Protection{
+				ServiceAccount: serviceAccount1,
 			},
 			Packages: []project.Package{
 				{
@@ -606,8 +606,8 @@ func Test_Evaluate(t *testing.T) {
 		},
 		{
 			Format: 1,
-			Principal: project.Principal{
-				URI: principalName2,
+			Protection: project.Protection{
+				ServiceAccount: serviceAccount2,
 			},
 			BuildRequirements: project.BuildRequirements{
 				RequireSlsaLevel: common.AsPointer(3),
@@ -733,8 +733,8 @@ func Test_Evaluate(t *testing.T) {
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(2),
 					},
-					Principal: project.Principal{
-						URI: principalName1,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount1,
 					},
 					Packages: []project.Package{
 						{
@@ -753,8 +753,8 @@ func Test_Evaluate(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: project.Principal{
-						URI: principalName2,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
@@ -802,8 +802,8 @@ func Test_Evaluate(t *testing.T) {
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(2),
 					},
-					Principal: project.Principal{
-						URI: principalName1,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount1,
 					},
 					Packages: []project.Package{
 						{
@@ -822,8 +822,8 @@ func Test_Evaluate(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: project.Principal{
-						URI: principalName2,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
@@ -876,8 +876,8 @@ func Test_Evaluate(t *testing.T) {
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(2),
 					},
-					Principal: project.Principal{
-						URI: principalName1,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount1,
 					},
 					Packages: []project.Package{
 						{
@@ -896,8 +896,8 @@ func Test_Evaluate(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: project.Principal{
-						URI: principalName2,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(1),
@@ -951,8 +951,8 @@ func Test_Evaluate(t *testing.T) {
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(2),
 					},
-					Principal: project.Principal{
-						URI: principalName1,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount1,
 					},
 					Packages: []project.Package{
 						{
@@ -971,8 +971,8 @@ func Test_Evaluate(t *testing.T) {
 				},
 				{
 					Format: 1,
-					Principal: project.Principal{
-						URI: principalName2,
+					Protection: project.Protection{
+						ServiceAccount: serviceAccount2,
 					},
 					BuildRequirements: project.BuildRequirements{
 						RequireSlsaLevel: common.AsPointer(3),
@@ -1030,7 +1030,7 @@ func Test_Evaluate(t *testing.T) {
 			opts := options.ReleaseVerification{
 				Verifier: verifier,
 			}
-			principal, err := policy.Evaluate(tt.digests, tt.packageName, tt.policyID, opts)
+			Protection, err := policy.Evaluate(tt.digests, tt.packageName, tt.policyID, opts)
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -1040,7 +1040,7 @@ func Test_Evaluate(t *testing.T) {
 			if len(tt.projects) < 2 {
 				t.Fatalf("internal error. number of projects: %d", len(tt.projects))
 			}
-			if diff := cmp.Diff(tt.projects[1].Principal, *principal, cmpopts.EquateErrors()); diff != "" {
+			if diff := cmp.Diff(tt.projects[1].Protection, *Protection, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
 		})

@@ -28,6 +28,7 @@ type Environment struct {
 // the name and the target environment.
 type Package struct {
 	Name        string      `json:"name"`
+	Registry    string      `json:"registry"`
 	Environment Environment `json:"environment"`
 }
 
