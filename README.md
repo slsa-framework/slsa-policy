@@ -219,10 +219,7 @@ This verification will be performed by the admission controller. See [Admission 
 
 The admisson controller is responsible for verifying the deployment attestation:
 1. Verify the signature
-1. Verify "contextType" == "https://slsa.dev/deployment/contextType/PrincipalID"
-2. Verify "context": {
-      "https://slsa.dev/deployment/context/principalID": "k8_sa://name@dev-project-id.iam.gserviceaccount.com"
-    } == Kubernetes service account on the pod.
+1. Verify each scope `google_service_account` == google service account the pod run under
 
 #### Kyverno
 
