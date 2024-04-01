@@ -44,7 +44,7 @@ runs:
           exit 1
         fi
         ref="${GH_ACTION_REF}"
-        gh publish -R "${GH_ACTION_REPOSITORY}" download "${ref}" -p "binary-linux-amd64*"
+        gh release -R "${GH_ACTION_REPOSITORY}" download "${ref}" -p "binary-linux-amd64*"
         chmod u+x binary-linux-amd64
         echo "ref=${ref}" >> "$GITHUB_OUTPUT"
 
