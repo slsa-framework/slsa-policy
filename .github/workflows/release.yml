@@ -18,4 +18,4 @@ jobs:
     uses: slsa-framework/slsa-github-generator/.github/workflows/builder_go_slsa3.yml@v1.10.0
     with:
       go-version-file: "./cmd/evaluator/go.mod"
-      config-file: .github/workflows/publish/slsa-evaluator.yml
+      config-file: .github/workflows/release/slsa-evaluator.yml
