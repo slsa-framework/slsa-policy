@@ -51,20 +51,20 @@ func (iter *bytesIterator) Error() error {
 }
 
 // Attestation verifier.
-func NewAttestationVerifier(digests intoto.DigestSet, packageName, env, releaserID string, buildLevel int) options.AttestationVerifier {
-	return &attestationVerifier{digests: digests, packageName: packageName, releaserID: releaserID, env: env, buildLevel: buildLevel}
+func NewAttestationVerifier(digests intoto.DigestSet, packageName, env, publishrID string, buildLevel int) options.AttestationVerifier {
+	return &attestationVerifier{digests: digests, packageName: packageName, publishrID: publishrID, env: env, buildLevel: buildLevel}
 }
 
 type attestationVerifier struct {
 	packageName string
-	releaserID  string
+	publishrID  string
 	buildLevel  int
 	env         string
 	digests     intoto.DigestSet
 }
 
-func (v *attestationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, packageName string, env []string, releaserID string, buildLevel int) (*string, error) {
-	if buildLevel <= v.buildLevel && packageName == v.packageName && releaserID == v.releaserID &&
+func (v *attestationVerifier) VerifyPublishAttestation(digests intoto.DigestSet, packageName string, env []string, publishrID string, buildLevel int) (*string, error) {
+	if buildLevel <= v.buildLevel && packageName == v.packageName && publishrID == v.publishrID &&
 		MapEq(digests, v.digests) &&
 		((v.env != "" && len(env) > 0 && slices.Contains(env, v.env)) ||
 			(v.env == "" && len(env) == 0)) {
@@ -73,7 +73,7 @@ func (v *attestationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet,
 		}
 		return &v.env, nil
 	}
-	return nil, fmt.Errorf("%w: cannot verify package Name (%q) releaser ID (%q) env (%q) buildLevel (%d)", errs.ErrorVerification, packageName, releaserID, env, buildLevel)
+	return nil, fmt.Errorf("%w: cannot verify package Name (%q) publishr ID (%q) env (%q) buildLevel (%d)", errs.ErrorVerification, packageName, publishrID, env, buildLevel)
 }
 
 func MapEq(m1, m2 map[string]string) bool {

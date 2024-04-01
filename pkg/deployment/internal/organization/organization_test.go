@@ -68,7 +68,7 @@ func Test_MaxBuildSlsaLevel(t *testing.T) {
 			level: 4,
 			policy: Policy{
 				Roots: Roots{
-					Release: []Root{
+					Publish: []Root{
 						{
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(4),
@@ -93,7 +93,7 @@ func Test_MaxBuildSlsaLevel(t *testing.T) {
 			level: 2,
 			policy: Policy{
 				Roots: Roots{
-					Release: []Root{
+					Publish: []Root{
 						{
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(2),
@@ -118,7 +118,7 @@ func Test_MaxBuildSlsaLevel(t *testing.T) {
 			level: -1,
 			policy: Policy{
 				Roots: Roots{
-					Release: []Root{},
+					Publish: []Root{},
 				},
 			},
 		},
@@ -135,7 +135,7 @@ func Test_MaxBuildSlsaLevel(t *testing.T) {
 	}
 }
 
-func Test_validateReleaseRoots(t *testing.T) {
+func Test_validatePublishRoots(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -152,7 +152,7 @@ func Test_validateReleaseRoots(t *testing.T) {
 			name: "one root with empty id",
 			policy: &Policy{
 				Roots: Roots{
-					Release: []Root{
+					Publish: []Root{
 						{
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
@@ -167,9 +167,9 @@ func Test_validateReleaseRoots(t *testing.T) {
 			name: "one root with empty level",
 			policy: &Policy{
 				Roots: Roots{
-					Release: []Root{
+					Publish: []Root{
 						{
-							ID: "releaser id",
+							ID: "publishr id",
 						},
 					},
 				},
@@ -180,9 +180,9 @@ func Test_validateReleaseRoots(t *testing.T) {
 			name: "one root with negative level",
 			policy: &Policy{
 				Roots: Roots{
-					Release: []Root{
+					Publish: []Root{
 						{
-							ID: "releaser id",
+							ID: "publishr id",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(-1),
 							},
@@ -196,9 +196,9 @@ func Test_validateReleaseRoots(t *testing.T) {
 			name: "one root with level greater than 4",
 			policy: &Policy{
 				Roots: Roots{
-					Release: []Root{
+					Publish: []Root{
 						{
-							ID: "releaser id",
+							ID: "publishr id",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(5),
 							},
@@ -212,9 +212,9 @@ func Test_validateReleaseRoots(t *testing.T) {
 			name: "one root with valid fields",
 			policy: &Policy{
 				Roots: Roots{
-					Release: []Root{
+					Publish: []Root{
 						{
-							ID: "releaser id",
+							ID: "publishr id",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
 							},
@@ -227,15 +227,15 @@ func Test_validateReleaseRoots(t *testing.T) {
 			name: "two roots with valid fields",
 			policy: &Policy{
 				Roots: Roots{
-					Release: []Root{
+					Publish: []Root{
 						{
-							ID: "releaser id",
+							ID: "publishr id",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
 							},
 						},
 						{
-							ID: "releaser id2",
+							ID: "publishr id2",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
 							},
@@ -248,15 +248,15 @@ func Test_validateReleaseRoots(t *testing.T) {
 			name: "two roots with same id",
 			policy: &Policy{
 				Roots: Roots{
-					Release: []Root{
+					Publish: []Root{
 						{
-							ID: "releaser id",
+							ID: "publishr id",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
 							},
 						},
 						{
-							ID: "releaser id",
+							ID: "publishr id",
 							Build: Build{
 								MaxSlsaLevel: common.AsPointer(3),
 							},
@@ -272,7 +272,7 @@ func Test_validateReleaseRoots(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := tt.policy.validateReleaseRoots()
+			err := tt.policy.validatePublishRoots()
 			if diff := cmp.Diff(tt.expected, err, cmpopts.EquateErrors()); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}
@@ -297,7 +297,7 @@ func Test_Evaluate(t *testing.T) {
 		tt := tt // Re-initializing variable so it is not changed while executing the closure below
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			err := tt.policy.Evaluate(intoto.DigestSet{}, "any_package_name", options.ReleaseVerification{})
+			err := tt.policy.Evaluate(intoto.DigestSet{}, "any_package_name", options.PublishVerification{})
 			if diff := cmp.Diff(tt.expected, err); diff != "" {
 				t.Fatalf("unexpected err (-want +got): \n%s", diff)
 			}

@@ -92,20 +92,20 @@ func Test_AttestationNew(t *testing.T) {
 }
 
 // Attestation verifier.
-func NewE2eAttestationVerifier(digests intoto.DigestSet, packageName, env, releaserID string, buildLevel int) AttestationVerifier {
-	return &attestationVerifier{digests: digests, packageName: packageName, env: env, releaserID: releaserID, buildLevel: buildLevel}
+func NewE2eAttestationVerifier(digests intoto.DigestSet, packageName, env, publishrID string, buildLevel int) AttestationVerifier {
+	return &attestationVerifier{digests: digests, packageName: packageName, env: env, publishrID: publishrID, buildLevel: buildLevel}
 }
 
 type attestationVerifier struct {
 	packageName string
-	releaserID  string
+	publishrID  string
 	buildLevel  int
 	env         string
 	digests     intoto.DigestSet
 }
 
-func (v *attestationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet, packageName string, env []string, opts AttestationVerifierReleaseOptions) (*string, error) {
-	if opts.BuildLevel == v.buildLevel && packageName == v.packageName && opts.ReleaserID == v.releaserID &&
+func (v *attestationVerifier) VerifyPublishAttestation(digests intoto.DigestSet, packageName string, env []string, opts AttestationVerifierPublishOptions) (*string, error) {
+	if opts.BuildLevel == v.buildLevel && packageName == v.packageName && opts.PublishrID == v.publishrID &&
 		common.MapEq(digests, v.digests) &&
 		((v.env != "" && len(env) > 0 && slices.Contains(env, v.env)) ||
 			(v.env == "" && len(env) == 0)) {
@@ -114,7 +114,7 @@ func (v *attestationVerifier) VerifyReleaseAttestation(digests intoto.DigestSet,
 		}
 		return &v.env, nil
 	}
-	return nil, fmt.Errorf("%w: cannot verify package Name (%q) releaser ID (%q) env (%q) buildLevel (%d)", errs.ErrorVerification, packageName, opts.ReleaserID, env, opts.BuildLevel)
+	return nil, fmt.Errorf("%w: cannot verify package Name (%q) publishr ID (%q) env (%q) buildLevel (%d)", errs.ErrorVerification, packageName, opts.PublishrID, env, opts.BuildLevel)
 }
 
 func newPolicyValidator(pass bool) PolicyValidator {
@@ -138,8 +138,8 @@ func Test_e2e(t *testing.T) {
 		"sha256": "val256",
 		"sha512": "val512",
 	}
-	releaserID1 := "releaser_id1"
-	releaserID2 := "releaser_id2"
+	publishrID1 := "publishr_id1"
+	publishrID2 := "publishr_id2"
 	packageName1 := "package_uri1"
 	packageName2 := "package_uri2"
 	packageName3 := "package_uri3"
@@ -151,15 +151,15 @@ func Test_e2e(t *testing.T) {
 	org := organization.Policy{
 		Format: 1,
 		Roots: organization.Roots{
-			Release: []organization.Root{
+			Publish: []organization.Root{
 				{
-					ID: releaserID1,
+					ID: publishrID1,
 					Build: organization.Build{
 						MaxSlsaLevel: common.AsPointer(2),
 					},
 				},
 				{
-					ID: releaserID2,
+					ID: publishrID2,
 					Build: organization.Build{
 						MaxSlsaLevel: common.AsPointer(3),
 					},
@@ -227,7 +227,7 @@ func Test_e2e(t *testing.T) {
 		policyID         string
 		env              string
 		buildLevel       int
-		releaserID       string
+		publishrID       string
 		principalURI     string
 		expected         error
 		errorEvaluate    error
@@ -248,7 +248,7 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			principalURI: pricipalURI2,
 			// Data that the verifier will use.
-			releaserID: releaserID2,
+			publishrID: publishrID2,
 			buildLevel: buildLevel3,
 		},
 		{
@@ -264,7 +264,7 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			principalURI: pricipalURI2,
 			// Data that the verifier will use.
-			releaserID:       releaserID2,
+			publishrID:       publishrID2,
 			buildLevel:       buildLevel3,
 			errorEvaluate:    errs.ErrorVerification,
 			errorAttestation: errs.ErrorInternal,
@@ -328,7 +328,7 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			principalURI: pricipalURI2,
 			// Data that the verifier will use.
-			releaserID:       releaserID2,
+			publishrID:       publishrID2,
 			buildLevel:       buildLevel3,
 			errorEvaluate:    errs.ErrorVerification,
 			errorAttestation: errs.ErrorInternal,
@@ -347,7 +347,7 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			principalURI: pricipalURI2,
 			// Data that the verifier will use.
-			releaserID:       releaserID2,
+			publishrID:       publishrID2,
 			buildLevel:       buildLevel3,
 			errorEvaluate:    errs.ErrorVerification,
 			errorAttestation: errs.ErrorInternal,
@@ -410,7 +410,7 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			principalURI: pricipalURI2,
 			// Data that the verifier will use.
-			releaserID: releaserID2,
+			publishrID: publishrID2,
 			buildLevel: buildLevel3,
 		},
 		{
@@ -427,7 +427,7 @@ func Test_e2e(t *testing.T) {
 			packageName:  packageName1,
 			principalURI: pricipalURI2,
 			// Data that the verifier will use.
-			releaserID:       releaserID1, // NOTE: mismatch releaser ID.
+			publishrID:       publishrID1, // NOTE: mismatch publishr ID.
 			buildLevel:       buildLevel3,
 			errorEvaluate:    errs.ErrorVerification,
 			errorAttestation: errs.ErrorInternal,
@@ -473,7 +473,7 @@ func Test_e2e(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to create policy: %v", err)
 			}
-			verifier := NewE2eAttestationVerifier(tt.digests, tt.packageName, tt.env, tt.releaserID, tt.buildLevel)
+			verifier := NewE2eAttestationVerifier(tt.digests, tt.packageName, tt.env, tt.publishrID, tt.buildLevel)
 			opts := AttestationVerificationOption{
 				Verifier: verifier,
 			}

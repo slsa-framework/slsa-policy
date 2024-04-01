@@ -32,7 +32,7 @@ func PolicyNew(org io.ReadCloser, projects iterator.NamedReadCloserIterator, val
 	}, nil
 }
 
-func (p *Policy) Evaluate(digests intoto.DigestSet, packageName, policyID string, releaseOpts options.ReleaseVerification) (*project.Protection, error) {
+func (p *Policy) Evaluate(digests intoto.DigestSet, packageName, policyID string, publishOpts options.PublishVerification) (*project.Protection, error) {
 	if packageName == "" {
 		return nil, fmt.Errorf("%w: package name is empty", errs.ErrorInvalidInput)
 	}
@@ -49,13 +49,13 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageName, policyID string
 	}
 
 	// Evaluate the org policy.
-	err := p.orgPolicy.Evaluate(digests, packageName, releaseOpts)
+	err := p.orgPolicy.Evaluate(digests, packageName, publishOpts)
 	if err != nil {
 		return nil, err
 	}
 
 	// Evaluate the project policy.
-	protection, err := projectPolicy.Evaluate(digests, packageName, p.orgPolicy, releaseOpts)
+	protection, err := projectPolicy.Evaluate(digests, packageName, p.orgPolicy, publishOpts)
 	if err != nil {
 		return nil, err
 	}

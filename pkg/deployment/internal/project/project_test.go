@@ -431,11 +431,11 @@ func Test_Evaluate(t *testing.T) {
 		digests     intoto.DigestSet
 		buildLevel  int
 		packageName string
-		releaserID  string
+		publishrID  string
 		env         string
 	}
-	releaserID1 := "releaser_id1"
-	releaserID2 := "releaser_id2"
+	publishrID1 := "publishr_id1"
+	publishrID2 := "publishr_id2"
 	packageName1 := "package_name1"
 	packageName2 := "package_name2"
 	digests := intoto.DigestSet{
@@ -444,15 +444,15 @@ func Test_Evaluate(t *testing.T) {
 	}
 	org := organization.Policy{
 		Roots: organization.Roots{
-			Release: []organization.Root{
+			Publish: []organization.Root{
 				{
-					ID: releaserID1,
+					ID: publishrID1,
 					Build: organization.Build{
 						MaxSlsaLevel: common.AsPointer(3),
 					},
 				},
 				{
-					ID: releaserID2,
+					ID: publishrID2,
 					Build: organization.Build{
 						MaxSlsaLevel: common.AsPointer(2),
 					},
@@ -485,7 +485,7 @@ func Test_Evaluate(t *testing.T) {
 	buildLevel := 3
 	vopts := dummyVerifierOpts{
 		digests:     digests,
-		releaserID:  releaserID2,
+		publishrID:  publishrID2,
 		packageName: packageName1,
 		buildLevel:  buildLevel,
 		env:         "prod",
@@ -590,15 +590,15 @@ func Test_Evaluate(t *testing.T) {
 			digests:      digests,
 			org: organization.Policy{
 				Roots: organization.Roots{
-					Release: []organization.Root{
+					Publish: []organization.Root{
 						{
-							ID: releaserID1,
+							ID: publishrID1,
 							Build: organization.Build{
 								MaxSlsaLevel: common.AsPointer(1),
 							},
 						},
 						{
-							ID: releaserID2,
+							ID: publishrID2,
 							Build: organization.Build{
 								MaxSlsaLevel: common.AsPointer(1),
 							},
@@ -612,7 +612,7 @@ func Test_Evaluate(t *testing.T) {
 			name:     "env mismatch",
 			expected: errs.ErrorVerification,
 			verifierOpts: dummyVerifierOpts{
-				releaserID:  releaserID2,
+				publishrID:  publishrID2,
 				packageName: "package_name",
 				env:         "staging",
 			},
@@ -630,9 +630,9 @@ func Test_Evaluate(t *testing.T) {
 			var verifier options.AttestationVerifier
 			if !tt.noVerifier {
 				verifier = common.NewAttestationVerifier(tt.verifierOpts.digests, tt.packageName,
-					tt.verifierOpts.env, tt.verifierOpts.releaserID, tt.verifierOpts.buildLevel)
+					tt.verifierOpts.env, tt.verifierOpts.publishrID, tt.verifierOpts.buildLevel)
 			}
-			opts := options.ReleaseVerification{
+			opts := options.PublishVerification{
 				Verifier: verifier,
 			}
 			protection, err := tt.policy.Evaluate(tt.digests, tt.packageName, tt.org, opts)
@@ -819,7 +819,7 @@ func Test_FromReaders(t *testing.T) {
 			// Create the org policy (only the maxBuildLevel is needed).
 			orgPolicy := organization.Policy{
 				Roots: organization.Roots{
-					Release: []organization.Root{
+					Publish: []organization.Root{
 						{
 							Build: organization.Build{
 								MaxSlsaLevel: common.AsPointer(tt.maxBuildLevel - 1),

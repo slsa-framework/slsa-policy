@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/deployment"
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/release"
+	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/publish"
 	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
 )
 
@@ -13,7 +13,7 @@ func usage(prog string) {
 		"Usage: %s [command]\n" +
 		"\n" +
 		"Available commands:\n" +
-		"release \t\tOperation on release policy\n" +
+		"publish \t\tOperation on publish policy\n" +
 		"deployment \t\tOperation on deployment policy\n" +
 		"\n"
 	utils.Log(msg, prog)
@@ -33,8 +33,8 @@ func main() {
 	switch arguments[0] {
 	default:
 		usage(os.Args[0])
-	case "release":
-		if err := release.Run(os.Args[0], arguments[1:]); err != nil {
+	case "publish":
+		if err := publish.Run(os.Args[0], arguments[1:]); err != nil {
 			utils.Log(err.Error() + "\n")
 			os.Exit(2)
 		}

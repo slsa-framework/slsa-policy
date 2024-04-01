@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
-	"github.com/laurentsimon/slsa-policy/pkg/release"
+	"github.com/laurentsimon/slsa-policy/pkg/publish"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/options"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/rekor"
 	clisign "github.com/sigstore/cosign/v2/cmd/cosign/cli/sign"
@@ -154,37 +154,37 @@ func attach(immutableImage string, att Attestation, bundle *cbundle.RekorBundle,
 	return ociremote.WriteAttestations(digest.Repository, newSE, ociremoteOpts...)
 }
 
-func ValidateIdentity(releaserID, releaserIDRegex string) error {
-	if (releaserID != "" && releaserIDRegex != "") ||
-		(releaserID == "" && releaserIDRegex == "") {
-		return fmt.Errorf("only one of releaserID (%q) and releaserIDRegex (%q) must be set", releaserID, releaserIDRegex)
+func ValidateIdentity(publishrID, publishrIDRegex string) error {
+	if (publishrID != "" && publishrIDRegex != "") ||
+		(publishrID == "" && publishrIDRegex == "") {
+		return fmt.Errorf("only one of publishrID (%q) and publishrIDRegex (%q) must be set", publishrID, publishrIDRegex)
 	}
 	return nil
 }
 
-func getIdentity(releaserID, releaserIDRegex string) (*cosign.Identity, error) {
-	if err := ValidateIdentity(releaserID, releaserIDRegex); err != nil {
+func getIdentity(publishrID, publishrIDRegex string) (*cosign.Identity, error) {
+	if err := ValidateIdentity(publishrID, publishrIDRegex); err != nil {
 		return nil, err
 	}
-	if releaserID != "" {
+	if publishrID != "" {
 		return &cosign.Identity{
 			Issuer:  githubIssuer,
-			Subject: releaserID,
+			Subject: publishrID,
 		}, nil
 	}
 	return &cosign.Identity{
 		Issuer:        githubIssuer,
-		SubjectRegExp: releaserIDRegex,
+		SubjectRegExp: publishrIDRegex,
 	}, nil
 }
 
 // VerifySignature verifies the signature of an attestation.
-func VerifySignature(immutableImage string, releaserID, releaserIDRegex string) (string, []byte, error) {
+func VerifySignature(immutableImage string, publishrID, publishrIDRegex string) (string, []byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(30*time.Second))
 	defer cancel()
 
 	var err error
-	identity, err := getIdentity(releaserID, releaserIDRegex)
+	identity, err := getIdentity(publishrID, publishrIDRegex)
 	if err != nil {
 		return "", nil, err
 	}
@@ -238,7 +238,7 @@ func VerifySignature(immutableImage string, releaserID, releaserIDRegex string) 
 	}
 	var errList []error
 	for _, vp := range verified {
-		payload, predicateType, err := cpolicy.AttestationToPayloadJSON(ctx, release.PredicateType(), vp)
+		payload, predicateType, err := cpolicy.AttestationToPayloadJSON(ctx, publish.PredicateType(), vp)
 		if err != nil {
 			errList = append(errList, fmt.Errorf("failed to convert to consumable policy validation: %w", err))
 			continue
@@ -247,12 +247,12 @@ func VerifySignature(immutableImage string, releaserID, releaserIDRegex string) 
 			// This is not the predicate type we're looking for.
 			continue
 		}
-		if release.PredicateType() != predicateType {
+		if publish.PredicateType() != predicateType {
 			errList = append(errList, fmt.Errorf("internal error. predicate ype (%q) != attestation type (%q)",
-				predicateType, release.PredicateType()))
+				predicateType, publish.PredicateType()))
 			continue
 		}
-		return releaserID, payload, nil
+		return publishrID, payload, nil
 	}
 	return "", nil, fmt.Errorf("failed to verify: %v", errList)
 }

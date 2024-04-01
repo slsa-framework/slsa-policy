@@ -9,14 +9,14 @@
   - [What is provenance?](#what-is-provenance)
   - [What is slsa-policy?](#what-is-slsa-repo)
 - [Setup](#setup)
-  - [Release policy](#release-policy)
+  - [Publish policy](#publish-policy)
     - [Org setup](#org-setup)
       - [Policy setup](#policy-setup)
       - [Pre-submit validation](#pre-submit-validation)
-      - [Release service](#release-service)
+      - [Publish service](#publish-service)
     - [Team setup](#team-setup)
       - [Policy definition](#policy-definition)
-      - [Call the release service](#call-the-release-service)
+      - [Call the publish service](#call-the-publish-service)
   - [Deployment policy](#deployment-policy)
     - [Org setup](#org-setup-1)
       - [Policy setup](#policy-setup-1)
@@ -69,7 +69,7 @@ slsa-policy is a Go library, a CLI and a set of GitHub Actions to implement sour
 
 ## Setup
 
-### Release policy
+### Publish policy
 
 #### Org setup
 
@@ -85,55 +85,55 @@ slsa-policy is a Go library, a CLI and a set of GitHub Actions to implement sour
         1. Limit any bypass actors to those that are strictly necessary (i.e. break glass).
         1. Require review from [CODEOWNERS](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#additional-settings).
 1. Add team maintainers as contributors to the repository. Give them `write` access. Do *NOT* give them admin access. Note that you can do that later when teams create their first policy, see [Policy definition](#policy-definition).
-1. Create a folder to store the release policies. See an example [here](https://github.com/laurentsimon/slsa-org/tree/main/policies/release/).
-1. Create a file with your trusted roots. See example [org.json](https://github.com/laurentsimon/slsa-org/tree/main/policies/release/org.json).
+1. Create a folder to store the publish policies. See an example [here](https://github.com/laurentsimon/slsa-org/tree/main/policies/publish/).
+1. Create a file with your trusted roots. See example [org.json](https://github.com/laurentsimon/slsa-org/tree/main/policies/publish/org.json).
 
 ##### Pre-submit validation
 
 To validate the policy files, run the binary as:
 
 ```bash
-cd policies/release
-$ go run . release validate org.json .
+cd policies/publish
+$ go run . publish validate org.json .
 ```
 
 TODO: we need pre-submits when new files are created, to ensure the appropriate owners are added to CODEOWNERS.
 
-##### Release service
+##### Publish service
 
-You need to define a workflow that your teams will call when they want to release their container images. This workflow is responsible for evaluating the release policy. See an example [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml)
+You need to define a workflow that your teams will call when they want to publish their container images. This workflow is responsible for evaluating the publish policy. See an example [image-publishr.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-publishr.yml)
 
 In the workflow above, the CLI is called as follows:
 
 ```bash
-cd policies/release
+cd policies/publish
 # This is passed by the caller, e.g. dev or prod.
 env="${{ inputs.environment }}"
-go run . release evaluate org.json . "${image}" "${env}"
+go run . publish evaluate org.json . "${image}" "${env}"
 ```
 
 #### Team setup
 
 ##### Policy definition
 
-Teams create their policy files under the folder defined by their organization in [Policy setup](#policy-setup). See an example of a policy in [echo-server.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/release/echo-server.json).
+Teams create their policy files under the folder defined by their organization in [Policy setup](#policy-setup). See an example of a policy in [echo-server.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/publish/echo-server.json).
 
 When a team creates a new file or folder:
 
 1. If not already done in [Org setup](#org-setup), org administrators should add team members as contributors and give them `write` access. Do *NOT* gives them admin access.
 1. Update the CODEOWNERS file to give permissions to the team members who own the package. This allows teams to edit their policies without requiring reviews by the organization admnistrators.
 
-##### Call the release service
+##### Call the publish service
 
-When publishing containers, teams must call the release policy service service [image-releaser.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-releaser.yml) defined in the org's [Release service](#release-service) section. See an example [deploy-image.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-image.yml). This workflows would be called with environment set as "staging" first. One staging tests have passed, it may be called with "prod" environment. Note that the environment must match one the values defined in the policy definition [echo-server.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/release/echo-server.json).
+When publishing containers, teams must call the publish policy service service [image-publishr.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-publishr.yml) defined in the org's [Publish service](#publish-service) section. See an example [deploy-image.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-image.yml). This workflows would be called with environment set as "staging" first. One staging tests have passed, it may be called with "prod" environment. Note that the environment must match one the values defined in the policy definition [echo-server.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/publish/echo-server.json).
 
-After the workflow has successfully run, you may manually verify the release attestation via:
+After the workflow has successfully run, you may manually verify the publish attestation via:
 
 ```bash
 # NOTE: change image to your image.
 $ image=docker.io/laurentsimon/slsa-project-echo-server@sha256:4378b3d11e11ede0f64946e588c590e460e44f90c8a7921ad2cb7b04aaf298d4
-$ creator_id=https://github.com/laurentsimon/slsa-org/.github/workflows/image-releaser.yml@refs/heads/main
-$ type=https://slsa.dev/release/v0.1
+$ creator_id=https://github.com/laurentsimon/slsa-org/.github/workflows/image-publishr.yml@refs/heads/main
+$ type=https://slsa.dev/publish/v0.1
 $ cosign verify-attestation "${image}" \
     --certificate-oidc-issuer https://token.actions.githubusercontent.com \
     --certificate-identity "${creator_id}" 
@@ -198,9 +198,9 @@ When a team creates a new file or folder:
 
 ##### Call the deployment service
 
-Before submitting a request to deploy containers, teams must call the deployment policy service [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml) defined in the org's [Deployment service](#deployment-service) section. See an example [deploy-image.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-image.yml). This may be called with "staging" environment first to allow the container to run on the staging service account defined in [servers-staging.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/deployment/servers-staging.json). Once all staging tests have passed, it may be called with "prod" environment. Note that the environment must match one the values defined in the release policy file [servers-prod.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/deployment/servers-prod.json) and the deployment policy file [echo-server.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/release/echo-server.json).
+Before submitting a request to deploy containers, teams must call the deployment policy service [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml) defined in the org's [Deployment service](#deployment-service) section. See an example [deploy-image.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-image.yml). This may be called with "staging" environment first to allow the container to run on the staging service account defined in [servers-staging.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/deployment/servers-staging.json). Once all staging tests have passed, it may be called with "prod" environment. Note that the environment must match one the values defined in the publish policy file [servers-prod.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/deployment/servers-prod.json) and the deployment policy file [echo-server.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/publish/echo-server.json).
 
-After the workflow has successfully run, you may manually verify the release attestation via:
+After the workflow has successfully run, you may manually verify the publish attestation via:
 
 ```bash
 # NOTE: change image to your image.

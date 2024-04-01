@@ -26,7 +26,7 @@ runs:
         echo "GH_ACTION_REPOSITORY: ${GH_ACTION_REPOSITORY}"
         echo "PWD: $PWD"
 
-    - name: Download the release binary
+    - name: Download the publish binary
       id: download
       shell: bash
       working-directory: ${{ steps.working_dir.outputs.name }}
@@ -44,7 +44,7 @@ runs:
           exit 1
         fi
         ref="${GH_ACTION_REF}"
-        gh release -R "${GH_ACTION_REPOSITORY}" download "${ref}" -p "binary-linux-amd64*"
+        gh publish -R "${GH_ACTION_REPOSITORY}" download "${ref}" -p "binary-linux-amd64*"
         chmod u+x binary-linux-amd64
         echo "ref=${ref}" >> "$GITHUB_OUTPUT"
 

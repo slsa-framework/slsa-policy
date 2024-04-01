@@ -139,9 +139,9 @@ func (p *Policy) validatePackages() error {
 }
 
 func (p *Policy) validateBuildRequirements(maxBuildLevel int) error {
-	// SLSA releaser
+	// SLSA publishr
 	//	1) must be set
-	//	2) must contain one a level that is satisfiable by the releasers defined in the org-policy.
+	//	2) must contain one a level that is satisfiable by the publishrs defined in the org-policy.
 	if maxBuildLevel < 0 || maxBuildLevel > 4 {
 		return fmt.Errorf("[project] %w: build's level is invalid (%d). Must satisfy 0 <= slsa_level <= 4",
 			errs.ErrorInvalidField, maxBuildLevel)
@@ -191,8 +191,8 @@ func FromReaders(readers iterator.NamedReadCloserIterator, orgPolicy organizatio
 
 // Evaluate evaluates a policy.
 func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string,
-	orgPolicy organization.Policy, releaseOpts options.ReleaseVerification) (*Protection, error) {
-	if releaseOpts.Verifier == nil {
+	orgPolicy organization.Policy, publishOpts options.PublishVerification) (*Protection, error) {
+	if publishOpts.Verifier == nil {
 		return nil, fmt.Errorf("[project] %w: verifier is empty", errs.ErrorInvalidInput)
 	}
 
@@ -208,28 +208,28 @@ func (p *Policy) Evaluate(digests intoto.DigestSet, packageName string,
 
 	env := pkg.Environment.AnyOf
 
-	// Verify with each releaser.
+	// Verify with each publishr.
 	// WARNING: the hidden assumption is that the verifier is aware of which
-	// package Names can be attested to by which releaser.
-	// TODO: Instead of iterating thru all releasers, the org policy may contain
+	// package Names can be attested to by which publishr.
+	// TODO: Instead of iterating thru all publishrs, the org policy may contain
 	// a trusted mapping.
 	var allErrs []error
-	for i := range orgPolicy.Roots.Release {
-		releaser := &orgPolicy.Roots.Release[i]
-		// Filter out the releasers that don't match the SLSA build level requirement
+	for i := range orgPolicy.Roots.Publish {
+		publishr := &orgPolicy.Roots.Publish[i]
+		// Filter out the publishrs that don't match the SLSA build level requirement
 		// in the policy.
-		if *releaser.Build.MaxSlsaLevel < *p.BuildRequirements.RequireSlsaLevel {
+		if *publishr.Build.MaxSlsaLevel < *p.BuildRequirements.RequireSlsaLevel {
 			continue
 		}
 		// We have a candidate.
-		verifiedEnv, err := releaseOpts.Verifier.VerifyReleaseAttestation(digests, packageName, env, releaser.ID, *p.BuildRequirements.RequireSlsaLevel)
+		verifiedEnv, err := publishOpts.Verifier.VerifyPublishAttestation(digests, packageName, env, publishr.ID, *p.BuildRequirements.RequireSlsaLevel)
 		if err != nil {
 			// Verification failed, continue.
 			allErrs = append(allErrs, err)
 			continue
 		}
 
-		// Verification of release attestation succeeded.
+		// Verification of publish attestation succeeded.
 
 		// Sanity check.
 		if err := validateEnv(env, verifiedEnv); err != nil {

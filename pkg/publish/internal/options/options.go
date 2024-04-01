@@ -1,26 +1,31 @@
 package options
 
-import "github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+import (
+	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+)
 
 // AttestationVerifier defines an interface to verify attestations.
 type AttestationVerifier interface {
-	// Publish attestations. The string returned contains the value of the environment, if present.
-	VerifyPublishAttestation(digests intoto.DigestSet, packageName string, environment []string, publishrID string, buildLevel int) (*string, error)
+	// Build attestations.
+	VerifyBuildAttestation(digests intoto.DigestSet, publishName, builderID, sourceName string) error
 }
 
-// PublishVerification defines the configuration to verify
-// publish attestations.
-type PublishVerification struct {
+// BuildVerification defines the configuration to verify
+// build attestations.
+type BuildVerification struct {
 	Verifier AttestationVerifier
+}
+
+// Request is metadata about the caller request.
+type Request struct {
+	Environment *string
 }
 
 // ValidationPackage defines the structure holding
 // package information to be validated.
 type ValidationPackage struct {
 	Name        string
-	Environment struct {
-		AnyOf []string
-	}
+	Environment ValidationEnvironment
 }
 
 // ValidationEnvironment defines the structure containing
