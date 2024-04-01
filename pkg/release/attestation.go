@@ -10,11 +10,11 @@ type decisionDetails struct {
 }
 
 type predicate struct {
-	CreationTime         string                   `json:"creationTime"`
-	DecisionDetails      *decisionDetails         `json:"decisionDetails,omitempty"`
-	Package              intoto.PackageDescriptor `json:"package"`
-	Properties           properties               `json:"properties,omitempty"`
-	DependencyProperties map[string]properties    `json:"dependencyProperties,omitempty"`
+	CreationTime    string                   `json:"creationTime"`
+	DecisionDetails *decisionDetails         `json:"decisionDetails,omitempty"`
+	Package         intoto.PackageDescriptor `json:"package"`
+	Properties      properties               `json:"properties,omitempty"`
+	// TODO: properties for dependencies.
 	// TODO: add inputs as a list of intoto.PackageDescriptor, so that we can
 	// indicate which attestations were used.
 }

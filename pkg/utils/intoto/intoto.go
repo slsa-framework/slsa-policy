@@ -20,11 +20,6 @@ type Header struct {
 	Subjects      []Subject `json:"subject"`
 }
 
-type Policy struct {
-	URI     string    `json:"uri,omitempty"`
-	Digests DigestSet `json:"digest,omitempty"`
-}
-
 type PackageDescriptor struct {
 	// Package name.
 	Name string `json:"name,omitempty"`
