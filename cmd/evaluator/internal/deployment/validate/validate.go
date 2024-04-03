@@ -3,9 +3,9 @@ package validate
 import (
 	"os"
 
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
-	"github.com/laurentsimon/slsa-policy/pkg/deployment"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator/named_files_reader"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/utils"
+	"github.com/slsa-framework/slsa-policy/pkg/deployment"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/iterator/named_files_reader"
 )
 
 func usage(cli string) {

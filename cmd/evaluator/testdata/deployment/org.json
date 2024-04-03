@@ -3,7 +3,7 @@
     "roots":{
         "publish":[
             {
-                "id":"https://github.com/laurentsimon/slsa-org/.github/workflows/image-publishr.yml@refs/heads/main",
+                "id":"https://github.com/slsa-framework/slsa-org/.github/workflows/image-publishr.yml@refs/heads/main",
                 "build":{
                     "max_slsa_level": 3
                 }

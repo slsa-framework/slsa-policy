@@ -9,9 +9,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	//"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/common"
-	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+	//"github.com/slsa-framework/slsa-policy/pkg/deployment/internal/common"
+	"github.com/slsa-framework/slsa-policy/pkg/errs"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
 )
 
 func Test_verifyDigests(t *testing.T) {

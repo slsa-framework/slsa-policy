@@ -3,9 +3,9 @@ package publish
 import (
 	"os"
 
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/publish/evaluate"
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/publish/validate"
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/publish/evaluate"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/publish/validate"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/utils"
 )
 
 func usage(cli string) {

@@ -1,11 +1,11 @@
-module github.com/laurentsimon/slsa-policy/cli/evaluator
+module github.com/slsa-framework/slsa-policy/cli/evaluator
 
 go 1.22
 
 require (
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-containerregistry v0.17.0
-	github.com/laurentsimon/slsa-policy/pkg v0.0.0
+	github.com/slsa-framework/slsa-policy/pkg v0.0.0
 	github.com/sigstore/cosign/v2 v2.2.0
 	github.com/sigstore/sigstore v1.7.2
 	github.com/slsa-framework/slsa-verifier/v2 v2.4.1
@@ -262,4 +262,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/laurentsimon/slsa-policy/pkg v0.0.0 => ../../pkg
+replace github.com/slsa-framework/slsa-policy/pkg v0.0.0 => ../../pkg

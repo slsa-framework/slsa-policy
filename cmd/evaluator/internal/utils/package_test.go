@@ -6,7 +6,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
 )
 
 func Test_PackageDescriptor(t *testing.T) {

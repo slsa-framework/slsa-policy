@@ -1,4 +1,4 @@
-module github.com/laurentsimon/slsa-policy/pkg
+module github.com/slsa-framework/slsa-policy/pkg
 
 go 1.22
 

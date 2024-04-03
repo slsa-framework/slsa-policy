@@ -1,7 +1,7 @@
 package publish
 
 import (
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
 )
 
 type decisionDetails struct {

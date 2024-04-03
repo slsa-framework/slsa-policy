@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/publish/internal"
-	"github.com/laurentsimon/slsa-policy/pkg/publish/internal/options"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
+	"github.com/slsa-framework/slsa-policy/pkg/errs"
+	"github.com/slsa-framework/slsa-policy/pkg/publish/internal"
+	"github.com/slsa-framework/slsa-policy/pkg/publish/internal/options"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/iterator"
 )
 
 // AttestationVerifier defines an interface to verify attestations.

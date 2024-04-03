@@ -6,10 +6,10 @@ import (
 	"io"
 	"slices"
 
-	"github.com/laurentsimon/slsa-policy/pkg/deployment/internal/options"
-	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
+	"github.com/slsa-framework/slsa-policy/pkg/deployment/internal/options"
+	"github.com/slsa-framework/slsa-policy/pkg/errs"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/iterator"
 )
 
 func AsPointer[K interface{}](o K) *K {

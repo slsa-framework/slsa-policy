@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/laurentsimon/slsa-policy/pkg/errs"
+	"github.com/slsa-framework/slsa-policy/pkg/errs"
 )
 
 type DigestSet map[string]string

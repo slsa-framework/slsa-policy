@@ -55,7 +55,7 @@ runs:
         GH_ACTION_REF: ${{ steps.download.outputs.ref }}
       run: |
         set -euo pipefail
-        slsa-verifier verify-artifact binary-linux-amd64 --provenance-path binary-linux-amd64.intoto.jsonl --source-uri github.com/laurentsimon/slsa-policy --source-tag "${GH_ACTION_REF}"
+        slsa-verifier verify-artifact binary-linux-amd64 --provenance-path binary-linux-amd64.intoto.jsonl --source-uri github.com/slsa-framework/slsa-policy --source-tag "${GH_ACTION_REF}"
 
     - name: Add binary to path
       shell: bash

@@ -7,11 +7,11 @@ import (
 	"io/ioutil"
 	"slices"
 
-	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/publish/internal/options"
-	"github.com/laurentsimon/slsa-policy/pkg/publish/internal/organization"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
+	"github.com/slsa-framework/slsa-policy/pkg/errs"
+	"github.com/slsa-framework/slsa-policy/pkg/publish/internal/options"
+	"github.com/slsa-framework/slsa-policy/pkg/publish/internal/organization"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/iterator"
 )
 
 // Repository defines the repository.

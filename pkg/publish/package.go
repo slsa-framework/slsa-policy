@@ -1,6 +1,6 @@
 package publish
 
-import "github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+import "github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
 
 // PackageHelper defines an interface to let callers
 // customize the parsing of the packages defined

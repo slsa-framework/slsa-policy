@@ -1,7 +1,7 @@
 {
     "format":1,
     "package": {
-        "name":"docker.io/laurentsimon/logger",
+        "name":"docker.io/slsa-framework/logger",
         "environment":{
             "any_of": [
                 "dev", "prod"
@@ -11,7 +11,7 @@
     "build":{
         "require_slsa_builder":"github_generator_level_3",
         "repository":{
-            "uri":"github.com/laurentsimon/slsa-logger"
+            "uri":"github.com/slsa-framework/slsa-logger"
         }
     }
 }

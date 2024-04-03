@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
-	"github.com/laurentsimon/slsa-policy/pkg/publish"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator/files_reader"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/utils"
+	"github.com/slsa-framework/slsa-policy/pkg/publish"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/iterator/files_reader"
 )
 
 func usage(cli string) {

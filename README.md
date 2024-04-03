@@ -8,6 +8,7 @@
   - [What is SLSA?](#what-is-slsa)
   - [What is provenance?](#what-is-provenance)
   - [What is slsa-policy?](#what-is-slsa-repo)
+- [End-to-end tutorial](#end-to-end-example)
 - [Setup](#setup)
   - [Publish policy](#publish-policy)
     - [Org setup](#org-setup)
@@ -67,6 +68,12 @@ slsa-policy is an example Go library, CLI and set of GitHub Actions to implement
 2. Containers (builds) are bounds to a set of privileges, the same way that OS processes are restricted to a set of running privilages. In cloud environments,
   permissions are defined via IAM and are associated with Service Accounts (SAs) by the policy. For more details on the design, see [Technical design](#technical-design).
 
+## End-to-end tutorial
+
+For an end-to-end tutorial, follow the [SLSA workshop hosted at the 2024 Open Source Security Conference](https://github.com/slsa-framework/oss-na24-slsa-workshop).
+
+The setup below are subset of the tutorial above, so we highly encourage you to follow hands-on activities of the workshop, available in the [link above](https://github.com/slsa-framework/oss-na24-slsa-workshop).
+
 ## Setup
 
 ### Publish policy
@@ -85,8 +92,8 @@ slsa-policy is an example Go library, CLI and set of GitHub Actions to implement
         1. Limit any bypass actors to those that are strictly necessary (i.e. break glass).
         1. Require review from [CODEOWNERS](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#additional-settings).
 1. Add team maintainers as contributors to the repository. Give them `write` access. Do *NOT* give them admin access. Note that you can do that later when teams create their first policy, see [Policy definition](#policy-definition).
-1. Create a folder to store the publish policies. See an example [here](https://github.com/laurentsimon/slsa-org/tree/main/policies/publish/).
-1. Create a file with your trusted roots. See example [org.json](https://github.com/laurentsimon/slsa-org/tree/main/policies/publish/org.json).
+1. Create a folder to store the publish policies. See an example [here](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/tree/main/policies/publish/).
+1. Create a file with your trusted roots. See example [org.json](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/tree/main/policies/publish/org.json).
 
 ##### Pre-submit validation
 
@@ -101,7 +108,7 @@ TODO: we need pre-submits when new files are created, to ensure the appropriate 
 
 ##### Publish service
 
-You need to define a workflow that your teams will call when they want to publish their container images. This workflow is responsible for evaluating the publish policy. See an example [image-publishr.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-publishr.yml)
+You need to define a workflow that your teams will call when they want to publish their container images. This workflow is responsible for evaluating the publish policy. See an example [image-publisher.yml](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/blob/main/.github/workflows/image-publisher.yml)
 
 In the workflow above, the CLI is called as follows:
 
@@ -116,7 +123,7 @@ go run . publish evaluate org.json . "${image}" "${env}"
 
 ##### Policy definition
 
-Teams create their policy files under the folder defined by their organization in [Policy setup](#policy-setup). See an example of a policy in [echo-server.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/publish/echo-server.json).
+Teams create their policy files under the folder defined by their organization in [Policy setup](#policy-setup). See an example of a policy in [echo-server.json](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/blob/main/policies/publish/echo-server.json).
 
 When a team creates a new file or folder:
 
@@ -125,14 +132,14 @@ When a team creates a new file or folder:
 
 ##### Call the publish service
 
-When publishing containers, teams must call the publish policy service service [image-publishr.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-publishr.yml) defined in the org's [Publish service](#publish-service) section. See an example [deploy-image.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-image.yml). This workflows would be called with environment set as "staging" first. One staging tests have passed, it may be called with "prod" environment. Note that the environment must match one the values defined in the policy definition [echo-server.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/publish/echo-server.json).
+When publishing containers, teams must call the publish policy service service [image-publisher.yml](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/blob/main/.github/workflows/image-publisher.yml) defined in the org's [Publish service](#publish-service) section. See an example [deploy-image.yml](https://github.com/slsa-framework/slsa-project/blob/main/.github/workflows/deploy-image.yml). This workflows would be called with environment set as "staging" first. One staging tests have passed, it may be called with "prod" environment. Note that the environment must match one the values defined in the policy definition [echo-server.json](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/blob/main/policies/publish/echo-server.json).
 
 After the workflow has successfully run, you may manually verify the publish attestation via:
 
 ```bash
 # NOTE: change image to your image.
-$ image=docker.io/laurentsimon/slsa-project-echo-server@sha256:4378b3d11e11ede0f64946e588c590e460e44f90c8a7921ad2cb7b04aaf298d4
-$ creator_id=https://github.com/laurentsimon/slsa-org/.github/workflows/image-publishr.yml@refs/heads/main
+$ image=docker.io/slsa-framework/slsa-project-echo-server@sha256:4378b3d11e11ede0f64946e588c590e460e44f90c8a7921ad2cb7b04aaf298d4
+$ creator_id=https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/.github/workflows/image-publisher.yml@refs/heads/main
 $ type=https://slsa.dev/publish/v0.1
 $ cosign verify-attestation "${image}" \
     --certificate-oidc-issuer https://token.actions.githubusercontent.com \
@@ -156,8 +163,8 @@ $ cosign verify-attestation "${image}" \
         1. Limit any bypass actors to those that are strictly necessary (i.e. break glass).
         1. Require review from [CODEOWNERS](https://docs.github.com/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#additional-settings).
 1. Add team maintainers as contributors to the repository. Give them `write` access. Do *NOT* give them admin access. Note that you can do that later when teams create their first policy, see [Policy definition](#policy-definition).
-1. Create a folder to store the deployment policies. See an example [here](https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/).
-1. Create a file with your trusted roots. See example [org.json](https://github.com/laurentsimon/slsa-org/tree/main/policies/deployment/org.json).
+1. Create a folder to store the deployment policies. See an example [here](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/tree/main/policies/deployment/).
+1. Create a file with your trusted roots. See example [org.json](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/tree/main/policies/deployment/org.json).
 
 ##### Pre-submit validation
 
@@ -172,13 +179,13 @@ TODO: we need pre-submits when new files are created, to ensure the appropriate 
 
 ##### Deployer workflow
 
-You need to define a workflow that your teams will call when they want to deploy their container images. This workflow is responsible for evaluating the deployment policy. See an example [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml)
+You need to define a workflow that your teams will call when they want to deploy their container images. This workflow is responsible for evaluating the deployment policy. See an example [image-deployer.yml](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/blob/main/.github/workflows/image-deployer.yml)
 
 In the workflow above, the CLI is called as follows:
 
 ```bash
 cd policies/deployment
-# This expands to https://github.com/laurentsimon/slsa-org/.github/workflows/image-deployer.yml@refs/heads/main
+# This expands to https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/.github/workflows/image-deployer.yml@refs/heads/main
 creator_id="https://github.com/${{ needs.detect-env.outputs.repository }}/.github/workflows/image-deployer.yml@${{ needs.detect-env.outputs.ref }}"
 # This is provided by the caller. It is the unique path to the policy, e.g. servers-dev.json
 policy_id="${{ inputs.policy-id }}"
@@ -189,7 +196,7 @@ go run . deployment evaluate org.json . "${image}" "${policy_id}" "${creator_id}
 
 ##### Policy definition
 
-Teams create their policy files under the folder defined by their organization in [Policy setup](#policy-setup-1). See an example of a policy in [servers-prod.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/deployment/servers-prod.json).
+Teams create their policy files under the folder defined by their organization in [Policy setup](#policy-setup-1). See an example of a policy in [servers-prod.json](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/blob/main/policies/deployment/servers-prod.json).
 
 When a team creates a new file or folder:
 
@@ -198,14 +205,14 @@ When a team creates a new file or folder:
 
 ##### Call the deployment service
 
-Before submitting a request to deploy containers, teams must call the deployment policy service [image-deployer.yml](https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml) defined in the org's [Deployment service](#deployment-service) section. See an example [deploy-image.yml](https://github.com/laurentsimon/slsa-project/blob/main/.github/workflows/deploy-image.yml). This may be called with "staging" environment first to allow the container to run on the staging service account defined in [servers-staging.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/deployment/servers-staging.json). Once all staging tests have passed, it may be called with "prod" environment. Note that the environment must match one the values defined in the publish policy file [servers-prod.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/deployment/servers-prod.json) and the deployment policy file [echo-server.json](https://github.com/laurentsimon/slsa-org/blob/main/policies/publish/echo-server.json).
+Before submitting a request to deploy containers, teams must call the deployment policy service [image-deployer.yml](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/blob/main/.github/workflows/image-deployer.yml) defined in the org's [Deployment service](#deployment-service) section. See an example [deploy-image.yml](https://github.com/slsa-framework/slsa-project/blob/main/.github/workflows/deploy-image.yml). This may be called with "staging" environment first to allow the container to run on the staging service account defined in [servers-staging.json](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/blob/main/policies/deployment/servers-staging.json). Once all staging tests have passed, it may be called with "prod" environment. Note that the environment must match one the values defined in the publish policy file [servers-prod.json](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/blob/main/policies/deployment/servers-prod.json) and the deployment policy file [echo-server.json](https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/blob/main/policies/publish/echo-server.json).
 
 After the workflow has successfully run, you may manually verify the publish attestation via:
 
 ```bash
 # NOTE: change image to your image.
-$ image=docker.io/laurentsimon/slsa-project-echo-server@sha256:4378b3d11e11ede0f64946e588c590e460e44f90c8a7921ad2cb7b04aaf298d4
-$ creator_id=https://github.com/laurentsimon/slsa-org/blob/main/.github/workflows/image-deployer.yml@refs/heads/main
+$ image=docker.io/slsa-framework/slsa-project-echo-server@sha256:4378b3d11e11ede0f64946e588c590e460e44f90c8a7921ad2cb7b04aaf298d4
+$ creator_id=https://github.com/slsa-framework/oss-na24-slsa-workshop-organization/blob/main/.github/workflows/image-deployer.yml@refs/heads/main
 $ type=https://slsa.dev/deployment/v0.1
 $ cosign verify-attestation "{$image}" \
     --certificate-oidc-issuer https://token.actions.githubusercontent.com \

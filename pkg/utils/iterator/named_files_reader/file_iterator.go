@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/iterator"
 )
 
 // FromPaths creates an iterator for a list of files.

@@ -6,9 +6,9 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/publish/internal/options"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+	"github.com/slsa-framework/slsa-policy/pkg/errs"
+	"github.com/slsa-framework/slsa-policy/pkg/publish/internal/options"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
 )
 
 // Root defines a trusted root.

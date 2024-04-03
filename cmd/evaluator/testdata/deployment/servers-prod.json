@@ -8,7 +8,7 @@
     },
     "packages":[
         {
-            "name": "docker.io/laurentsimon/slsa-project-echo-server",
+            "name": "docker.io/slsa-framework/slsa-project-echo-server",
             "environment": {
                 "any_of": [
                     "prod"
@@ -16,7 +16,7 @@
             }
         },
         {
-            "name": "docker.io/laurentsimon/laurentsimon/database-server",
+            "name": "docker.io/slsa-framework/slsa-framework/database-server",
             "environment": {
                 "any_of": [
                     "prod"
@@ -24,7 +24,7 @@
             }
         },
         {
-            "name": "docker.io/laurentsimon/laurentsimon/logger",
+            "name": "docker.io/slsa-framework/slsa-framework/logger",
             "environment": {
                 "any_of": [
                     "prod"
@@ -32,7 +32,7 @@
             }
         },
         {
-            "name": "docker.io/laurentsimon/laurentsimon/ids",
+            "name": "docker.io/slsa-framework/slsa-framework/ids",
             "environment": {
                 "any_of": [
                     "prod"

@@ -3,7 +3,7 @@ package publish
 import (
 	"fmt"
 
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
 )
 
 func newPackageHelper(registry string) PackageHelper {

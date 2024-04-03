@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/laurentsimon/slsa-policy/pkg/errs"
+	"github.com/slsa-framework/slsa-policy/pkg/errs"
 )
 
 func Test_ValidateSubject(t *testing.T) {

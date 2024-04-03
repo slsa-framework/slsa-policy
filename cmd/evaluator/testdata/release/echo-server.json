@@ -1,7 +1,7 @@
 {
     "format":1,
     "package": {
-        "name":"docker.io/laurentsimon/slsa-project-echo-server",
+        "name":"docker.io/slsa-framework/slsa-project-echo-server",
         "environment":{
             "any_of": [
                 "staging", "prod"
@@ -11,7 +11,7 @@
     "build":{
         "require_slsa_builder":"github_generator_level_3",
         "repository":{
-            "uri":"github.com/laurentsimon/slsa-project"
+            "uri":"github.com/slsa-framework/slsa-project"
         }
     }
 }

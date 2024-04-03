@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/deployment"
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/publish"
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/deployment"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/publish"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/utils"
 )
 
 func usage(prog string) {

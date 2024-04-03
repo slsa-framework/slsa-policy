@@ -3,9 +3,9 @@ package deployment
 import (
 	"os"
 
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/deployment/evaluate"
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/deployment/validate"
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/deployment/evaluate"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/deployment/validate"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/utils"
 )
 
 func usage(cli string) {

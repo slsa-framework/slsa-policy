@@ -8,11 +8,11 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/laurentsimon/slsa-policy/pkg/errs"
-	"github.com/laurentsimon/slsa-policy/pkg/publish/internal/common"
-	"github.com/laurentsimon/slsa-policy/pkg/publish/internal/organization"
-	"github.com/laurentsimon/slsa-policy/pkg/publish/internal/project"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+	"github.com/slsa-framework/slsa-policy/pkg/errs"
+	"github.com/slsa-framework/slsa-policy/pkg/publish/internal/common"
+	"github.com/slsa-framework/slsa-policy/pkg/publish/internal/organization"
+	"github.com/slsa-framework/slsa-policy/pkg/publish/internal/project"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
 )
 
 func Test_AttestationNew(t *testing.T) {

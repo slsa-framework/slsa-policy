@@ -6,11 +6,11 @@ import (
 	"io"
 	"strings"
 
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils/crypto"
-	"github.com/laurentsimon/slsa-policy/pkg/deployment"
-	"github.com/laurentsimon/slsa-policy/pkg/publish"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/utils"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/utils/crypto"
+	"github.com/slsa-framework/slsa-policy/pkg/deployment"
+	"github.com/slsa-framework/slsa-policy/pkg/publish"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
 )
 
 type publishVerifier struct {

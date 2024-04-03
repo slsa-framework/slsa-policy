@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
-	"github.com/laurentsimon/slsa-policy/pkg/publish"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/utils"
+	"github.com/slsa-framework/slsa-policy/pkg/publish"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/options"
 	"github.com/sigstore/cosign/v2/cmd/cosign/cli/rekor"
 	clisign "github.com/sigstore/cosign/v2/cmd/cosign/cli/sign"

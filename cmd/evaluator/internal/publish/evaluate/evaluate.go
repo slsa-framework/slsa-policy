@@ -5,12 +5,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/publish/validate"
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils"
-	"github.com/laurentsimon/slsa-policy/cli/evaluator/internal/utils/crypto"
-	"github.com/laurentsimon/slsa-policy/pkg/publish"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
-	"github.com/laurentsimon/slsa-policy/pkg/utils/iterator/files_reader"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/publish/validate"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/utils"
+	"github.com/slsa-framework/slsa-policy/cli/evaluator/internal/utils/crypto"
+	"github.com/slsa-framework/slsa-policy/pkg/publish"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/iterator/files_reader"
 )
 
 func usage(cli string) {
@@ -18,7 +18,7 @@ func usage(cli string) {
 		"Usage: %s publish evaluate orgPath projectsPath packageName [optional:environment]\n" +
 		"\n" +
 		"Example:\n" +
-		"%s publish evaluate ./path/to/policy/org ./path/to/policy/projects laurentsimon/echo-server@sha256:xxxx prod\n" +
+		"%s publish evaluate ./path/to/policy/org ./path/to/policy/projects slsa-framework/echo-server@sha256:xxxx prod\n" +
 		"\n"
 	fmt.Fprintf(os.Stderr, msg, cli, cli)
 	os.Exit(1)

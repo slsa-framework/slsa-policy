@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/laurentsimon/slsa-policy/pkg/errs"
+	"github.com/slsa-framework/slsa-policy/pkg/errs"
 
-	"github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+	"github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
 )
 
 type Creation struct {

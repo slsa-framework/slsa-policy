@@ -1,6 +1,6 @@
 package options
 
-import "github.com/laurentsimon/slsa-policy/pkg/utils/intoto"
+import "github.com/slsa-framework/slsa-policy/pkg/utils/intoto"
 
 // AttestationVerifier defines an interface to verify attestations.
 type AttestationVerifier interface {
