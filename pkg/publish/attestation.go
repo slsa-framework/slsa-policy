@@ -12,6 +12,7 @@ type decisionDetails struct {
 type predicate struct {
 	CreationTime    string                   `json:"creationTime"`
 	DecisionDetails *decisionDetails         `json:"decisionDetails,omitempty"`
+	// NOTE: We may replace the descriptor by a PURL.
 	Package         intoto.PackageDescriptor `json:"package"`
 	Properties      properties               `json:"properties,omitempty"`
 	// TODO: properties for dependencies.
