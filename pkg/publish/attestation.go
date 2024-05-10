@@ -15,8 +15,6 @@ type predicate struct {
 	Package         intoto.PackageDescriptor `json:"package"`
 	Properties      properties               `json:"properties,omitempty"`
 	// TODO: properties for dependencies.
-	// TODO: add inputs as a list of intoto.PackageDescriptor, so that we can
-	// indicate which attestations were used.
 }
 
 type attestation struct {
